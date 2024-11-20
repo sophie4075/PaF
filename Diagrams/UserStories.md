@@ -1,7 +1,5 @@
 # User Stories
 
----
-
 ## Admin
 
 ### 1. Artikel anlegen und verwalten
