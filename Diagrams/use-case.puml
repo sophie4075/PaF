@@ -1,0 +1,33 @@
+@startuml
+left to right direction
+actor "Kunde" as User
+actor "Admin" as Admin
+actor "System" as System
+
+' Admin Use Cases
+Admin --> (Artikel anlegen und verwalten) 
+Admin --> (Buchungen einsehen und verwalten) 
+Admin --> (Rechnung für Buchungen) 
+Admin --> (Kategorisierung der Artikel) 
+Admin --> (Schaden- oder Verlustverwaltung) 
+Admin --> (Inventarprüfung und Wartung) 
+Admin --> (Erinnerung und Benachrichtigungen an Rückgaben und Zahlungen erhalten) 
+
+' User Use Cases
+User --> (Artikel buchen) 
+User --> (Bezahlung der Buchung) 
+User --> (Rechnung erhalten) 
+User --> (Buchungsübersicht)
+User --> (Benachrichtigungen über Buchungsstatus, Zahlungserfolg und Rückgabefristen erhalten) : "Automatische Updates"
+User --> (Benachrichtigungen verwalten) 
+User --> (Artikel suchen und filtern) 
+User --> (Konto anlegen und löschen)
+User --> (Kontoinformationen bearbeiten) 
+User --> (Erinnerung an Rückgaben erhalten) : "Automatisch durch System"
+
+' System Automation
+System --> (Rechnung für Buchungen) : "Automatisch nach Zahlung"
+System --> (Erinnerung an Rückgaben erhalten) : "Automatisch vor Fälligkeit"
+System --> (Benachrichtigungen über Buchungsstatus, Zahlungserfolg und Rückgabefristen erhalten) : "Automatisch ausgelöst"
+
+@enduml
