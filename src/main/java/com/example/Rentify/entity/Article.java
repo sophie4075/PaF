@@ -1,4 +1,4 @@
-package com.example.SpaceSnap.entity;
+package com.example.Rentify.entity;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,7 +13,7 @@ import jakarta.persistence.Id;
 @Getter
 @Setter
 @Entity
-public class Artikel {
+public class Article {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // Automatische ID-Generierung
@@ -25,7 +25,7 @@ public class Artikel {
     private double grundpreis;
     private String bildUrl;
 
-    public Artikel(String bezeichnung, String beschreibung, int stueckzahl, double grundpreis, String bildUrl) {
+    public Article(String bezeichnung, String beschreibung, int stueckzahl, double grundpreis, String bildUrl) {
         this.bezeichnung = bezeichnung;
         this.beschreibung = beschreibung;
         this.stueckzahl = stueckzahl;

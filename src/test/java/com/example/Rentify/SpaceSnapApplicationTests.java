@@ -1,10 +1,10 @@
-package com.example.SpaceSnap;
+package com.example.Rentify;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class SpaceSnapApplicationTests {
+class RentifyApplicationTests {
 
 	@Test
 	void contextLoads() {

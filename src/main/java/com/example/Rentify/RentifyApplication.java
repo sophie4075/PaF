@@ -1,13 +1,13 @@
-package com.example.SpaceSnap;
+package com.example.Rentify;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class SpaceSnapApplication {
+public class RentifyApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(SpaceSnapApplication.class, args);
+		SpringApplication.run(RentifyApplication.class, args);
 	}
 
 }
