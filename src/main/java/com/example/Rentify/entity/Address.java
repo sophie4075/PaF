@@ -1,24 +1,27 @@
 package com.example.Rentify.entity;
 
-import jakarta.persistence.Embeddable;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/**
- * The Address class is an embeddable entity representing a user's address.
- * It is used within the User entity.
- */
-
 @NoArgsConstructor
 @Getter
 @Setter
-@Embeddable
-
+@Entity
 public class Address {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, length = 100)
     private String street;
+    @Column(nullable = false, length = 100)
     private String city;
     private String state;
+    @Column(nullable = false, length = 10)
     private String postalCode;
+    @Column(nullable = false, length = 100)
     private String country;
 }
+
