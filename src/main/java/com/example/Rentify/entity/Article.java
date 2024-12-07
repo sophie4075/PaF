@@ -4,10 +4,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import java.util.List;
 
 @NoArgsConstructor
 @Getter
@@ -16,7 +14,7 @@ import jakarta.persistence.Id;
 public class Article {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // Automatische ID-Generierung
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String bezeichnung;
@@ -24,6 +22,9 @@ public class Article {
     private int stueckzahl;
     private double grundpreis;
     private String bildUrl;
+
+    @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ArticleInstance> articleInstances; // Beziehung zu ArticleInstance
 
     public Article(String bezeichnung, String beschreibung, int stueckzahl, double grundpreis, String bildUrl) {
         this.bezeichnung = bezeichnung;
