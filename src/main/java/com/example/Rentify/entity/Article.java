@@ -1,22 +1,20 @@
-package com.example.SpaceSnap.entity;
+package com.example.Rentify.entity;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import java.util.List;
 
 @NoArgsConstructor
 @Getter
 @Setter
 @Entity
-public class Artikel {
+public class Article {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // Automatische ID-Generierung
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String bezeichnung;
@@ -25,7 +23,10 @@ public class Artikel {
     private double grundpreis;
     private String bildUrl;
 
-    public Artikel(String bezeichnung, String beschreibung, int stueckzahl, double grundpreis, String bildUrl) {
+    @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ArticleInstance> articleInstances; // Beziehung zu ArticleInstance
+
+    public Article(String bezeichnung, String beschreibung, int stueckzahl, double grundpreis, String bildUrl) {
         this.bezeichnung = bezeichnung;
         this.beschreibung = beschreibung;
         this.stueckzahl = stueckzahl;
