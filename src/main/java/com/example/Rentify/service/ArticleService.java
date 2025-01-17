@@ -3,6 +3,7 @@ package com.example.Rentify.service;
 import com.example.Rentify.entity.Article;
 import com.example.Rentify.repo.ArticleRepo;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpEntity;
@@ -17,6 +18,9 @@ public class ArticleService {
 
     private final ArticleRepo articleRepo;
     private final ObjectMapper objectMapper;
+
+    @Value("${gemini.api.key}")
+    private String apiKey;
 
     public ArticleService(ArticleRepo articleRepo) {
         this.articleRepo = articleRepo;
@@ -65,7 +69,7 @@ public class ArticleService {
         );
 
         // API-URL und Header
-        String apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyCNotcQkYiq63djIXUTcaPPcpgjwRjKgjg";
+        String apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + apiKey;
         HttpHeaders headers = new HttpHeaders();
         headers.set("Content-Type", "application/json");
 
@@ -85,7 +89,6 @@ public class ArticleService {
             try {
                 // JSON-Antwort verarbeiten
                 JsonNode root = objectMapper.readTree(response.getBody());
-                // Extrahiere den Text
                 String text = root
                         .path("candidates")
                         .get(0)
@@ -94,7 +97,7 @@ public class ArticleService {
                         .get(0)
                         .path("text")
                         .asText();
-                return text; // Gibt nur den Text zurück
+                return text;
             } catch (Exception e) {
                 throw new RuntimeException("Fehler beim Verarbeiten der API-Antwort: " + e.getMessage(), e);
             }
@@ -102,5 +105,4 @@ public class ArticleService {
             throw new RuntimeException("Fehler beim Abrufen der Beschreibung von der Gemini-API");
         }
     }
-
 }
