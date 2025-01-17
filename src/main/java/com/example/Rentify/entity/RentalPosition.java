@@ -14,6 +14,8 @@ import java.time.LocalDate;
 @Entity
 public class RentalPosition {
 
+    @Id
+    private Long id;
     private LocalDate rentalStart;
     private LocalDate rentalEnd;
     private BigDecimal positionPrice;
@@ -25,4 +27,5 @@ public class RentalPosition {
     @ManyToOne
     @JoinColumn(name = "articleInstance_id", nullable = false)
     private ArticleInstance articleInstance;
+
 }
