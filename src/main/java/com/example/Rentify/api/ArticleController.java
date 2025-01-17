@@ -54,4 +54,16 @@ public class ArticleController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    @PostMapping("/{id}/generate-description")
+    public ResponseEntity<String> generateDescription(@PathVariable Long id) {
+        return articleService.getArticleById(id)
+                .map(article -> {
+                    String description = articleService.generateDescription(article);
+                    article.setBeschreibung(description);
+                    articleService.updateArticle(id, article);
+                    return ResponseEntity.ok(description);
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
 }
