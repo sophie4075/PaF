@@ -9,13 +9,16 @@ import org.jetbrains.annotations.NotNull;
 public class RegisterRequest {
 
 
-    private String FirstName;
-    private String LastName;
+    private String firstName;
+    private String lastName;
 
 
     private String email;
     private String password;
 
+    private BusinessDetailsDto businessDetailsDto;
+
     @NotNull
     private AddressDto addressDto;
 }
+

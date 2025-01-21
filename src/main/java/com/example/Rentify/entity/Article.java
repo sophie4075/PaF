@@ -18,7 +18,7 @@ public class Article {
     private Long id;
 
     private String bezeichnung;
-    @Lob
+    @Column(columnDefinition = "TEXT")
     private String beschreibung;
     private int stueckzahl;
     private double grundpreis;
