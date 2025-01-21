@@ -1,4 +1,4 @@
-# Projektbeschreibung
+## Projektbeschreibung
 
 Umgesetzt werden soll eine Webapplikation, die das Anfragen und Ausleihen von Equipment ermöglicht. Dabei stehen folgende Anforderungen im Fokus:
 
