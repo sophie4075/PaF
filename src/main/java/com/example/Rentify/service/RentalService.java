@@ -1,23 +1,50 @@
 package com.example.Rentify.service;
 
 import com.example.Rentify.entity.Rental;
+import com.example.Rentify.events.RentalCreatedEvent;
 import com.example.Rentify.repo.RentalRepo;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
 
+/**
+ * The RentalService class provides business logic for rental-related operations.
+ * An event is published after a rental is created. An EmailNotificationListener
+ * (implementiert als Observer) reagiert auf dieses Event und versendet eine E-Mail.
+ */
 @Service
 public class RentalService {
     private final RentalRepo rentalRepo;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public RentalService(RentalRepo rentalRepo) {
+    /**
+     * Constructor for injecting the Rental repository and ApplicationEventPublisher.
+     *
+     * @param rentalRepo      Rental repository.
+     * @param eventPublisher  ApplicationEventPublisher for publishing events.
+     */
+    @Autowired
+    public RentalService(RentalRepo rentalRepo, ApplicationEventPublisher eventPublisher) {
         this.rentalRepo = rentalRepo;
+        this.eventPublisher = eventPublisher;
     }
 
+    /**
+     * Creates a new rental, calculates the total price, saves it, and publishes an event.
+     *
+     * @param rental the rental entity to create.
+     * @return the saved rental.
+     */
     public Rental createRental(Rental rental) {
         rental.setTotalPrice(calculateTotalPrice(rental));
-        return rentalRepo.save(rental);
+        Rental savedRental = rentalRepo.save(rental);
+
+        eventPublisher.publishEvent(new RentalCreatedEvent(savedRental));
+
+        return savedRental;
     }
 
     public Rental updateRental(Long id, Rental updatedRental) {
@@ -54,5 +81,4 @@ public class RentalService {
                 .map(pos -> pos.getPositionPrice() == null ? BigDecimal.ZERO : pos.getPositionPrice())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
-
 }
