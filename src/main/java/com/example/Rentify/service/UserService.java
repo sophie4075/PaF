@@ -2,8 +2,10 @@ package com.example.Rentify.service;
 
 import com.example.Rentify.entity.Address;
 import com.example.Rentify.entity.User;
+import com.example.Rentify.events.UserUpdatedEvent;
 import com.example.Rentify.repo.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher; // Neuer Import für Event Publishing
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,22 +13,21 @@ import java.util.List;
 /**
  * The UserService class provides the business logic for User-related operations.
  */
-
 @Service
-
 public class UserService {
     private final UserRepo userRepository;
-
+    private final ApplicationEventPublisher eventPublisher;  // ApplicationEventPublisher als Abhängigkeit
 
     /**
-     * Constructor for injecting the User repository.
+     * Constructor for injecting the User repository and ApplicationEventPublisher.
      *
      * @param userRepository User repository.
+     * @param eventPublisher ApplicationEventPublisher for publishing events.
      */
-
     @Autowired
-    public UserService(UserRepo userRepository) {
+    public UserService(UserRepo userRepository, ApplicationEventPublisher eventPublisher) {
         this.userRepository = userRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     /**
@@ -39,9 +40,15 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    /**
+     * Update an existing user.
+     *
+     * @param id The ID of the user to update.
+     * @param updatedUser The user entity with updated information.
+     * @return The updated user.
+     */
     public User updateUser(Long id, User updatedUser) {
         User existingUser = userRepository.findById(id)
-                //TODO Custom Exception -> RunTime might not be ideal
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         existingUser.setFirstName(updatedUser.getFirstName());
@@ -51,26 +58,29 @@ public class UserService {
         existingUser.setBillingAddress(updatedUser.getBillingAddress());
         existingUser.setShippingAddress(updatedUser.getShippingAddress());
 
-        return userRepository.save(existingUser);
-    }
+        User savedUser = userRepository.save(existingUser);
 
+        // Statt einer direkten Benachrichtigung wird nun ein Event veröffentlicht
+        eventPublisher.publishEvent(new UserUpdatedEvent(savedUser));
+
+        return savedUser;
+    }
 
     /**
      * Retrieve a user by ID.
      *
      * @param id User ID.
      * @return The user entity.
-     * @throws RuntimeException if the user is not found.
+     * @throws IllegalArgumentException if the user is not found.
      */
     public User getUserById(Long id) {
         return userRepository.findById(id)
-                //TODO Custom Exception -> RunTimeException might not be ideal
-                // + Think about more generic error messages to avoid exposing sensitive information to attackers
                 .orElseThrow(() -> new IllegalArgumentException("User could not be retrieved"));
     }
 
     /**
      * Retrieve all users.
+     *
      * @return A list of all users.
      */
     public List<User> getAllUsers() {
@@ -78,6 +88,12 @@ public class UserService {
         return (List<User>) users;
     }
 
+    /**
+     * Find users with an optional ID filter.
+     *
+     * @param idFilter The ID filter to apply.
+     * @return A list of users matching the filter.
+     */
     public List<User> findUsers(Long idFilter) {
         return idFilter == null
                 ? (List<User>) userRepository.findAll()
@@ -86,20 +102,24 @@ public class UserService {
                 .orElseGet(List::of);
     }
 
-
     /**
      * Delete a user by ID.
+     *
      * @param id User ID.
      */
     public void deleteUserById(Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new IllegalArgumentException("User with ID " + id + " not found");
+        }
         userRepository.deleteById(id);
     }
 
     /**
      * Retrieve the billing address of a user by user ID.
+     *
      * @param userId The user ID.
      * @return The billing address.
-     * @throws RuntimeException if the user is not found.
+     * @throws IllegalArgumentException if the user is not found.
      */
     public Address getBillingAddressByUserId(Long userId) {
         User user = userRepository.findById(userId)
@@ -109,15 +129,14 @@ public class UserService {
 
     /**
      * Retrieve the shipping address of a user by user ID.
+     *
      * @param userId The user ID.
      * @return The shipping address.
-     * @throws RuntimeException if the user is not found.
+     * @throws IllegalArgumentException if the user is not found.
      */
     public Address getShippingAddressByUserId(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("No results found"));
         return user.getShippingAddress();
     }
-
-    //extend with further operations when needed, remember to updated Controller as well
 }
