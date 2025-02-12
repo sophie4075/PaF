@@ -24,6 +24,10 @@ public class Article {
     private double grundpreis;
     private String bildUrl;
 
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Category category;
+
     @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ArticleInstance> articleInstances; // Beziehung zu ArticleInstance
 

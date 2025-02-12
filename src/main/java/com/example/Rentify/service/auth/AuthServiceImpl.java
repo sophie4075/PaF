@@ -12,10 +12,15 @@ import com.example.Rentify.repo.UserRepo;
 import com.example.Rentify.repo.BusinessDetailsRepo;
 import com.example.Rentify.repo.AddressRepo;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
+import org.w3c.dom.CharacterData;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +30,40 @@ public class AuthServiceImpl implements AuthService {
     private final AddressRepo addressRepo;
     private final BusinessDetailsRepo businessDetailsRepo;
 
+    //TODO Don't make this accessible for everyone -> Create magic link and send credentials to owner
+    public void createAdminAcc(){
+        User admin = userRepo.findByRole(Role.ADMIN);
+        if(admin == null){
+            User newAdmin = new User();
+            newAdmin.setRole(Role.ADMIN);
+            //Update mail to owner
+            newAdmin.setEmail("admin@rentify.com");
+            //TODO: Create random password generation
+            newAdmin.setPassword(new BCryptPasswordEncoder().encode("admiN123!"));
+            newAdmin.setFirstName("Admin");
+            newAdmin.setLastName("Rentify");
+
+            // Standardadresse setzen
+            Address defaultAddress = new Address();
+            defaultAddress.setStreet("Default Street");
+            defaultAddress.setPostalCode("12345");
+            defaultAddress.setCity("Default City");
+            defaultAddress.setState("Default State");
+            defaultAddress.setCountry("Default Country");
+
+
+            newAdmin.setBillingAddress(defaultAddress);
+            newAdmin.setShippingAddress(defaultAddress);
+
+            // User speichern
+            userRepo.save(newAdmin);
+            log.info("Admin-Account erfolgreich erstellt.");
+        } else {
+            log.info("Admin-Account existiert bereits.");
+        }
+    }
+
+
 
     @Override
     public UserDto createCustomer(RegisterRequest registerRequest){
@@ -32,7 +71,6 @@ public class AuthServiceImpl implements AuthService {
         user.setFirstName(registerRequest.getFirstName());
         user.setLastName(registerRequest.getLastName());
         user.setEmail(registerRequest.getEmail());
-        // TODO: Implement Bcrypt
         user.setPassword(new BCryptPasswordEncoder().encode(registerRequest.getPassword()));
 
 
@@ -44,20 +82,6 @@ public class AuthServiceImpl implements AuthService {
         }
 
 
-//        Address address = new Address();
-//        AddressDto addressDto = registerRequest.getAddressDto();
-//
-//
-//        address.setStreet(addressDto.getStreet());
-//        address.setPostalCode(addressDto.getPostalCode());
-//        address.setCity(addressDto.getCity());
-//        address.setState(addressDto.getState());
-//        address.setCountry(addressDto.getCountry());
-
-
-
-        //address.setCompanyName(addressDto.getCompanyName());
-        //address.setVatId(addressDto.getVatId());
 
         AddressDto addressDto = registerRequest.getAddressDto();
 
@@ -95,10 +119,6 @@ public class AuthServiceImpl implements AuthService {
 
             user.setBusinessDetails(businessDetails);
         }
-
-        //user.setBillingAddress(address);
-        //user.setShippingAddress(address);
-
 
         User createdUser = userRepo.save(user);
 

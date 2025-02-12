@@ -26,10 +26,5 @@ public class Address {
     @Column(nullable = false, length = 100)
     private String country;
 
-    // Optional
-    /* @Column(length = 100)
-    private String companyName;
-    @Column(length = 12)
-    private String vatId; */
 }
 

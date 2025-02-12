@@ -1,10 +1,12 @@
 package com.example.Rentify.repo;
 
+import com.example.Rentify.entity.Role;
 import com.example.Rentify.entity.User;
 
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -15,4 +17,5 @@ import java.util.Optional;
 public interface UserRepo extends CrudRepository<User, Long> {
 
     Optional<User> findFirstByEmail(String email);
+    User findByRole(Role role);
 }
