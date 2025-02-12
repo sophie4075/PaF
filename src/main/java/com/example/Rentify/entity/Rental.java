@@ -22,7 +22,10 @@ public class Rental {
 
     private BigDecimal totalPrice;
 
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
     @OneToMany(mappedBy = "rental", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RentalPosition> rentalPositions;
 }
-

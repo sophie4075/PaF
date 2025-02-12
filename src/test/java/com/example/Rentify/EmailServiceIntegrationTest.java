@@ -6,10 +6,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class RentifyApplicationTests {
+public class EmailServiceIntegrationTest {
 
-	@Test
-	void contextLoads() {
-	}
+    @Autowired
+    private EmailService emailService;
 
+    @Test
+    public void testSendEmail() {
+        emailService.sendEmail("test@test.com", "Test Subject", "Test Content");
+    }
 }

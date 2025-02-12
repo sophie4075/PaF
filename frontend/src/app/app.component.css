@@ -1,0 +1,108 @@
+/*Schiebt Elemente offscreen, die Inhalte sind nur "sichtbar" für Screenreader, aber nicht visuell für den User*/
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed&display=swap');
+.sr-only{
+  position:absolute;
+  left:-10000px;
+  top:auto;
+  width:1px;
+  height:1px;
+  overflow:hidden;
+}
+
+
+header{
+  z-index: 9998;
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 5vw;
+  background: transparent;
+}
+
+#logo{
+  width: 2%;
+  height: 2%;
+  min-width: 3em;
+  margin: 0.5rem 0;
+}
+
+nav ul{
+  display: flex;
+  gap: 1.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  text-align: center;
+}
+
+
+.mobile-nav-toggle{
+  display: none;
+}
+
+
+nav a {
+  font-family: 'Roboto Condensed', sans-serif;
+  text-transform: uppercase;
+  font-size: 1rem;
+  font-weight: lighter;
+  text-decoration: none;
+  letter-spacing: 2px;
+}
+
+nav a:hover {
+  font-size: 0.9rem;
+}
+
+@media (max-width: 44em) {
+
+  /*Navigation tablet/mobile */
+  nav ul{
+    position: fixed;
+    /*Damit das Layer weit genug oben liegt, aber immer noch unter dem Button*/
+    z-index: 1000;
+    /*"Nimmt 30% der linken Seite, die bleibt somit frei, wenn sich die Navigation öffnet*/
+    inset: 0 0 0 30%;
+    background: hsl(0 0% 100% / 0.5);
+    /*Die Ul ist bereits ein Flex Element, mit der Flex Direction wird nun also erreicht, dass
+    die li-Elemente untereinander dargestellt werden
+     */
+    flex-direction: column;
+    /*Nimmt den kleiner Wert, für den Fall dass der Bildschirm gedreht wird*/
+    padding: min(20vh, 10rem) 2em;
+    backdrop-filter: blur(1rem);
+    /*Die Navigation List nimmt 100% seiner Breite/width zur rechten Seite von der Seite */
+    transform: translateX(100%);
+    transition: transform 350ms ease-out;
+  }
+
+  nav ul[data-visible="true"]{
+    transform: translateX(0%);
+  }
+
+  .mobile-nav-toggle[aria-expanded="true"]{
+    background-image: url("../../lib/assets/cross.png");
+  }
+
+
+  .mobile-nav-toggle{
+    display: block;
+    position: absolute;
+    background-color: transparent;
+    /*Damit der Button immer ganz oben "liegt"*/
+    z-index: 9999;
+    background-repeat: no-repeat;
+    background-image: url("../../lib/assets/Hamburger-menu.png");
+    background-size: cover;
+    width: 1.5rem;
+    border: 0;
+    /*festes Seitenverhältnis */
+    aspect-ratio: 1 / 1;
+    top: 1.5rem;
+    right: 2rem;
+  }
+
+}
+
