@@ -7,6 +7,8 @@ import {HomeComponent} from './modules/home/home/home.component';
 export const routes: Routes = [
   {path: "register", component: RegisterComponent},
   {path: "login", component: LoginComponent},
+  { path: "admin", loadChildren: () => import("./modules/admin/admin.module").then(m => m.AdminModule)},
+  { path: "customer", loadChildren: () => import("./modules/customer/customer.module").then(m => m.CustomerModule)},
   { path: '', component: HomeComponent },
 ];
 

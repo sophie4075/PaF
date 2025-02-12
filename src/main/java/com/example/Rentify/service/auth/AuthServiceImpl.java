@@ -12,15 +12,11 @@ import com.example.Rentify.repo.UserRepo;
 import com.example.Rentify.repo.BusinessDetailsRepo;
 import com.example.Rentify.repo.AddressRepo;
 
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
-import org.w3c.dom.CharacterData;
 
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +26,7 @@ public class AuthServiceImpl implements AuthService {
     private final AddressRepo addressRepo;
     private final BusinessDetailsRepo businessDetailsRepo;
 
-    //TODO Don't make this accessible for everyone -> Create magic link and send credentials to owner
+    //TODO Don't make this accessible for everyone -> Create magic link and send credentials to owner(s)
     public void createAdminAcc(){
         User admin = userRepo.findByRole(Role.ADMIN);
         if(admin == null){

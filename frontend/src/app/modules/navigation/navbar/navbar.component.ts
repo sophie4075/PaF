@@ -1,17 +1,26 @@
-import {AfterViewInit, Component} from '@angular/core';
-import {RouterLink, RouterLinkActive} from '@angular/router';
+import {AfterViewInit, Component, Input} from '@angular/core';
+import {Router, RouterLink, RouterLinkActive} from '@angular/router';
+import {StorageService} from "../../../auth/service/storage/storage.service";
+import {NgStyle} from "@angular/common";
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
   imports: [
     RouterLink,
-    RouterLinkActive
+    RouterLinkActive,
+    NgStyle
   ],
   templateUrl: './navbar.component.html',
   styleUrl: '../../../app.component.css'
 })
 export class NavbarComponent implements AfterViewInit{
+
+  @Input() isCustomerLoggedIn!: boolean;
+  @Input() isAdminLoggedIn!: boolean;
+  @Input() isStaffLoggedIn!: boolean;
+
+  constructor(private router: Router) { }
 
   ngAfterViewInit() {
     const primaryNav = document.querySelector("#navigation") as HTMLElement;
@@ -38,6 +47,23 @@ export class NavbarComponent implements AfterViewInit{
         navToggle.setAttribute('aria-expanded', 'false');
       }
     })
+  }
+
+  get dashboardRoute(): string {
+    if (this.isAdminLoggedIn) {
+      return '/admin/dashboard';
+    } else if (this.isCustomerLoggedIn) {
+      return '/customer/dashboard';
+    } else if (this.isStaffLoggedIn) {
+      return '/staff/dashboard';
+    } else {
+      return '/';
+    }
+  }
+
+  logout(){
+    StorageService.logout();
+    this.router.navigate(['/']);
   }
 
 }

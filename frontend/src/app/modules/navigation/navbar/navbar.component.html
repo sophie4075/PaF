@@ -10,9 +10,20 @@
   </button>
 
   <nav id="navbar">
-    <ul data-visible="false" id="navigation">
-      <li><a routerLink="/login" routerLinkActive="active">Login</a></li>
-      <li><a routerLink="/register" routerLinkActive="active">Register</a></li>
-    </ul>
+      <ul data-visible="false" id="navigation">
+          <li><a routerLink="/products" routerLinkActive="active">Products</a></li>
+          @if(!isCustomerLoggedIn && !isStaffLoggedIn && !isAdminLoggedIn){
+              <li><a routerLink="/login" routerLinkActive="active">Login</a></li>
+              <li><a routerLink="/register" routerLinkActive="active">Register</a></li>
+          }
+          @else if(isCustomerLoggedIn || isStaffLoggedIn || isAdminLoggedIn) {
+              @if(isStaffLoggedIn || isAdminLoggedIn){
+                  <!-- TODO make Link update dynamically -->
+                  <li><a routerLink="/admin/article" routerLinkActive="active">Add Article</a></li>
+              }
+              <li><a [routerLink]="dashboardRoute" routerLinkActive="active">Dashboard</a></li>
+              <li><a routerLinkActive="active" (click)="logout()" [ngStyle]="{'cursor': 'pointer'}">Logout</a></li>
+          }
+      </ul>
   </nav>
 </header>
