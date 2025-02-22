@@ -83,9 +83,8 @@ nav a:hover {
   }
 
   .mobile-nav-toggle[aria-expanded="true"]{
-    background-image: url("../../lib/assets/cross.png");
+    background-image: url("../../public/assets/cross.png");
   }
-
 
   .mobile-nav-toggle{
     display: block;
@@ -94,13 +93,12 @@ nav a:hover {
     /*Damit der Button immer ganz oben "liegt"*/
     z-index: 9999;
     background-repeat: no-repeat;
-    background-image: url("../../lib/assets/Hamburger-menu.png");
+    background-image: url("../../public/assets/Hamburger-menu.png");
     background-size: cover;
     width: 1.5rem;
     border: 0;
     /*festes Seitenverhältnis */
     aspect-ratio: 1 / 1;
-    top: 1.5rem;
     right: 2rem;
   }
 

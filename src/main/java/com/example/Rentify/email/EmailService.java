@@ -1,4 +1,4 @@
-package com.example.Rentify.email;
+/*package com.example.Rentify.email;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
@@ -18,11 +18,11 @@ public class EmailService {
      * @param subject Betreff der E-Mail
      * @param text    Inhalt der E-Mail
      */
-    public void sendEmail(String to, String subject, String text) {
+    /*public void sendEmail(String to, String subject, String text) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
         message.setSubject(subject);
         message.setText(text);
         mailSender.send(message);
     }
-}
+}*/

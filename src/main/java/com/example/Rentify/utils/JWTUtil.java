@@ -73,6 +73,7 @@ public class JWTUtil {
     }
 
     // Generate Key
+    //TODO: Reminder: that should probably removed here :D
     private SecretKey getSignInKey() {
         byte[] keyBytes = Decoders.BASE64.decode("VomOiT8pL65YE3GFEHLwZG2klJ+cmZ7ZHjEkKwxYBoM=");
         return Keys.hmacShaKeyFor(keyBytes);

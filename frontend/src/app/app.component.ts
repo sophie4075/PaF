@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, ViewEncapsulation} from '@angular/core';
 import {Router, RouterLink, RouterOutlet} from '@angular/router';
 import {NavbarComponent} from './modules/navigation/navbar/navbar.component';
 import {StorageService} from "./auth/service/storage/storage.service";
@@ -8,7 +8,7 @@ import {StorageService} from "./auth/service/storage/storage.service";
   standalone: true,
   imports: [RouterOutlet, NavbarComponent, RouterLink],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  styleUrl: './app.component.css',
 })
 export class AppComponent implements OnInit{
   title = 'rentify_frontend';
