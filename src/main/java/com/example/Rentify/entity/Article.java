@@ -6,6 +6,7 @@ import lombok.Setter;
 
 import jakarta.persistence.*;
 import java.util.List;
+import java.util.Set;
 
 @NoArgsConstructor
 @Getter
@@ -24,9 +25,13 @@ public class Article {
     private double grundpreis;
     private String bildUrl;
 
-    @ManyToOne
-    @JoinColumn(name = "category_id")
-    private Category category;
+    @ManyToMany
+    @JoinTable(
+            name = "article_category",
+            joinColumns = @JoinColumn(name = "article_id"),
+            inverseJoinColumns = @JoinColumn(name = "category_id")
+    )
+    private Set<Category> categories;
 
     @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ArticleInstance> articleInstances; // Beziehung zu ArticleInstance

@@ -1,16 +1,15 @@
 package com.example.Rentify.configuration;
 
 import com.example.Rentify.entity.Article;
+import com.example.Rentify.entity.ArticleInstance;
 import com.example.Rentify.entity.Category;
+import com.example.Rentify.entity.Status;
 import com.example.Rentify.repo.*;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class DatabaseSeeder implements CommandLineRunner {
@@ -35,38 +34,60 @@ public class DatabaseSeeder implements CommandLineRunner {
         categoryRepository.deleteAll();
 
 
-        Map<String, List<Article>> categoryArticlesMap = new HashMap<>();
+        Map<String, Map<String, List<Article>>> categoryMap = new HashMap<>();
 
-        categoryArticlesMap.put("Laptop", Arrays.asList(
-                new Article("MacBook Pro", "Apple Laptop mit M2 Chip", 5, 2400.00, "https://picsum.photos/200"),
+        Map<String, List<Article>> laptopSubcategories = new HashMap<>();
+        laptopSubcategories.put("Apple", List.of(
+                new Article("MacBook Pro", "Apple Laptop mit M2 Chip", 5, 2400.00, "https://picsum.photos/200")
+        ));
+        laptopSubcategories.put("Dell", List.of(
                 new Article("Dell XPS 15", "Leistungsstark und portabel", 3, 1800.00, "https://picsum.photos/200")
         ));
+        categoryMap.put("Laptop", laptopSubcategories);
 
-        categoryArticlesMap.put("Kamera", Arrays.asList(
-                new Article("Canon EOS R5", "High-End Vollformat Kamera", 2, 3900.00, "https://picsum.photos/200"),
-                new Article("Sony Alpha A7 III", "Spiegellose Systemkamera", 4, 2000.00, "https://picsum.photos/200")
+        Map<String, List<Article>> werkzeugSubcategories = new HashMap<>();
+        werkzeugSubcategories.put("Schraubenzieher", List.of(
+                new Article("Bosch Akkuschrauber", "18V Akkuschrauber-Set", 10, 199.00, "https://picsum.photos/200")
         ));
-
-        categoryArticlesMap.put("Werkzeug", Arrays.asList(
-                new Article("Bosch Akkuschrauber", "18V Akkuschrauber-Set", 10, 199.00, "https://picsum.photos/200"),
+        werkzeugSubcategories.put("Bohrmaschinen", List.of(
                 new Article("Makita Bohrmaschine", "Robuste Schlagbohrmaschine", 6, 150.00, "https://picsum.photos/200")
         ));
+        categoryMap.put("Werkzeug", werkzeugSubcategories);
 
-        categoryArticlesMap.put("Tontechnik", Arrays.asList(
-                new Article("Shure SM7B Mikrofon", "Professionelles Studio-Mikrofon", 5, 399.00, "https://picsum.photos/200"),
-                new Article("Yamaha Mischpult", "16-Kanal Analog-Mixer", 2, 499.00, "https://picsum.photos/200")
-        ));
+        for (Map.Entry<String, Map<String, List<Article>>> mainEntry : categoryMap.entrySet()) {
+            // Create Category
+            Category mainCategory = new Category();
+            mainCategory.setName(mainEntry.getKey());
+            mainCategory = categoryRepository.save(mainCategory);
 
-        for (Map.Entry<String, List<Article>> entry : categoryArticlesMap.entrySet()) {
-            Category category = new Category();
-            category.setName(entry.getKey());
-            category = categoryRepository.save(category);
+            // Run through all sub categories of the main category
+            Map<String, List<Article>> subMap = mainEntry.getValue();
+            for (Map.Entry<String, List<Article>> subEntry : subMap.entrySet()) {
+                // Create subcategory and assign parent category
+                Category subCategory = new Category();
+                subCategory.setName(subEntry.getKey());
+                subCategory.setParent(mainCategory);
+                subCategory = categoryRepository.save(subCategory);
 
-            for (Article article : entry.getValue()) {
-                article.setCategory(category);
-                articleRepository.save(article);
+                // Add article to subcategory
+                for (Article article : subEntry.getValue()) {
+                    Set<Category> categories = new HashSet<>();
+                    categories.add(subCategory);
+                    article.setCategories(categories);
+
+                    Article savedArticle = articleRepository.save(article);
+                    for (int i = 1; i <= savedArticle.getStueckzahl(); i++) {
+                        ArticleInstance instance = new ArticleInstance();
+                        instance.setArticle(savedArticle);
+                        instance.setStatus(Status.AVAILABLE);
+                        instance.setInventoryNumber("ART-" + savedArticle.getId() + "-" + i);
+                        articleInstanceRepository.save(instance);
+                    }
+                }
+
             }
         }
+
 
         System.out.println("Added articles to database.");
 

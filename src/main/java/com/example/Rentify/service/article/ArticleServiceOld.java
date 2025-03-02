@@ -1,6 +1,9 @@
-package com.example.Rentify.service;
+/*package com.example.Rentify.service.article;
 
 import com.example.Rentify.entity.Article;
+import com.example.Rentify.entity.ArticleInstance;
+import com.example.Rentify.entity.Status;
+import com.example.Rentify.repo.ArticleInstanceRepo;
 import com.example.Rentify.repo.ArticleRepo;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,13 +20,15 @@ import java.util.Optional;
 public class ArticleService {
 
     private final ArticleRepo articleRepo;
+    private final ArticleInstanceRepo articleInstanceRepo;
     private final ObjectMapper objectMapper;
 
     @Value("${gemini.api.key}")
     private String apiKey;
 
-    public ArticleService(ArticleRepo articleRepo) {
+    public ArticleService(ArticleRepo articleRepo, ArticleInstanceRepo articleInstanceRepo) {
         this.articleRepo = articleRepo;
+        this.articleInstanceRepo = articleInstanceRepo;
         this.objectMapper = new ObjectMapper();
     }
 
@@ -44,10 +49,17 @@ public class ArticleService {
                 .map(article -> {
                     article.setBezeichnung(updatedArticle.getBezeichnung());
                     article.setBeschreibung(updatedArticle.getBeschreibung());
-                    article.setStueckzahl(updatedArticle.getStueckzahl());
+                    int currentCount = article.getArticleInstances() != null
+                            ? article.getArticleInstances().size() : 0;
+                    int newCount = updatedArticle.getStueckzahl();
+                    article.setStueckzahl(newCount);
                     article.setGrundpreis(updatedArticle.getGrundpreis());
                     article.setBildUrl(updatedArticle.getBildUrl());
-                    return articleRepo.save(article);
+                    //return articleRepo.save(article);
+                    Article savedArticle = articleRepo.save(article);
+                    adjustArticleInstances(savedArticle, currentCount, newCount);
+                    return savedArticle;
+
                 })
                 .orElseThrow(() -> new IllegalArgumentException("Article not found with id: " + id));
     }
@@ -105,4 +117,31 @@ public class ArticleService {
             throw new RuntimeException("Fehler beim Abrufen der Beschreibung von der Gemini-API");
         }
     }
-}
+
+    private void adjustArticleInstances(Article article, int currentCount, int newCount) {
+
+        if(newCount > currentCount) {
+            for (int i = currentCount + 1; i <= newCount; i++) {
+                ArticleInstance instance = new ArticleInstance();
+                instance.setArticle(article);
+                instance.setStatus(Status.AVAILABLE);
+                instance.setInventoryNumber("ART-" + article.getId() + "-" + i);
+                articleInstanceRepo.save(instance);
+            }
+        }
+        else if(newCount < currentCount) {
+            int diff = currentCount - newCount;
+            List<ArticleInstance> availableInstances = article.getArticleInstances().stream()
+                    .filter(instance -> instance.getStatus() == Status.AVAILABLE)
+                    .toList();
+            int removed = 0;
+            for (ArticleInstance instance : availableInstances) {
+                if(removed >= diff) break;
+                articleInstanceRepo.delete(instance);
+                removed++;
+            }
+            // TODO: throw error and inform user
+        }
+    }
+
+}*/

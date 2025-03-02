@@ -39,6 +39,7 @@ public class WebSecConfig {
                         .requestMatchers("/api/customer/**").hasAnyAuthority(Role.BUSINESS_CLIENT.name())
                         .requestMatchers("/api/customer/**").hasAnyAuthority(Role.PRIVATE_CLIENT.name())
                         .requestMatchers("/api/articles/**").permitAll()
+                        .requestMatchers("/api/categories/**", "/api/statuses/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

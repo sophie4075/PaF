@@ -3,8 +3,16 @@ import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/
 import {Router, RouterLink} from '@angular/router';
 import {NgForOf} from '@angular/common';
 import {MatButton} from '@angular/material/button';
-import {ArticleService} from "../../../../core/services/article.service";
-import {FileUploadService} from "../../../../core/services/file-upload.service";
+import {ArticleService} from "../../../../core/services/article/article.service";
+import {FileUploadService} from "../../../../core/services/file-upload/file-upload.service";
+import {CategoryService} from '../../../../core/services/category/category.service';
+import {StatusService} from '../../../../core/services/status/status.service';
+import {data} from "autoprefixer";
+import {MatFormField} from "@angular/material/form-field";
+import {MatChipGrid, MatChipRow} from "@angular/material/chips";
+import {MatIcon} from "@angular/material/icon";
+import {MatAutocomplete, MatOption} from "@angular/material/autocomplete";
+
 //TODO implement ArticleService
 export interface Category {
   id: number;
@@ -18,7 +26,13 @@ export interface Category {
     ReactiveFormsModule,
     NgForOf,
     MatButton,
-    RouterLink
+    RouterLink,
+    MatFormField,
+    MatChipGrid,
+    MatChipRow,
+    MatIcon,
+    MatAutocomplete,
+    MatOption
   ],
   templateUrl: './post-article.component.html',
   styleUrl: './post-article.component.css'
@@ -33,6 +47,8 @@ export class PostArticleComponent implements OnInit {
   constructor(private fb: FormBuilder,
               private articleService: ArticleService,
               private fileUploadService: FileUploadService,
+              private categoryService: CategoryService,
+              private statusService: StatusService,
               private router: Router) { }
 
   ngOnInit() {
@@ -48,26 +64,24 @@ export class PostArticleComponent implements OnInit {
     });
 
     // Get data from backend
-    //this.loadCategories();
-    //this.loadStatuses();
+    this.loadCategories();
+    this.loadStatuses();
   }
 
-  /* loadCategories() {
-     this.articleService.getCategories().subscribe((data: Category[]) => {
-       this.categories = data;
-     }, (err: any) => {
-       console.error('Fehler beim Laden der Kategorien', err);
-     });
-   }*/
-
-  /*loadStatuses() {
-    this.articleService.getStates().subscribe((data: string[]) => {
-      this.statuses = data;
+  loadCategories() {
+    this.categoryService.getCategories().subscribe((data: Category[]) => {
+      this.categories = data;
     }, (err: any) => {
-      console.error('Fehler beim Laden der Status', err);
+      console.error('Fehler beim Laden der Kategorien', err);
     });
+  }
 
-  }*/
+  loadStatuses() {
+    this.statusService.getStatuses().subscribe(
+        (data: string[]) => {this.statuses = data;},
+        (error: any) => { console.error('Fehler beim Laden der Status', error); }
+    );
+  }
 
   /*onSubmit() {
     if (this.articleForm.valid) {
@@ -124,7 +138,6 @@ export class PostArticleComponent implements OnInit {
                   inventoryNumber: null
                 }]
               };
-              // Nun den Artikel über den Artikelservice anlegen
               this.articleService.createArticle(newArticle).subscribe(
                   (response: any) => {
                     console.log('Created article successfully ', response);
@@ -139,8 +152,7 @@ export class PostArticleComponent implements OnInit {
             }
         );
       } else {
-        // Falls kein Bild ausgewählt wurde, kannst du entweder eine Fehlermeldung anzeigen oder
-        // den Artikel ohne Bild anlegen.
+
         console.error('Kein Bild ausgewählt');
       }
     } else {
