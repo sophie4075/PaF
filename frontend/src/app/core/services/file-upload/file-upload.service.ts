@@ -14,7 +14,8 @@ export class FileUploadService {
   uploadImage(file: File): Observable<{ fileDownloadUri: string }> {
     const formData = new FormData();
     formData.append('file', file);
-    return this.http.post<{ fileDownloadUri: string }>(this.uploadUrl, formData);
+    //return this.http.post<{ fileDownloadUri: string }>(this.uploadUrl, formData);
+    return this.http.post<{ fileDownloadUri: string }>(this.uploadUrl, formData, { responseType: 'json' });
   }
 
 }

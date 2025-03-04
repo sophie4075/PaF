@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 
 //Quellen:
@@ -26,14 +29,19 @@ public class ImageUploadController {
     }
 
     @PostMapping("/images")
-    public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<Map<String, String>> uploadImage(@RequestParam("file") MultipartFile file) {
         try {
             String fileName = storageService.saveImage(file);
             String fileDownloadUri = "/api/uploads/images/" + fileName;
-            return ResponseEntity.ok("Image uploaded successfully: " + fileDownloadUri);
+            //return ResponseEntity.ok("Image uploaded successfully: " + fileDownloadUri);
+            Map<String, String> response = new HashMap<>();
+            response.put("fileDownloadUri", fileDownloadUri);
+            return ResponseEntity.ok(response);
         } catch (IOException e) {
+            /*return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error uploading image");*/
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error uploading image");
+                    .body(Collections.singletonMap("error", "Error uploading image"));
         }
     }
 

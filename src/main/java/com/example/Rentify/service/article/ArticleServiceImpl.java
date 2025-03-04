@@ -175,5 +175,46 @@ public class ArticleServiceImpl implements ArticleService {
             throw new IllegalArgumentException("Article not found with id: " + id);
         }
     }
+
+    @Override
+    public String generateDescriptionForName(String bezeichnung) {
+        String prompt = String.format(
+                "Erstelle eine Beschreibung für eine Verleihplattform für einen Artikel mit folgendem Namen: %s.",
+                bezeichnung
+        );
+
+        String apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + apiKey;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Content-Type", "application/json");
+
+        String requestBody = String.format(
+                "{\"contents\": [{\"parts\": [{\"text\": \"%s\"}]}]}",
+                prompt
+        );
+
+        HttpEntity<String> entity = new HttpEntity<>(requestBody, headers);
+        RestTemplate restTemplate = new RestTemplate();
+
+        ResponseEntity<String> response = restTemplate.postForEntity(apiUrl, entity, String.class);
+
+        if(response.getStatusCode().is2xxSuccessful()){
+            try{
+                JsonNode root = objectMapper.readTree(response.getBody());
+                return root
+                        .path("candidates")
+                        .get(0)
+                        .path("content")
+                        .path("parts")
+                        .get(0)
+                        .path("text")
+                        .asText();
+            } catch(Exception e) {
+                throw new RuntimeException("Fehler beim Verarbeiten der API-Antwort: " + e.getMessage(), e);
+            }
+        } else {
+            throw new RuntimeException("Fehler beim Abrufen der Beschreibung von der API");
+        }
+    }
 }
 

@@ -75,6 +75,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/articles")
@@ -133,5 +134,17 @@ public class ArticleController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    @PostMapping("/generate-description-by-name")
+    public ResponseEntity<String> generateDescriptionByName(@RequestBody Map<String, String> body) {
+        String bezeichnung = body.get("bezeichnung");
+        if (bezeichnung == null || bezeichnung.isEmpty()) {
+            return ResponseEntity.badRequest().body("Bezeichnung fehlt.");
+        }
+        // Erstelle den Prompt und rufe die Gemini-API auf
+        String description = articleService.generateDescriptionForName(bezeichnung);
+        return ResponseEntity.ok(description);
+    }
+
 }
 

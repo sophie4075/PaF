@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import {Observable} from "rxjs";
 import {HttpClient} from "@angular/common/http";
+import {Category} from "../category/category.service";
 
 export interface Article {
   id?: number;
@@ -9,7 +10,8 @@ export interface Article {
   stueckzahl: number;
   grundpreis: number;
   bildUrl: string;
-  category: { id: number };
+  //category: { id: number };
+  categories: Category[]
   articleInstances: Array<{
     status: string;
     inventoryNumber?: string | null;
@@ -46,4 +48,14 @@ export class ArticleService {
   deleteArticle(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
+
+  generateDescriptionForName(bezeichnung: string): Observable<string> {
+    return this.http.post(
+        `${this.apiUrl}/generate-description-by-name`,
+        { bezeichnung },
+        { responseType: 'text' }
+    );
+  }
+
+
 }

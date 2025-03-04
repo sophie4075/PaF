@@ -12,4 +12,5 @@ public interface ArticleService {
     ArticleDto updateArticle(Long id, ArticleDto articleDto);
     void deleteArticle(Long id);
     String generateDescription(Long id);
+    String generateDescriptionForName(String bezeichnung);
 }

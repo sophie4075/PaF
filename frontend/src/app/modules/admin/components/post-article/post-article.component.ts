@@ -1,23 +1,24 @@
 import {Component, OnInit} from '@angular/core';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {Router, RouterLink} from '@angular/router';
-import {NgForOf} from '@angular/common';
+import {AsyncPipe, NgForOf} from '@angular/common';
 import {MatButton} from '@angular/material/button';
 import {ArticleService} from "../../../../core/services/article/article.service";
 import {FileUploadService} from "../../../../core/services/file-upload/file-upload.service";
-import {CategoryService} from '../../../../core/services/category/category.service';
+import {Category, CategoryService} from '../../../../core/services/category/category.service';
 import {StatusService} from '../../../../core/services/status/status.service';
-import {data} from "autoprefixer";
-import {MatFormField} from "@angular/material/form-field";
-import {MatChipGrid, MatChipRow} from "@angular/material/chips";
+import {MatFormField, MatLabel} from "@angular/material/form-field";
+import {MatChipGrid, MatChipInput, MatChipRow} from "@angular/material/chips";
 import {MatIcon} from "@angular/material/icon";
-import {MatAutocomplete, MatOption} from "@angular/material/autocomplete";
+import {MatAutocomplete, MatAutocompleteTrigger, MatOption} from "@angular/material/autocomplete";
+import {CategorySelectorComponent} from "../../../../shared/category-selector/category-selector.component";
+import {MatProgressSpinner} from "@angular/material/progress-spinner";
 
 //TODO implement ArticleService
-export interface Category {
+/*export interface Category {
   id: number;
   name: string;
-}
+} */
 
 @Component({
   selector: 'app-post-article',
@@ -32,7 +33,13 @@ export interface Category {
     MatChipRow,
     MatIcon,
     MatAutocomplete,
-    MatOption
+    MatOption,
+    CategorySelectorComponent,
+    AsyncPipe,
+    MatAutocompleteTrigger,
+    MatChipInput,
+    MatLabel,
+    MatProgressSpinner,
   ],
   templateUrl: './post-article.component.html',
   styleUrl: './post-article.component.css'
@@ -42,6 +49,7 @@ export class PostArticleComponent implements OnInit {
   categories: Category[] = [];
   statuses: string[] = [];
   selectedFile: File | undefined;
+  selectedCategories: Category[] = [];
   //imagePreview: string | ArrayBuffer | undefined;
 
   constructor(private fb: FormBuilder,
@@ -51,6 +59,7 @@ export class PostArticleComponent implements OnInit {
               private statusService: StatusService,
               private router: Router) { }
 
+  showGenerateDescriptionButton = false;
   ngOnInit() {
     // Formular initialisieren
     this.articleForm = this.fb.group({
@@ -58,14 +67,23 @@ export class PostArticleComponent implements OnInit {
       beschreibung: ['', Validators.required],
       stueckzahl: [0, Validators.required],
       grundpreis: [0.0, Validators.required],
-      bildUrl: ['', Validators.required],
+      bildUrl: [''],
       category: ['', Validators.required],
       status: ['', Validators.required]
+    });
+
+    this.articleForm.get('bezeichnung')?.valueChanges.subscribe(value => {
+      this.showGenerateDescriptionButton = (value && value.trim().length > 0);
     });
 
     // Get data from backend
     this.loadCategories();
     this.loadStatuses();
+  }
+
+  onCategoriesChanged(categories: Category[]): void {
+    this.selectedCategories = categories;
+    this.articleForm.patchValue({ category: categories });
   }
 
   loadCategories() {
@@ -132,7 +150,8 @@ export class PostArticleComponent implements OnInit {
                 stueckzahl: formValue.stueckzahl,
                 grundpreis: formValue.grundpreis,
                 bildUrl: imageUrl,  // Setze die hochgeladene Bild-URL
-                category: { id: formValue.category },
+                //category: { id: formValue.category },
+                categories: this.selectedCategories,
                 articleInstances: [{
                   status: formValue.status,
                   inventoryNumber: null
@@ -143,17 +162,16 @@ export class PostArticleComponent implements OnInit {
                     console.log('Created article successfully ', response);
                   },
                   (error: any) => {
-                    console.error('Fehler beim Anlegen des Artikels', error);
+                    console.error('Error while creating the article', error);
                   }
               );
             },
             (error) => {
-              console.error('Fehler beim Upload des Bildes', error);
+              console.error('Error while uploading image', error);
             }
         );
       } else {
-
-        console.error('Kein Bild ausgewählt');
+        console.error('No Image selected');
       }
     } else {
       console.error('Form not valid');
@@ -166,6 +184,8 @@ export class PostArticleComponent implements OnInit {
   onSelectFile(event: Event){
     const target = event.target as HTMLInputElement;
     if(target.files && target.files[0]){
+
+      this.selectedFile = target.files[0];
       let reader = new FileReader();
 
       reader.readAsDataURL(target.files[0]);
@@ -176,6 +196,24 @@ export class PostArticleComponent implements OnInit {
     }
   }
 
+  loading = false;
+  onGenerateDescription() {
+    const productName = this.articleForm.get('bezeichnung')?.value;
+    if (productName) {
+      this.loading = true
+      this.articleService.generateDescriptionForName(productName).subscribe(
+          (description: string) => {
+            this.articleForm.patchValue({ beschreibung: description });
+            this.loading = false;
+          },
+          error => {
+            console.error('Fehler beim Generieren der Beschreibung', error);
+            this.articleForm.patchValue({ beschreibung: '**Fehler beim Generieren der Beschreibung**' });
+            this.loading = false;
+          }
+      );
+    }
+  }
 
 
 }
