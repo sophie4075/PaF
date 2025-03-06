@@ -41,7 +41,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         final String userEmail;
 
         // Check if the Authorization header is missing or doesn't start with "Bearer "
-        if(StringUtils.isEmpty(authHeader) || authHeader.startsWith("Bearer ")) {
+        //!authHeader.startsWith("Bearer ") ?
+        if(StringUtils.isEmpty(authHeader) || !authHeader.startsWith("Bearer ")) {
             // Continue without authentication
             filterChain.doFilter(request, response);
             return;
