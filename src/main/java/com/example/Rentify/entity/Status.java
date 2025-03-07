@@ -4,5 +4,6 @@ public enum Status {
     AVAILABLE,
     RENTED,
     UNDER_REPAIR,
-    RETIRED
+    RETIRED,
+    PRE_LAUNCH
 }

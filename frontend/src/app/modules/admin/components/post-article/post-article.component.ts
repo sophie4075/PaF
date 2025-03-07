@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, inject, OnInit} from '@angular/core';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {Router, RouterLink} from '@angular/router';
 import {AsyncPipe, NgForOf} from '@angular/common';
@@ -13,6 +13,7 @@ import {MatIcon} from "@angular/material/icon";
 import {MatAutocomplete, MatAutocompleteTrigger, MatOption} from "@angular/material/autocomplete";
 import {CategorySelectorComponent} from "../../../../shared/category-selector/category-selector.component";
 import {MatProgressSpinner} from "@angular/material/progress-spinner";
+import {MatSnackBar} from "@angular/material/snack-bar";
 
 //TODO implement ArticleService
 /*export interface Category {
@@ -50,7 +51,7 @@ export class PostArticleComponent implements OnInit {
   statuses: string[] = [];
   selectedFile: File | undefined;
   selectedCategories: Category[] = [];
-  //imagePreview: string | ArrayBuffer | undefined;
+  private _snackBar = inject(MatSnackBar);
 
   constructor(private fb: FormBuilder,
               private articleService: ArticleService,
@@ -157,24 +158,41 @@ export class PostArticleComponent implements OnInit {
                   inventoryNumber: null
                 }]
               };
+              //TODO: remove deprecated implementation
               this.articleService.createArticle(newArticle).subscribe(
                   (response: any) => {
-                    console.log('Created article successfully ', response);
+                    this.router.navigateByUrl("/admin/dashboard")
+                    this._snackBar.open('Created article successfully ', '🎉', {
+                      duration: 5000,
+                    });
                   },
                   (error: any) => {
                     console.error('Error while creating the article', error);
+                    this.router.navigateByUrl("/admin/dashboard")
+                    this._snackBar.open('Error while creating the article ', '(╥﹏╥)', {
+                      duration: 5000,
+                    });
                   }
               );
             },
             (error) => {
               console.error('Error while uploading image', error);
+              this._snackBar.open('Error while uploading image ', '(╥﹏╥)', {
+                duration: 5000,
+              });
             }
         );
       } else {
         console.error('No Image selected');
+        this._snackBar.open('No Image selected ', '(＋_＋)', {
+          duration: 5000,
+        });
       }
     } else {
-      console.error('Form not valid');
+      console.error('Form not valid ┐( ˘ ､ ˘ )┌');
+      this._snackBar.open('Form not valid ', 'Form not valid ┐( ˘ ､ ˘ )┌', {
+        duration: 5000,
+      });
     }
   }
 

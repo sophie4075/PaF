@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -216,5 +217,16 @@ public class ArticleServiceImpl implements ArticleService {
             throw new RuntimeException("Fehler beim Abrufen der Beschreibung von der API");
         }
     }
+
+    @Override
+    public List<ArticleDto> getFilteredArticles(double minPrice, double maxPrice, LocalDate startDate, LocalDate endDate,
+                                                List<Category> categories, List<Integer> parentCategoryIds) {
+        List<Article> articles = articleRepo.findAvailableArticles(
+                minPrice, maxPrice, startDate, endDate, categories, parentCategoryIds);
+        return articles.stream()
+                .map(ArticleMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
 }
 

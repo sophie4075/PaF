@@ -1,7 +1,9 @@
 package com.example.Rentify.service.article;
 
 import com.example.Rentify.dto.ArticleDto;
+import com.example.Rentify.entity.Category;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,4 +15,5 @@ public interface ArticleService {
     void deleteArticle(Long id);
     String generateDescription(Long id);
     String generateDescriptionForName(String bezeichnung);
+    List<ArticleDto> getFilteredArticles(double minPrice, double maxPrice, LocalDate startDate, LocalDate endDate, List<Category> categories, List<Integer> parentCat);
 }

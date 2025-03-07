@@ -70,21 +70,28 @@ public class ArticleController {
 package com.example.Rentify.api;
 
 import com.example.Rentify.dto.ArticleDto;
+import com.example.Rentify.entity.Category;
+import com.example.Rentify.repo.CategoryRepo;
 import com.example.Rentify.service.article.ArticleService;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
-import java.util.Map;
+
+import java.time.LocalDate;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/articles")
 public class ArticleController {
 
     private final ArticleService articleService;
+    private final CategoryRepo categoryRepo;
 
-    public ArticleController(ArticleService articleService) {
+    public ArticleController(ArticleService articleService, CategoryRepo categoryRepo) {
         this.articleService = articleService;
+        this.categoryRepo = categoryRepo;
     }
 
     @GetMapping
@@ -145,6 +152,66 @@ public class ArticleController {
         String description = articleService.generateDescriptionForName(bezeichnung);
         return ResponseEntity.ok(description);
     }
+
+    @GetMapping("/filter")
+    public ResponseEntity<List<ArticleDto>> getFilteredArticles(
+            @RequestParam(required = false) double minPrice,
+            @RequestParam(required = false) double maxPrice,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(required = false) List<Long> categoryIds) {
+
+        // Hole die ausgewählten Kategorien
+        List<Category> selectedCategories = categoryRepo.findAllById(categoryIds);
+        if (selectedCategories.isEmpty()) {
+            throw new RuntimeException("No category found.");
+        }
+
+        // Erstelle ein Set mit allen Kategorien (direkt ausgewählt + untergeordnete)
+        Set<Category> allCategories = new HashSet<>(selectedCategories);
+        // Erstelle ein Set für die IDs der Parent-Kategorien
+        Set<Integer> parentCategoryIds = new HashSet<>();
+
+        for (Category category : selectedCategories) {
+            // Angenommen, bei einer Parent-Kategorie ist parentId null
+            if (category.getParent() == null) {
+                // Füge die ID der Parent-Kategorie hinzu
+                parentCategoryIds.add(category.getId().intValue());
+                // Falls vorhanden, füge alle Child-Kategorien hinzu
+                if (category.getSubCategories() != null) {
+                    allCategories.addAll(category.getSubCategories());
+                }
+            }
+        }
+
+        // Übergib beide Listen an den Service
+        List<ArticleDto> articles = articleService.getFilteredArticles(
+                minPrice,
+                maxPrice,
+                startDate,
+                endDate,
+                new ArrayList<>(allCategories),
+                new ArrayList<>(parentCategoryIds)
+        );
+        return ResponseEntity.ok(articles);
+    }
+
+
+    /*public ResponseEntity<List<ArticleDto>> getFilteredArticles(
+            @RequestParam(required = false)  double minPrice,
+            @RequestParam(required = false)  double maxPrice,
+            @RequestParam(required = false)  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false)  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(required = false)  List<Long> categoryIds) {
+
+        List<Category> categories = categoryRepo.findAllById(categoryIds);
+        if (categories.isEmpty()) {
+            throw new RuntimeException("No category found.");
+        }
+        List<ArticleDto> articles = articleService.getFilteredArticles(minPrice, maxPrice, startDate, endDate, categories);
+        return ResponseEntity.ok(articles);
+    }*/
+
 
 }
 

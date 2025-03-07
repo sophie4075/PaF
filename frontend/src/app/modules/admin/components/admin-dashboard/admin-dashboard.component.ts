@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
+import {ArticleService} from "../../../../core/services/article/article.service";
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -7,6 +8,17 @@ import { Component } from '@angular/core';
   templateUrl: './admin-dashboard.component.html',
   styleUrl: './admin-dashboard.component.css'
 })
-export class AdminDashboardComponent {
+export class AdminDashboardComponent implements OnInit{
 
+  constructor(private articleService: ArticleService) {}
+
+  ngOnInit() {
+    this.getAllCars()
+  }
+
+  getAllCars(){
+    this.articleService.getArticles().subscribe((res) => {
+      console.log(res)
+    })
+  }
 }
