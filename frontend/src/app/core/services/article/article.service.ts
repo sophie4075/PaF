@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import {Observable} from "rxjs";
+import {map, Observable} from "rxjs";
 import {HttpClient, HttpParams} from "@angular/common/http";
 import {Category} from "../category/category.service";
 
@@ -78,5 +78,13 @@ export class ArticleService {
     return this.http.get<Article[]>(`${this.apiUrl}/filter`, { params });
   }
 
+
+  searchArticles(query: string): Observable<Article[]> {
+    return this.getArticles().pipe(
+        map(articles => articles.filter(article =>
+            article.bezeichnung.toLowerCase().includes(query.toLowerCase())
+        ))
+    );
+  }
 
 }

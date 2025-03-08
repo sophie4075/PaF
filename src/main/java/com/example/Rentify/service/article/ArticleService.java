@@ -1,7 +1,6 @@
 package com.example.Rentify.service.article;
 
 import com.example.Rentify.dto.ArticleDto;
-import com.example.Rentify.entity.Category;
 
 import java.time.LocalDate;
 import java.util.List;
