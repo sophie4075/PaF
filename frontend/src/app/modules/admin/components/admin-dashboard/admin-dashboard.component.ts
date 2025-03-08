@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {ArticleService} from "../../../../core/services/article/article.service";
+import {ArticleService} from "../../../../shared/services/article/article.service";
 
 @Component({
   selector: 'app-admin-dashboard',

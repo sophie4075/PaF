@@ -1,15 +1,17 @@
 import {Component, OnInit} from '@angular/core';
-import {Article, ArticleService} from "../../../../../core/services/article/article.service";
-import {Category, CategoryService} from "../../../../../core/services/category/category.service";
+import {Article, ArticleService} from "../../../../../services/article/article.service";
+import {Category, CategoryService} from "../../../../../services/category/category.service";
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {debounceTime, distinctUntilChanged} from "rxjs";
+import {RouterLink} from "@angular/router";
 
 @Component({
     selector: 'app-product-category',
     standalone: true,
     imports: [
         ReactiveFormsModule,
-        FormsModule
+        FormsModule,
+        RouterLink
     ],
     templateUrl: './product-category.component.html',
     styleUrl: './product-category.component.css'

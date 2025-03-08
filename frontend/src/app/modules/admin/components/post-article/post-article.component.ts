@@ -3,15 +3,15 @@ import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/
 import {Router, RouterLink} from '@angular/router';
 import {AsyncPipe, NgForOf} from '@angular/common';
 import {MatButton} from '@angular/material/button';
-import {ArticleService} from "../../../../core/services/article/article.service";
-import {FileUploadService} from "../../../../core/services/file-upload/file-upload.service";
-import {Category, CategoryService} from '../../../../core/services/category/category.service';
-import {StatusService} from '../../../../core/services/status/status.service';
+import {ArticleService} from "../../../../shared/services/article/article.service";
+import {FileUploadService} from "../../../../shared/services/file-upload/file-upload.service";
+import {Category, CategoryService} from '../../../../shared/services/category/category.service';
+import {StatusService} from '../../../../shared/services/status/status.service';
 import {MatFormField, MatLabel} from "@angular/material/form-field";
 import {MatChipGrid, MatChipInput, MatChipRow} from "@angular/material/chips";
 import {MatIcon} from "@angular/material/icon";
 import {MatAutocomplete, MatAutocompleteTrigger, MatOption} from "@angular/material/autocomplete";
-import {CategorySelectorComponent} from "../../../../shared/category-selector/category-selector.component";
+import {CategorySelectorComponent} from "../category-selector/category-selector.component";
 import {MatProgressSpinner} from "@angular/material/progress-spinner";
 import {MatSnackBar} from "@angular/material/snack-bar";
 

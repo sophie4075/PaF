@@ -18,7 +18,7 @@ import {MatSnackBar, MatSnackBarModule} from '@angular/material/snack-bar';
 import {NgIf} from '@angular/common';
 import {MatIcon} from '@angular/material/icon';
 
-import {AuthService} from '../../service/auth/auth.service';
+import {AuthService} from '../../../shared/services/auth/auth.service';
 import { Router } from '@angular/router';
 
 

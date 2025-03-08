@@ -1,6 +1,6 @@
 import {AfterViewInit, Component, Input} from '@angular/core';
 import {Router, RouterLink, RouterLinkActive} from '@angular/router';
-import {StorageService} from "../../../auth/service/storage/storage.service";
+import {StorageService} from "../../../services/storage/storage.service";
 import {NgStyle} from "@angular/common";
 
 @Component({
@@ -12,7 +12,7 @@ import {NgStyle} from "@angular/common";
     NgStyle
   ],
   templateUrl: './navbar.component.html',
-  styleUrl: '../../../app.component.css'
+  styleUrl: '../../../../app.component.css'
 })
 export class NavbarComponent implements AfterViewInit{
 

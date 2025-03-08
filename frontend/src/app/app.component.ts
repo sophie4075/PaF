@@ -1,7 +1,7 @@
 import {Component, OnInit, ViewEncapsulation} from '@angular/core';
 import {Router, RouterLink, RouterOutlet} from '@angular/router';
-import {NavbarComponent} from './modules/navigation/navbar/navbar.component';
-import {StorageService} from "./auth/service/storage/storage.service";
+import {NavbarComponent} from './shared/components/navigation/navbar/navbar.component';
+import {StorageService} from "./shared/services/storage/storage.service";
 
 @Component({
   selector: 'app-root',

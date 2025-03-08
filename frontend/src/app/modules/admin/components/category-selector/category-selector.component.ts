@@ -7,7 +7,7 @@ import {FormControl, ReactiveFormsModule} from "@angular/forms";
 import {COMMA, ENTER} from "@angular/cdk/keycodes";
 import {map, Observable, startWith} from "rxjs";
 import {AsyncPipe, NgForOf} from "@angular/common";
-import {Category} from "../../core/services/category/category.service";
+import {Category} from "../../../../shared/services/category/category.service";
 
 @Component({
   selector: 'app-category-selector',

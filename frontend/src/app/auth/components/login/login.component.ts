@@ -2,8 +2,8 @@ import { Component } from '@angular/core';
 import {MatButton} from "@angular/material/button";
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
 import {Router, RouterLink} from "@angular/router";
-import {StorageService} from "../../service/storage/storage.service";
-import {AuthService} from "../../service/auth/auth.service";
+import {StorageService} from "../../../shared/services/storage/storage.service";
+import {AuthService} from "../../../shared/services/auth/auth.service";
 
 @Component({
   selector: 'app-login',
