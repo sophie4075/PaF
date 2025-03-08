@@ -5,6 +5,9 @@ import {AdminDashboardComponent} from "./components/admin-dashboard/admin-dashbo
 import {ProductCategoryComponent} from "../../shared/components/products/components/pcp/product-category/product-category.component";
 import {UpdateArticleComponent} from "./components/update-article/update-article.component";
 import {AdminGuard} from "../../shared/guards/admin/admin-guard.guard";
+/**
+ * Work in Progess
+ * */
 
 const routes: Routes = [
   {path: '', component: AdminDashboardComponent, canActivate: [AdminGuard]},
