@@ -15,5 +15,5 @@ public interface ArticleService {
     void deleteArticle(Long id);
     String generateDescription(Long id);
     String generateDescriptionForName(String bezeichnung);
-    List<ArticleDto> getFilteredArticles(double minPrice, double maxPrice, LocalDate startDate, LocalDate endDate, List<Category> categories, List<Integer> parentCat);
+    List<ArticleDto> getFilteredArticles(Double minPrice, Double maxPrice, LocalDate startDate, LocalDate endDate, List<Long> categoryIds);
 }

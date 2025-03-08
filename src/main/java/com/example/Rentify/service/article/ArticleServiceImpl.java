@@ -7,9 +7,11 @@ import com.example.Rentify.mapper.ArticleMapper;
 import com.example.Rentify.repo.ArticleRepo;
 import com.example.Rentify.repo.ArticleInstanceRepo;
 import com.example.Rentify.repo.CategoryRepo;
+import com.example.Rentify.utils.ArticleSpecification;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -218,11 +220,24 @@ public class ArticleServiceImpl implements ArticleService {
         }
     }
 
+
     @Override
-    public List<ArticleDto> getFilteredArticles(double minPrice, double maxPrice, LocalDate startDate, LocalDate endDate,
-                                                List<Category> categories, List<Integer> parentCategoryIds) {
-        List<Article> articles = articleRepo.findAvailableArticles(
-                minPrice, maxPrice, startDate, endDate, categories, parentCategoryIds);
+    public List<ArticleDto> getFilteredArticles(Double minPrice, Double maxPrice, LocalDate startDate,
+                                                LocalDate endDate, List<Long> categoryIds) {
+
+        Specification<Article> spec = Specification.where(null);
+
+        if(minPrice != null && maxPrice != null) {
+            spec = spec.and(ArticleSpecification.hasPriceBetween(minPrice, maxPrice));
+        }
+        if(startDate != null && endDate != null) {
+            //TODO!
+            //spec = spec.and(ArticleSpecification.isAvailableBetween(startDate, endDate));
+        }
+        if(categoryIds != null && !categoryIds.isEmpty()){
+            spec = spec.and(ArticleSpecification.hasCategory(categoryIds));
+        }
+        List<Article> articles = articleRepo.findAll(spec);
         return articles.stream()
                 .map(ArticleMapper::toDTO)
                 .collect(Collectors.toList());
