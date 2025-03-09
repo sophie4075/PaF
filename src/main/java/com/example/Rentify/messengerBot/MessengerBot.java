@@ -1,6 +1,8 @@
 package com.example.Rentify.messengerBot;
 
+import com.example.Rentify.entity.Rental;
 import com.example.Rentify.entity.User;
+import com.example.Rentify.service.RentalService;
 import com.example.Rentify.service.UserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -11,16 +13,22 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
+import java.util.List;
+
 @Component
 public class MessengerBot extends TelegramLongPollingBot {
 
     private final String botToken;
     private final UserService userService;
+    private final RentalService rentalService; // Added RentalService
 
-    public MessengerBot(@Value("${telegram.bot.token}") String botToken, UserService userService) {
+    public MessengerBot(@Value("${telegram.bot.token}") String botToken,
+                        UserService userService,
+                        RentalService rentalService) {
         super(botToken);
         this.botToken = botToken;
         this.userService = userService;
+        this.rentalService = rentalService;
 
         try {
             TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
@@ -46,19 +54,30 @@ public class MessengerBot extends TelegramLongPollingBot {
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
             String chatId = update.getMessage().getChatId().toString();
-            System.out.println("Chat ID: " + chatId + " Message: " + update.getMessage().getText());
             String messageText = update.getMessage().getText().trim();
 
-            if (messageText.equalsIgnoreCase("/start")) {
-                handleStartCommand(chatId);
-            } else if (messageText.equalsIgnoreCase("/stop")) {
-                handleStopCommand(chatId);
-            } else if (messageText.equalsIgnoreCase("/relink")) {
-                removeChatId(chatId);
-            } else if (isValidEmail(messageText)) {
-                linkChatIdToUser(chatId, messageText);
-            } else {
-                sendMessage(chatId, messageText + " is not a valid command. Send /start to start.");
+            System.out.println("Received Message: " + messageText + " from Chat ID: " + chatId);
+
+            switch (messageText.toLowerCase()) {
+                case "/start":
+                    handleStartCommand(chatId);
+                    break;
+                case "/stop":
+                    handleStopCommand(chatId);
+                    break;
+                case "/relink":
+                    removeChatId(chatId);
+                    break;
+                case "/rentals":
+                    sendAllUserRentals(chatId);
+                    break;
+                default:
+                    if (isValidEmail(messageText)) {
+                        linkChatIdToUser(chatId, messageText);
+                    } else {
+                        sendMessage(chatId, messageText + " is not a valid command. Send /start to begin.");
+                    }
+                    break;
             }
         }
     }
@@ -68,7 +87,7 @@ public class MessengerBot extends TelegramLongPollingBot {
         if (user == null) {
             sendMessage(chatId, "You are not registered yet. Please enter your email to link your account.");
         } else {
-            sendMessage(chatId, "Welcome back! You are already registered. Send relink to link a new account.");
+            sendMessage(chatId, "Welcome back! You are already registered. Send /relink to link a new account.");
         }
     }
 
@@ -86,32 +105,24 @@ public class MessengerBot extends TelegramLongPollingBot {
         User user = userService.getUserByChatId(chatId);
         if (user != null) {
             userService.updateChatId(user.getId(), null);
-            sendMessage(chatId, "Your Telegram chat link has been removed. You will no longer receive notifications. Enter new email adrees to resubscribe");
+            sendMessage(chatId, "Your Telegram chat link has been removed. You will no longer receive notifications. Enter a new email address to resubscribe.");
         } else {
             sendMessage(chatId, "No linked Rentify account found for this chat.");
         }
     }
 
-
     public void linkChatIdToUser(String chatId, String email) {
-        User user = userService.getUserByChatId(chatId);
-        if (user == null) {
-            user = userService.getUserByEmail(email);
-            if (user != null) {
-                userService.updateChatId(user.getId(), chatId);
-                sendMessage(chatId, "Your Rentify account has been linked to this Telegram chat.");
-            } else {
-                sendMessage(chatId, "No Rentify account found with this email.");
-            }
+        User user = userService.getUserByEmail(email);
+        if (user != null) {
+            userService.updateChatId(user.getId(), chatId);
+            sendMessage(chatId, "Your Rentify account has been linked to this Telegram chat.");
         } else {
-            sendMessage(chatId, "You are already linked. Send /relink to link a new account.");
+            sendMessage(chatId, "No Rentify account found with this email.");
         }
     }
 
     public void sendMessage(String chatId, String text) {
         System.out.println("Sending message to Telegram: " + text);
-        System.out.println("Chat ID: " + chatId);
-
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
         message.setText(text);
@@ -125,17 +136,46 @@ public class MessengerBot extends TelegramLongPollingBot {
         }
     }
 
-
     private boolean isValidEmail(String email) {
         return email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
     }
-
 
     public void sendReminder(String chatId, String artikelName) {
         sendMessage(chatId, "Reminder: Your rental for '" + artikelName + "' is due soon!");
     }
 
-    public void sendRentalInfo(String chatId, String ausleiheDetails) {
-        sendMessage(chatId, "Rental Info: " + ausleiheDetails);
+    public void sendRentalInfo(String chatId, String rentalDetails) {
+        sendMessage(chatId, "Rental Info: " + rentalDetails);
+    }
+
+    /**
+     * Sends information about all rentals of a user to their Telegram chat.
+     */
+    public void sendAllUserRentals(String chatId) {
+        User user = userService.getUserByChatId(chatId);
+        if (user == null) {
+            sendMessage(chatId, "No user account is linked to this chat. Please register first.");
+            return;
+        }
+
+        List<Rental> rentals = rentalService.getRentalsByUserId(user.getId());
+        if (rentals.isEmpty()) {
+            sendMessage(chatId, "You currently have no rentals.");
+            return;
+        }
+
+        for (Rental rental : rentals) {
+            String rentalDetails = formatRentalDetails(rental);
+            sendRentalInfo(chatId, rentalDetails);
+        }
+    }
+
+    /**
+     * Formats the rental details for messaging.
+     */
+    private String formatRentalDetails(Rental rental) {
+        return "Rental ID: " + rental.getId() + "\n" +
+                "Total Price: " + rental.getTotalPrice() + "€\n" +
+                "Status: " + rental.getRentalStatus() + "\n";
     }
 }

@@ -6,6 +6,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.*;
 
 @Component
@@ -15,6 +17,8 @@ public class DatabaseSeeder implements CommandLineRunner {
     private final ArticleRepo articleRepository;
     private final ArticleInstanceRepo articleInstanceRepository;
     private final UserRepo userRepository;
+    private final RentalRepo rentalRepository;
+    private final RentalPositionRepo rentalPositionRepository;
     private final PasswordEncoder passwordEncoder;
 
     public DatabaseSeeder(
@@ -22,11 +26,15 @@ public class DatabaseSeeder implements CommandLineRunner {
             ArticleRepo articleRepository,
             ArticleInstanceRepo articleInstanceRepository,
             UserRepo userRepository,
+            RentalRepo rentalRepository,
+            RentalPositionRepo rentalPositionRepository,
             PasswordEncoder passwordEncoder) {
         this.categoryRepository = categoryRepository;
         this.articleRepository = articleRepository;
         this.articleInstanceRepository = articleInstanceRepository;
         this.userRepository = userRepository;
+        this.rentalRepository = rentalRepository;
+        this.rentalPositionRepository = rentalPositionRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -36,15 +44,16 @@ public class DatabaseSeeder implements CommandLineRunner {
         articleRepository.deleteAll();
         categoryRepository.deleteAll();
         userRepository.deleteAll();
+        rentalRepository.deleteAll();
+        rentalPositionRepository.deleteAll();
 
         seedUsers();
         seedArticles();
-
+        seedRentals();
         System.out.println("Database seeding completed.");
     }
 
     private void seedUsers() {
-        // Prüfe, ob die User bereits existieren
         Optional<User> existingUser1 = userRepository.findFirstByEmail("max@mustermann.com");
         Optional<User> existingUser2 = userRepository.findFirstByEmail("erika@musterfrau.com");
 
@@ -71,7 +80,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                 usersToSave.add(user2);
             }
 
-            // Speichern, falls neue Benutzer hinzugefügt wurden
             if (!usersToSave.isEmpty()) {
                 userRepository.saveAll(usersToSave);
                 System.out.println("Added " + usersToSave.size() + " new users to database.");
@@ -82,11 +90,9 @@ public class DatabaseSeeder implements CommandLineRunner {
             System.out.println("Users already exist. Skipping seeding.");
         }
 
-        // Ausgabe der existierenden Benutzer mit ihren IDs
         List<User> allUsers = (List<User>) userRepository.findAll();
         allUsers.forEach(user -> System.out.println("User: " + user.getEmail() + " ID: " + user.getId()));
     }
-
 
     private void seedArticles() {
         Map<String, Map<String, List<Article>>> categoryMap = new HashMap<>();
@@ -139,5 +145,49 @@ public class DatabaseSeeder implements CommandLineRunner {
         }
 
         System.out.println("Added articles to database.");
+    }
+
+    /**
+     * Seed rentals for test users.
+     */
+    private void seedRentals() {
+        List<User> users = (List<User>) userRepository.findAll();
+        if (users.isEmpty()) {
+            System.out.println("No users found, skipping rental seeding.");
+            return;
+        }
+
+        User user = users.get(0);
+
+        List<ArticleInstance> articleInstances = (List<ArticleInstance>) articleInstanceRepository.findAll();
+        if (articleInstances.size() < 2) {
+            System.out.println("Not enough articles for rental seeding.");
+            return;
+        }
+
+        Rental rental = new Rental();
+        rental.setUser(user);
+        rental.setRentalStatus(RentalStatus.PENDING);
+        rental.setTotalPrice(BigDecimal.valueOf(50.0));
+
+        RentalPosition position1 = new RentalPosition();
+        position1.setRental(rental);
+        position1.setRentalStart(LocalDate.now());
+        position1.setRentalEnd(LocalDate.now().plusDays(5));
+        position1.setPositionPrice(BigDecimal.valueOf(25.0));
+        position1.setArticleInstance(articleInstances.get(0));
+
+        RentalPosition position2 = new RentalPosition();
+        position2.setRental(rental);
+        position2.setRentalStart(LocalDate.now());
+        position2.setRentalEnd(LocalDate.now().plusDays(5));
+        position2.setPositionPrice(BigDecimal.valueOf(25.0));
+        position2.setArticleInstance(articleInstances.get(1));
+
+        rental = rentalRepository.save(rental);
+        rentalPositionRepository.save(position1);
+        rentalPositionRepository.save(position2);
+
+        System.out.println("Seeded rental for user: " + user.getEmail());
     }
 }

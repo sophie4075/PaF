@@ -45,6 +45,7 @@ public class RentalServiceTest {
         testUser.setFirstName("Max");
         testUser.setLastName("Mustermann");
         testUser.setEmail("max@mustermann.com");
+        testUser.setChatId("493192316");
         testUser = userService.createUser(testUser);
 
         article1 = new Article();

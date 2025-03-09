@@ -81,4 +81,8 @@ public class RentalService {
                 .map(pos -> pos.getPositionPrice() == null ? BigDecimal.ZERO : pos.getPositionPrice())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
+
+    public List<Rental> getRentalsByUserId(Long userId) {
+        return rentalRepo.findByUserId(userId);
+    }
 }
