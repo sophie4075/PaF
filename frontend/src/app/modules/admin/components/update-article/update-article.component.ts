@@ -26,11 +26,9 @@ export class UpdateArticleComponent implements OnInit{
   getArticleById(){
     this.articleService.getArticleById(this.articleId).subscribe((res) => {
       console.log(res)
+      const ArticleDto = res
     })
   }
-
-
-
 
 
 }

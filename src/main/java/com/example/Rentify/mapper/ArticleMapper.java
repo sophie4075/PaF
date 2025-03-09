@@ -1,8 +1,10 @@
 package com.example.Rentify.mapper;
 
 import com.example.Rentify.dto.ArticleDto;
+import com.example.Rentify.dto.ArticleInstanceDto;
 import com.example.Rentify.dto.CategoryDto;
 import com.example.Rentify.entity.Article;
+import com.example.Rentify.entity.ArticleInstance;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,6 +28,17 @@ public class ArticleMapper {
                     .collect(Collectors.toList());
             dto.setCategories(categoryDTOs);
         }
+        return dto;
+    }
+
+    public static ArticleInstanceDto toInstanceDto(ArticleInstance instance) {
+        if (instance == null) {
+            return null;
+        }
+        ArticleInstanceDto dto = new ArticleInstanceDto();
+        dto.setId(instance.getId());
+        dto.setInventoryNumber(instance.getInventoryNumber());
+        dto.setStatus(instance.getStatus().toString());
         return dto;
     }
 }

@@ -19,7 +19,7 @@
           @else if(isCustomerLoggedIn || isStaffLoggedIn || isAdminLoggedIn) {
               @if(isStaffLoggedIn || isAdminLoggedIn){
                   <!-- TODO make Link update dynamically -->
-                  <li><a routerLink="/admin/article" routerLinkActive="active">Add Article</a></li>
+                  <li><a routerLink="/admin/post-article" routerLinkActive="active">Add Article</a></li>
               }
               <li><a [routerLink]="dashboardRoute" routerLinkActive="active">Dashboard</a></li>
               <li><a routerLinkActive="active" (click)="logout()" [ngStyle]="{'cursor': 'pointer'}">Logout</a></li>

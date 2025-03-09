@@ -1,5 +1,5 @@
 import {Component, inject, OnInit} from '@angular/core';
-import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {Router, RouterLink} from '@angular/router';
 import {AsyncPipe, NgForOf} from '@angular/common';
 import {MatButton} from '@angular/material/button';
@@ -14,12 +14,6 @@ import {MatAutocomplete, MatAutocompleteTrigger, MatOption} from "@angular/mater
 import {CategorySelectorComponent} from "../category-selector/category-selector.component";
 import {MatProgressSpinner} from "@angular/material/progress-spinner";
 import {MatSnackBar} from "@angular/material/snack-bar";
-
-//TODO implement ArticleService
-/*export interface Category {
-  id: number;
-  name: string;
-} */
 
 @Component({
   selector: 'app-post-article',
@@ -70,11 +64,27 @@ export class PostArticleComponent implements OnInit {
       grundpreis: [0.0, Validators.required],
       bildUrl: [''],
       category: ['', Validators.required],
-      status: ['', Validators.required]
+      sameStatus: [true],
+      status: ['', Validators.required],
+      instanceStatuses: this.fb.array([])
     });
 
     this.articleForm.get('bezeichnung')?.valueChanges.subscribe(value => {
       this.showGenerateDescriptionButton = (value && value.trim().length > 0);
+    });
+
+    this.articleForm.get('stueckzahl')?.valueChanges.subscribe(() => {
+      this.updateInstanceStatuses();
+    });
+
+
+    this.articleForm.get('sameStatus')?.valueChanges.subscribe(value => {
+      if (value) {
+        this.articleForm.get('status')?.enable();
+      } else {
+        this.articleForm.get('status')?.disable();
+      }
+      this.updateInstanceStatuses();
     });
 
     // Get data from backend
@@ -102,73 +112,67 @@ export class PostArticleComponent implements OnInit {
     );
   }
 
-  /*onSubmit() {
-    if (this.articleForm.valid) {
-      const formValue = this.articleForm.value;
+  get instanceStatuses(): FormArray {
+    return this.articleForm.get('instanceStatuses') as FormArray;
+  }
 
-      const newArticle = {
-        bezeichnung: formValue.bezeichnung,
-        beschreibung: formValue.beschreibung,
-        stueckzahl: formValue.stueckzahl,
-        grundpreis: formValue.grundpreis,
-        bildUrl: formValue.bildUrl,
-        category: { id: formValue.category },
-        articleInstances: [{
-
-          status: formValue.status,
-          // TODO
-          inventoryNumber: null
-        }]
-      };
-
-      //TODO
-      this.articleService.createArticle(newArticle).subscribe((response: any) => {
-        console.log('Artikel erfolgreich angelegt', response);
-        // Nach erfolgreicher Anlage zur Artikelübersicht navigieren
-        this.router.navigate(['/articles']);
-      }, (error: any) => {
-        console.error('Fehler beim Anlegen des Artikels', error);
-      });
-    } else {
-      console.error('Form not valid');
+  updateInstanceStatuses(): void {
+    while (this.instanceStatuses.length) {
+      this.instanceStatuses.removeAt(0);
     }
-  }*/
+
+    if (!this.articleForm.get('sameStatus')?.value) {
+      const count = this.articleForm.get('stueckzahl')?.value || 0;
+      for (let i = 0; i < count; i++) {
+        this.instanceStatuses.push(this.fb.control('', Validators.required));
+      }
+    }
+  }
+
 
   onSubmit() {
     if (this.articleForm.valid) {
-      // Wenn ein Bild ausgewählt wurde, zuerst hochladen
+      // Upload Image first
       if (this.selectedFile) {
         this.fileUploadService.uploadImage(this.selectedFile).subscribe(
             (uploadResponse) => {
-              // Erhalte die URL aus der Upload-Antwort
+              // Get URL from Upload response
               const imageUrl = uploadResponse.fileDownloadUri;
 
               // Erstelle den Artikel, wobei das Bild über die URL referenziert wird
               const formValue = this.articleForm.value;
+
+              let articleInstances = [];
+
+              if (formValue.sameStatus) {
+                articleInstances.push({
+                  status: formValue.status,
+                  inventoryNumber: null // Generated in Backend
+                });
+              } else {
+                articleInstances = formValue.instanceStatuses.map((s: string) => ({ status: s, inventoryNumber: null }));
+              }
+
               const newArticle = {
                 bezeichnung: formValue.bezeichnung,
                 beschreibung: formValue.beschreibung,
                 stueckzahl: formValue.stueckzahl,
                 grundpreis: formValue.grundpreis,
-                bildUrl: imageUrl,  // Setze die hochgeladene Bild-URL
-                //category: { id: formValue.category },
+                bildUrl: imageUrl,
                 categories: this.selectedCategories,
-                articleInstances: [{
-                  status: formValue.status,
-                  inventoryNumber: null
-                }]
+                articleInstances: articleInstances
               };
               //TODO: remove deprecated implementation
               this.articleService.createArticle(newArticle).subscribe(
                   (response: any) => {
-                    this.router.navigateByUrl("/admin/dashboard")
+                    this.router.navigateByUrl('/admin')
                     this._snackBar.open('Created article successfully ', '🎉', {
                       duration: 5000,
                     });
                   },
                   (error: any) => {
                     console.error('Error while creating the article', error);
-                    this.router.navigateByUrl("/admin/dashboard")
+                    this.router.navigateByUrl("/admin/post-article")
                     this._snackBar.open('Error while creating the article ', '(╥﹏╥)', {
                       duration: 5000,
                     });
@@ -190,7 +194,7 @@ export class PostArticleComponent implements OnInit {
       }
     } else {
       console.error('Form not valid ┐( ˘ ､ ˘ )┌');
-      this._snackBar.open('Form not valid ', 'Form not valid ┐( ˘ ､ ˘ )┌', {
+      this._snackBar.open('Form not valid ', ' ┐( ˘ ､ ˘ )┌', {
         duration: 5000,
       });
     }

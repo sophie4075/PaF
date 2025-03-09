@@ -34,6 +34,7 @@ export class ProductCategoryComponent implements OnInit {
                 private categoryService: CategoryService,
                 private fb: FormBuilder) {
         this.filterForm = this.fb.group({
+            selectedCategories: [[]],
             minPrice: [this.minPrice],
             maxPrice: [this.maxPrice],
             startDate: [''],

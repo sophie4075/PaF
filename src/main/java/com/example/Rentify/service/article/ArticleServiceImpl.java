@@ -1,8 +1,11 @@
 package com.example.Rentify.service.article;
 
 import com.example.Rentify.dto.ArticleDto;
+import com.example.Rentify.dto.ArticleInstanceDto;
 import com.example.Rentify.entity.Article;
+import com.example.Rentify.entity.ArticleInstance;
 import com.example.Rentify.entity.Category;
+import com.example.Rentify.entity.Status;
 import com.example.Rentify.mapper.ArticleMapper;
 import com.example.Rentify.repo.ArticleRepo;
 import com.example.Rentify.repo.ArticleInstanceRepo;
@@ -19,10 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -78,6 +78,32 @@ public class ArticleServiceImpl implements ArticleService {
         }
 
         Article saved = articleRepo.save(article);
+
+        List<ArticleInstanceDto> instanceDtos = articleDto.getArticleInstances();
+
+        if (instanceDtos.size() == 1) {
+            String statusValue = instanceDtos.getFirst().getStatus();
+            for (int i = 1; i <= saved.getStueckzahl(); i++) {
+                ArticleInstance instance = new ArticleInstance();
+                instance.setArticle(saved);
+                instance.setStatus(Status.valueOf(statusValue.toUpperCase()));
+                instance.setInventoryNumber("ART-" + saved.getId() + "-" + i);
+                articleInstanceRepo.save(instance);
+            }
+        } else if (instanceDtos.size() == saved.getStueckzahl()) {
+            int counter = 1;
+            for (ArticleInstanceDto dto : instanceDtos) {
+                ArticleInstance instance = new ArticleInstance();
+                instance.setArticle(saved);
+                instance.setStatus(Status.valueOf(dto.getStatus().toUpperCase()));
+                instance.setInventoryNumber("ART-" + saved.getId() + "-" + counter);
+                articleInstanceRepo.save(instance);
+                counter++;
+            }
+        } else {
+            throw new IllegalArgumentException("The number of instances does not match the number of units.");
+        }
+
         return ArticleMapper.toDTO(saved);
     }
 
@@ -133,6 +159,7 @@ public class ArticleServiceImpl implements ArticleService {
                 .orElseThrow(() -> new IllegalArgumentException("Article not found with id: " + id));
         return ArticleMapper.toDTO(updated);
     }
+
 
     @Override
     public void deleteArticle(Long id) {

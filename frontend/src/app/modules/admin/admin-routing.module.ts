@@ -12,7 +12,7 @@ import {AdminGuard} from "../../shared/guards/admin/admin-guard.guard";
 const routes: Routes = [
   {path: '', component: AdminDashboardComponent, canActivate: [AdminGuard]},
   {path: 'post-article', component: PostArticleComponent, canActivate: [AdminGuard]},
-  {path: "update-article/:id", component: UpdateArticleComponent, canActivate: [AdminGuard]},
+  {path: 'pdp/article/:id/edit', component: UpdateArticleComponent, canActivate: [AdminGuard]},
 ];
 
 @NgModule({
