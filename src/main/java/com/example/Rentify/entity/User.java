@@ -29,6 +29,9 @@ public class User implements UserDetails {
     private String lastName;
     private String phone;
     private String email;
+    @Setter
+    @Getter
+    private String chatId;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "billing_address_id")
@@ -74,4 +77,5 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return UserDetails.super.isEnabled();
     }
+
 }

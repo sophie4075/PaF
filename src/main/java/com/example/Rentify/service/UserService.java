@@ -139,4 +139,21 @@ public class UserService {
                 .orElseThrow(() -> new IllegalArgumentException("No results found"));
         return user.getShippingAddress();
     }
+
+
+    public User getUserByChatId(String chatId) {
+        return userRepository.findByChatId(chatId).orElse(null);
+    }
+
+    public void updateChatId(Long userId, String chatId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        user.setChatId(chatId);
+        userRepository.save(user);
+    }
+
+    public User getUserByEmail(String email) {
+        return userRepository.findFirstByEmail(email).orElse(null);
+    }
+
 }
