@@ -14,8 +14,11 @@ import java.time.LocalDate;
 @Entity
 public class RentalPosition {
 
+
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private LocalDate rentalStart;
     private LocalDate rentalEnd;
     private BigDecimal positionPrice;

@@ -1,4 +1,4 @@
-/*package com.example.Rentify.email;
+package com.example.Rentify.email;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
@@ -12,17 +12,17 @@ public class EmailService {
     private JavaMailSender mailSender;
 
     /**
-     * Versendet eine E-Mail.
+     * Sends an E-Mail.
      *
-     * @param to      Empfängeradresse
-     * @param subject Betreff der E-Mail
-     * @param text    Inhalt der E-Mail
+     * @param to      Receiver address
+     * @param subject subject of E-Mail
+     * @param text    content of E-Mail
      */
-    /*public void sendEmail(String to, String subject, String text) {
+    public void sendEmail(String to, String subject, String text) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
         message.setSubject(subject);
         message.setText(text);
         mailSender.send(message);
     }
-}*/
+}

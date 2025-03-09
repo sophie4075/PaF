@@ -2,6 +2,7 @@ package com.example.Rentify.service.article;
 
 import com.example.Rentify.dto.ArticleDto;
 import com.example.Rentify.entity.Article;
+import com.example.Rentify.entity.ArticleInstance;
 import com.example.Rentify.entity.Category;
 import com.example.Rentify.mapper.ArticleMapper;
 import com.example.Rentify.repo.ArticleRepo;
@@ -80,6 +81,11 @@ public class ArticleServiceImpl implements ArticleService {
         Article saved = articleRepo.save(article);
         return ArticleMapper.toDTO(saved);
     }
+
+    public ArticleInstance createArticleInstance(ArticleInstance articleInstance) {
+        return articleInstanceRepo.save(articleInstance);
+    }
+
 
     @Override
     public List<ArticleDto> getAllArticles() {

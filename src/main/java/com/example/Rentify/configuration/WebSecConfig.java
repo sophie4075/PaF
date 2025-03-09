@@ -33,9 +33,11 @@ public class WebSecConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers("/h2-console/**").permitAll() // Zugriff auf H2-Konsole erlauben
+                        .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("api/admin/**").hasAnyAuthority(Role.ADMIN.name())
+                        .requestMatchers("/api/rental/**").permitAll()
+                        .requestMatchers("/api/articles/**").permitAll()
+                        .requestMatchers("/api/admin/**").hasAnyAuthority(Role.ADMIN.name())
                         .requestMatchers("/api/customer/**").hasAnyAuthority(Role.BUSINESS_CLIENT.name())
                         .requestMatchers("/api/customer/**").hasAnyAuthority(Role.PRIVATE_CLIENT.name())
                         .requestMatchers("/api/articles/**").permitAll()

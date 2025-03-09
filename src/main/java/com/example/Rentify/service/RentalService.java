@@ -12,8 +12,8 @@ import java.util.List;
 
 /**
  * The RentalService class provides business logic for rental-related operations.
- * An event is published after a rental is created. An EmailNotificationListener
- * (implementiert als Observer) reagiert auf dieses Event und versendet eine E-Mail.
+ * An event is published after a rental is created. An EmailNotificationListener,
+ * implemented as an Observer, reacts to this event and sends an email.
  */
 @Service
 public class RentalService {

@@ -1,4 +1,4 @@
-/*package com.example.Rentify.email;
+package com.example.Rentify.email;
 
 import com.example.Rentify.entity.Rental;
 import com.example.Rentify.entity.User;
@@ -17,7 +17,7 @@ public class EmailNotificationListener {
     /**
      * Reagiert auf ein Benutzeraktualisierungs-Event und sendet eine E-Mail an den Benutzer.
      */
-   /* @EventListener
+    @EventListener
     public void handleUserUpdatedEvent(UserUpdatedEvent event) {
         User user = event.getUser();
         String to = user.getEmail();
@@ -29,7 +29,7 @@ public class EmailNotificationListener {
     /**
      * Reagiert auf ein Ausleihe-erstellt-Event und sendet eine E-Mail.
      */
-   /* @EventListener
+    @EventListener
     public void handleRentalCreatedEvent(RentalCreatedEvent event) {
         Rental rental = event.getRental();
         User user = rental.getUser();
@@ -38,4 +38,4 @@ public class EmailNotificationListener {
         String text = "Hallo " + user.getFirstName() + ",\n\nDeine Ausleihe wurde erfolgreich erstellt. Gesamtpreis: " + rental.getTotalPrice() + "€." + "\n\nViele Grüße\nDein Rentify-Team";
         emailService.sendEmail(to, subject, text);
     }
-}*/
+}
