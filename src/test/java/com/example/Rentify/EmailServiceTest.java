@@ -1,6 +1,6 @@
 package com.example.Rentify;
 
-import com.example.Rentify.email.EmailService;
+import com.example.Rentify.service.EmailService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;

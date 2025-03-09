@@ -2,6 +2,7 @@ package com.example.Rentify;
 
 import com.example.Rentify.entity.*;
 import com.example.Rentify.service.ArticleService;
+import com.example.Rentify.service.EmailService;
 import com.example.Rentify.service.RentalService;
 import com.example.Rentify.service.UserService;
 import com.example.Rentify.service.article.ArticleServiceImpl;
@@ -16,7 +17,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 @SpringBootTest
 public class RentalServiceTest {
@@ -31,7 +31,7 @@ public class RentalServiceTest {
     private UserService userService;
 
     @MockBean
-    private com.example.Rentify.email.EmailService emailService;
+    private EmailService emailService;
 
     private User testUser;
     private Article article1;
@@ -44,7 +44,7 @@ public class RentalServiceTest {
         testUser = new User();
         testUser.setFirstName("Max");
         testUser.setLastName("Mustermann");
-        testUser.setEmail("max.mustermann@example.com");
+        testUser.setEmail("max@mustermann.com");
         testUser = userService.createUser(testUser);
 
         article1 = new Article();
@@ -66,11 +66,11 @@ public class RentalServiceTest {
         // Persist ArticleInstances before using them
         ArticleInstance articleInstance1 = new ArticleInstance();
         articleInstance1.setArticle(article1);
-        articleInstance1 = articleServiceImpl.createArticleInstance(articleInstance1); // Persist
+        articleInstance1 = articleServiceImpl.createArticleInstance(articleInstance1);
 
         ArticleInstance articleInstance2 = new ArticleInstance();
         articleInstance2.setArticle(article2);
-        articleInstance2 = articleServiceImpl.createArticleInstance(articleInstance2); // Persist
+        articleInstance2 = articleServiceImpl.createArticleInstance(articleInstance2);
 
         // Create RentalPositions
         RentalPosition position1 = new RentalPosition();

@@ -1,18 +1,23 @@
-package com.example.Rentify.email;
+package com.example.Rentify.listener;
 
 import com.example.Rentify.entity.Rental;
 import com.example.Rentify.entity.User;
 import com.example.Rentify.events.RentalCreatedEvent;
 import com.example.Rentify.events.UserUpdatedEvent;
+import com.example.Rentify.messengerBot.MessengerBot;
+import com.example.Rentify.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 @Component
-public class EmailNotificationListener {
+public class NotificationListener {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private MessengerBot messengerBot;
 
     /**
      * Reagiert auf ein Benutzeraktualisierungs-Event und sendet eine E-Mail an den Benutzer.
@@ -35,7 +40,18 @@ public class EmailNotificationListener {
         User user = rental.getUser();
         String to = user.getEmail();
         String subject = "Neue Ausleihe erstellt";
-        String text = "Hallo " + user.getFirstName() + ",\n\nDeine Ausleihe wurde erfolgreich erstellt. Gesamtpreis: " + rental.getTotalPrice() + "€." + "\n\nViele Grüße\nDein Rentify-Team";
+        String text = "Hallo " + user.getFirstName() + ",\n\nDeine Ausleihe wurde erfolgreich erstellt. Gesamtpreis: "
+                + rental.getTotalPrice() + "€." + "\n\nViele Grüße\nDein Rentify-Team";
+
+        // Send EMail
         emailService.sendEmail(to, subject, text);
+
+        // If the user has a chat id also send a telegram message
+        if (user.getChatId() != null) {
+            String ausleiheDetails = "Hallo " + user.getFirstName() +
+                    ",\n\nDeine Ausleihe wurde erfolgreich erstellt.\nGesamtpreis: "
+                    + rental.getTotalPrice() + "€.";
+            messengerBot.sendRentalInfo(user.getChatId(), ausleiheDetails);
+        }
     }
 }

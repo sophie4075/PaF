@@ -18,6 +18,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
+
 
 @Service
 @RequiredArgsConstructor
@@ -29,14 +31,14 @@ public class AuthServiceImpl implements AuthService {
 
     //TODO Don't make this accessible for everyone -> Create magic link and send credentials to owner(s)
     @PostConstruct
-    public void createAdminAcc(){
-        User admin = userRepo.findByRole(Role.ADMIN);
-        if(admin == null){
+    public void createAdminAcc() {
+        List<User> admins = userRepo.findAllByRole(Role.ADMIN);
+        if (admins.isEmpty()) { // Prüft, ob noch kein Admin existiert
             User newAdmin = new User();
             newAdmin.setRole(Role.ADMIN);
-            //Update mail to owner
+            // Update Mail an den Besitzer
             newAdmin.setEmail("admin@rentify.com");
-            //TODO: Create random password generation
+            // TODO: Zufällige Passwortgenerierung implementieren
             newAdmin.setPassword(new BCryptPasswordEncoder().encode("admiN123!"));
             newAdmin.setFirstName("Admin");
             newAdmin.setLastName("Rentify");
@@ -49,7 +51,6 @@ public class AuthServiceImpl implements AuthService {
             defaultAddress.setState("Default State");
             defaultAddress.setCountry("Default Country");
 
-
             newAdmin.setBillingAddress(defaultAddress);
             newAdmin.setShippingAddress(defaultAddress);
 
@@ -60,6 +61,7 @@ public class AuthServiceImpl implements AuthService {
             log.info("Admin-Account existiert bereits.");
         }
     }
+
 
 
 
