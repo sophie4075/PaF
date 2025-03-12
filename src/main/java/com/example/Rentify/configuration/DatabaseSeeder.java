@@ -5,6 +5,7 @@ import com.example.Rentify.repo.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -40,12 +41,12 @@ public class DatabaseSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        rentalPositionRepository.deleteAll();
+        rentalRepository.deleteAll();
         articleInstanceRepository.deleteAll();
         articleRepository.deleteAll();
         categoryRepository.deleteAll();
         userRepository.deleteAll();
-        rentalRepository.deleteAll();
-        rentalPositionRepository.deleteAll();
 
         seedUsers();
         seedArticles();
@@ -179,7 +180,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 
         RentalPosition position2 = new RentalPosition();
         position2.setRental(rental);
-        position2.setRentalStart(LocalDate.now());
+        position2.setRentalStart(LocalDate.now().plusDays(1));
         position2.setRentalEnd(LocalDate.now().plusDays(5));
         position2.setPositionPrice(BigDecimal.valueOf(25.0));
         position2.setArticleInstance(articleInstances.get(1));

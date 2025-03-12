@@ -25,6 +25,7 @@ public class User implements UserDetails {
     private Long id;
 
     private String password;
+    @Getter
     private String firstName;
     private String lastName;
     private String phone;
@@ -57,6 +58,11 @@ public class User implements UserDetails {
     public String getUsername() {
         return email;
     }
+
+    public String getName() {
+        return firstName + " " + lastName;
+    }
+
 
     @Override
     public boolean isAccountNonExpired() {

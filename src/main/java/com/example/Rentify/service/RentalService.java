@@ -1,7 +1,9 @@
 package com.example.Rentify.service;
 
 import com.example.Rentify.entity.Rental;
+import com.example.Rentify.entity.RentalPosition;
 import com.example.Rentify.events.RentalCreatedEvent;
+import com.example.Rentify.repo.RentalPositionRepo;
 import com.example.Rentify.repo.RentalRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -12,25 +14,29 @@ import java.util.List;
 
 /**
  * The RentalService class provides business logic for rental-related operations.
- * An event is published after a rental is created. An EmailNotificationListener,
- * implemented as an Observer, reacts to this event and sends an email.
  */
 @Service
 public class RentalService {
     private final RentalRepo rentalRepo;
+    private final RentalPositionRepo rentalPositionRepo;
     private final ApplicationEventPublisher eventPublisher;
 
     /**
      * Constructor for injecting the Rental repository and ApplicationEventPublisher.
      *
      * @param rentalRepo      Rental repository.
+     * @param rentalPositionRepo Rental position repository.
      * @param eventPublisher  ApplicationEventPublisher for publishing events.
      */
     @Autowired
-    public RentalService(RentalRepo rentalRepo, ApplicationEventPublisher eventPublisher) {
+    public RentalService(RentalRepo rentalRepo,
+                         RentalPositionRepo rentalPositionRepo,
+                         ApplicationEventPublisher eventPublisher) {
         this.rentalRepo = rentalRepo;
+        this.rentalPositionRepo = rentalPositionRepo;
         this.eventPublisher = eventPublisher;
     }
+
 
     /**
      * Creates a new rental, calculates the total price, saves it, and publishes an event.
@@ -69,6 +75,10 @@ public class RentalService {
 
     public List<Rental> getAllRentals() {
         return (List<Rental>) rentalRepo.findAll();
+    }
+
+    public List<RentalPosition> getAllRentalPositions() {
+        return rentalPositionRepo.findAll();
     }
 
     public Rental getRentalById(Long id) {

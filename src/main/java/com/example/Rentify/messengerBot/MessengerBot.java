@@ -1,6 +1,7 @@
 package com.example.Rentify.messengerBot;
 
 import com.example.Rentify.entity.Rental;
+import com.example.Rentify.entity.RentalPosition;
 import com.example.Rentify.entity.User;
 import com.example.Rentify.service.RentalService;
 import com.example.Rentify.service.UserService;
@@ -12,8 +13,11 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
-
+import org.springframework.scheduling.annotation.Scheduled;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
+
 
 @Component
 public class MessengerBot extends TelegramLongPollingBot {
@@ -168,6 +172,30 @@ public class MessengerBot extends TelegramLongPollingBot {
             String rentalDetails = formatRentalDetails(rental);
             sendRentalInfo(chatId, rentalDetails);
         }
+    }
+
+
+    public void sendRemindersForTomorrow() {
+        // Fetches all RentalPositions from the database
+        List<RentalPosition> rentalPositions = rentalService.getAllRentalPositions();
+        LocalDate tomorrow = LocalDate.now().plusDays(1);
+
+        // Filters RentalPositions whose rentalStart date is tomorrow
+        List<RentalPosition> positionsStartingTomorrow = rentalPositions.stream()
+                .filter(position -> position.getRentalStart().equals(tomorrow))
+                .toList();
+
+        // Notify the users for each relevant RentalPosition
+        positionsStartingTomorrow.forEach(position -> {
+            Rental rental = position.getRental();
+            User user = rental.getUser();
+            String chatId = user.getChatId();
+            if (chatId != null && !chatId.isEmpty()) {
+                String message = String.format("Hi %s, don't forget: your rental for '%s' starts tomorrow!",
+                        user.getFirstName(), position.getArticleInstance().getArtikelName());
+                sendMessage(chatId, message);
+            }
+        });
     }
 
     /**

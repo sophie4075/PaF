@@ -17,7 +17,7 @@ public class Article {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    @Getter
     private String bezeichnung;
     @Column(columnDefinition = "TEXT")
     private String beschreibung;

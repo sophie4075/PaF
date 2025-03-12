@@ -25,7 +25,7 @@ import static org.mockito.Mockito.*;
 public class RentalNotificationListenerTest {
 
     @MockBean
-    private MessengerBot messengerBot; // Mocked MessengerBot for unit testing
+    private MessengerBot messengerBot; // Mocked MessengerBot for testing
 
     @Mock
     private UserService userService;

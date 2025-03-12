@@ -24,4 +24,9 @@ public class ArticleInstance {
     @ManyToOne
     @JoinColumn(name = "article_id", nullable = false)
     private Article article;
+
+    public String getArtikelName() {
+        return article.getBezeichnung();
+    }
+
 }
