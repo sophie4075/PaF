@@ -1,5 +1,6 @@
 package com.example.Rentify.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
@@ -74,4 +75,8 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return UserDetails.super.isEnabled();
     }
+
+    @OneToMany(mappedBy = "user")
+    @JsonBackReference
+    private List<Rental> rentals;
 }

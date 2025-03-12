@@ -31,18 +31,18 @@
           </div>
 
 
-          <div class="flex justify-center">
+          <div class="flex justify-center flex-col">
             <button
               mat-raised-button
               [disabled]="loginForm.invalid"
               type="submit">
               Einloggen
             </button>
+
+              <a routerLink="/register" class="mt-4 text-center text-sm font-medium text-primary-600 hover:underline dark:text-primary-500">Noch nicht registriert?</a>
+
           </div>
 
-          <p class="text-sm font-light text-gray-500 dark:text-gray-400 text-center">
-            Noch nicht registriert? <a routerLink="register" class="font-medium text-primary-600 hover:underline dark:text-primary-500"></a>
-          </p>
         </form>
       </div>
     </div>

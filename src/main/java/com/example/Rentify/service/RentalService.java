@@ -1,14 +1,21 @@
 package com.example.Rentify.service;
 
 import com.example.Rentify.entity.Rental;
+import com.example.Rentify.entity.User;
 import com.example.Rentify.events.RentalCreatedEvent;
 import com.example.Rentify.repo.RentalRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * The RentalService class provides business logic for rental-related operations.
@@ -19,6 +26,7 @@ import java.util.List;
 public class RentalService {
     private final RentalRepo rentalRepo;
     private final ApplicationEventPublisher eventPublisher;
+    private final UserService userService;
 
     /**
      * Constructor for injecting the Rental repository and ApplicationEventPublisher.
@@ -27,9 +35,10 @@ public class RentalService {
      * @param eventPublisher  ApplicationEventPublisher for publishing events.
      */
     @Autowired
-    public RentalService(RentalRepo rentalRepo, ApplicationEventPublisher eventPublisher) {
+    public RentalService(RentalRepo rentalRepo, ApplicationEventPublisher eventPublisher, UserService userService) {
         this.rentalRepo = rentalRepo;
         this.eventPublisher = eventPublisher;
+        this.userService = userService;
     }
 
     /**
@@ -39,6 +48,20 @@ public class RentalService {
      * @return the saved rental.
      */
     public Rental createRental(Rental rental) {
+
+        /*Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+
+        User currentUser = userService.getUserByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + email));
+
+        rental.setUser(currentUser);*/
+
+
+        if (rental.getRentalPositions() != null) {
+            rental.getRentalPositions().forEach(pos -> pos.setRental(rental));
+        }
+
         rental.setTotalPrice(calculateTotalPrice(rental));
         Rental savedRental = rentalRepo.save(rental);
 

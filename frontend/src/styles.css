@@ -22,7 +22,13 @@ p, button, a{
   font-size: 1rem;
 }
 
+#article-description ul {
+  @apply list-disc pl-5;
+}
 
+#article-description li {
+  @apply mb-2;
+}
 
 
 html, body { height: 100%; }

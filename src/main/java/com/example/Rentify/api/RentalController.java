@@ -22,6 +22,7 @@ public class RentalController {
         try {
             return ResponseEntity.status(HttpStatus.CREATED).body(rentalService.createRental(rental));
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }

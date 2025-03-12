@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import {MatButton} from "@angular/material/button";
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
-import {Router, RouterLink} from "@angular/router";
+import {ActivatedRoute, Router, RouterLink} from "@angular/router";
 import {StorageService} from "../../../shared/services/storage/storage.service";
 import {AuthService} from "../../../shared/services/auth/auth.service";
 
@@ -19,8 +19,12 @@ import {AuthService} from "../../../shared/services/auth/auth.service";
 export class LoginComponent {
 
   loginForm!: FormGroup;
+  returnUrl: string = '/';
 
-  constructor(private fb: FormBuilder, private authService: AuthService, private router:Router) {
+  constructor(private fb: FormBuilder,
+              private authService: AuthService,
+              private router:Router,
+              private route: ActivatedRoute) {
   }
 
   ngOnInit() {
@@ -30,6 +34,9 @@ export class LoginComponent {
         password: ['', Validators.required],
       }
     );
+
+    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
+
   }
 
   onSubmit() {
@@ -51,11 +58,11 @@ export class LoginComponent {
           }
 
           if(StorageService.isAdminLoggedIn() || StorageService.isStaffLoggedIn()){
-            this.router.navigateByUrl("/admin/dashboard")
+            this.router.navigateByUrl("/admin")
             return;
           }
 
-          this.router.navigateByUrl("/customer/dashboard")
+          this.router.navigateByUrl(this.returnUrl)
 
         }
       })

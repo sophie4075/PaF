@@ -14,6 +14,7 @@ import {MatAutocomplete, MatAutocompleteTrigger, MatOption} from "@angular/mater
 import {CategorySelectorComponent} from "../category-selector/category-selector.component";
 import {MatProgressSpinner} from "@angular/material/progress-spinner";
 import {MatSnackBar} from "@angular/material/snack-bar";
+import {NgxCurrencyDirective} from "ngx-currency";
 
 @Component({
   selector: 'app-post-article',
@@ -35,6 +36,7 @@ import {MatSnackBar} from "@angular/material/snack-bar";
     MatChipInput,
     MatLabel,
     MatProgressSpinner,
+    NgxCurrencyDirective,
   ],
   templateUrl: './post-article.component.html',
   styleUrl: './post-article.component.css'

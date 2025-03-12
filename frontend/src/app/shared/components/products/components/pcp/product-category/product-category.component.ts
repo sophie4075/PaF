@@ -4,6 +4,7 @@ import {Category, CategoryService} from "../../../../../services/category/catego
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {debounceTime, distinctUntilChanged} from "rxjs";
 import {RouterLink} from "@angular/router";
+import {CurrencyPipe} from "@angular/common";
 
 @Component({
     selector: 'app-product-category',
@@ -11,7 +12,8 @@ import {RouterLink} from "@angular/router";
     imports: [
         ReactiveFormsModule,
         FormsModule,
-        RouterLink
+        RouterLink,
+        CurrencyPipe
     ],
     templateUrl: './product-category.component.html',
     styleUrl: './product-category.component.css'

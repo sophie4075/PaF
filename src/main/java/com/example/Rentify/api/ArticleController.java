@@ -1,6 +1,7 @@
 package com.example.Rentify.api;
 
 import com.example.Rentify.dto.ArticleDto;
+import com.example.Rentify.dto.AvailabilityDto;
 import com.example.Rentify.repo.CategoryRepo;
 import com.example.Rentify.service.article.ArticleService;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -94,5 +95,27 @@ public class ArticleController {
         List<ArticleDto> articles = articleService.getFilteredArticles(minPrice, maxPrice, startDate, endDate, categoryIds);
         return ResponseEntity.ok(articles);
     }
+
+    @CrossOrigin(origins = "http://localhost:4200")
+    @PatchMapping("/{id}")
+    public ResponseEntity<ArticleDto> patchArticle(@PathVariable Long id, @RequestBody Map<String, Object> updates) {
+        try {
+            ArticleDto updated = articleService.patchArticle(id, updates);
+            return ResponseEntity.ok(updated);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/availability")
+    public ResponseEntity<Map<String, Object>> checkAvailability(
+            @RequestParam Long articleId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        AvailabilityDto response = articleService.checkAvailability(articleId, startDate, endDate);
+        return ResponseEntity.ok(response.toMap());
+    }
+
+
 }
 

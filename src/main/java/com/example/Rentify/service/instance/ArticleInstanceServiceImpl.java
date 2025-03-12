@@ -30,7 +30,7 @@ public class ArticleInstanceServiceImpl {
                 .orElseThrow(() -> new IllegalArgumentException("Instance not found"));
 
         if (instance.getStatus() != Status.RETIRED) {
-            throw new IllegalArgumentException("Nur Instanzen mit Status RETIRED dürfen gelöscht werden.");
+            throw new IllegalArgumentException("Only instances with RETIRED status may be deleted");
         }
         instanceRepo.delete(instance);
         updateArticleQuantity(article);
@@ -65,7 +65,7 @@ public class ArticleInstanceServiceImpl {
         ArticleInstance instance = instanceRepo.findById(instanceId)
                 .orElseThrow(() -> new IllegalArgumentException("Instance not found"));
         if (instance.getStatus() == Status.RENTED) {
-            throw new IllegalArgumentException("Instanz mit Status RENTED darf nicht geändert werden.");
+            throw new IllegalArgumentException("Instance with status RENTED may not be changed.");
         }
         instance.setStatus(Status.valueOf(instanceDto.getStatus().toUpperCase()));
         instanceRepo.save(instance);

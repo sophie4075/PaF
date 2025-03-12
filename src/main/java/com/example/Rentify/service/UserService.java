@@ -9,6 +9,7 @@ import org.springframework.context.ApplicationEventPublisher; // Neuer Import fÃ
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * The UserService class provides the business logic for User-related operations.
@@ -139,4 +140,11 @@ public class UserService {
                 .orElseThrow(() -> new IllegalArgumentException("No results found"));
         return user.getShippingAddress();
     }
+
+    public Optional<User> getUserByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
+
+
 }

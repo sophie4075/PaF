@@ -15,6 +15,7 @@ import java.time.LocalDate;
 public class RentalPosition {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private LocalDate rentalStart;
     private LocalDate rentalEnd;
