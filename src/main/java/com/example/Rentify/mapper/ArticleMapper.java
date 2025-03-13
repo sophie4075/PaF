@@ -41,4 +41,21 @@ public class ArticleMapper {
         dto.setStatus(instance.getStatus().toString());
         return dto;
     }
+
+    public static Article toEntity(ArticleDto dto) {
+        if (dto == null) {
+            return null;
+        }
+        Article article = new Article();
+        article.setId(dto.getId());
+        article.setBezeichnung(dto.getBezeichnung());
+        article.setBeschreibung(dto.getBeschreibung());
+        article.setStueckzahl(dto.getStueckzahl());
+        article.setGrundpreis(dto.getGrundpreis());
+        article.setBildUrl(dto.getBildUrl());
+        // Optional: Kategorien mappen, falls nötig
+        return article;
+    }
+
+
 }

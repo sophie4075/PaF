@@ -1,86 +1,144 @@
 package com.example.Rentify.service;
 
-import com.example.Rentify.entity.Rental;
-import com.example.Rentify.entity.User;
-import com.example.Rentify.events.RentalCreatedEvent;
+import com.example.Rentify.dto.RentalDto;
+import com.example.Rentify.entity.*;
+import com.example.Rentify.mapper.RentalMapper;
+import com.example.Rentify.repo.ArticleInstanceRepo;
+import com.example.Rentify.repo.RentalPositionRepo;
 import com.example.Rentify.repo.RentalRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
-/**
- * The RentalService class provides business logic for rental-related operations.
- * An event is published after a rental is created. An EmailNotificationListener
- * (implementiert als Observer) reagiert auf dieses Event und versendet eine E-Mail.
- */
 @Service
 public class RentalService {
     private final RentalRepo rentalRepo;
+    private final RentalPositionRepo rentalPositionRepo;
+    private final ArticleInstanceRepo articleInstanceRepo;
     private final ApplicationEventPublisher eventPublisher;
-    private final UserService userService;
 
-    /**
-     * Constructor for injecting the Rental repository and ApplicationEventPublisher.
-     *
-     * @param rentalRepo      Rental repository.
-     * @param eventPublisher  ApplicationEventPublisher for publishing events.
-     */
     @Autowired
-    public RentalService(RentalRepo rentalRepo, ApplicationEventPublisher eventPublisher, UserService userService) {
+    public RentalService(RentalRepo rentalRepo,
+                         RentalPositionRepo rentalPositionRepo,
+                         ArticleInstanceRepo articleInstanceRepo,
+                         ApplicationEventPublisher eventPublisher) {
         this.rentalRepo = rentalRepo;
+        this.rentalPositionRepo = rentalPositionRepo;
+        this.articleInstanceRepo = articleInstanceRepo;
         this.eventPublisher = eventPublisher;
-        this.userService = userService;
     }
 
-    /**
-     * Creates a new rental, calculates the total price, saves it, and publishes an event.
-     *
-     * @param rental the rental entity to create.
-     * @return the saved rental.
-     */
-    public Rental createRental(Rental rental) {
+    /*public RentalDto createRental(Rental rental, List<RentalPosition> rentalPositions) {
 
-        /*Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String email = auth.getName();
-
-        User currentUser = userService.getUserByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + email));
-
-        rental.setUser(currentUser);*/
-
-
-        if (rental.getRentalPositions() != null) {
-            rental.getRentalPositions().forEach(pos -> pos.setRental(rental));
-        }
-
-        rental.setTotalPrice(calculateTotalPrice(rental));
         Rental savedRental = rentalRepo.save(rental);
 
-        eventPublisher.publishEvent(new RentalCreatedEvent(savedRental));
+        for (RentalPosition position : rentalPositions) {
+            position.setRental(savedRental);
 
-        return savedRental;
+            Long articleInstanceId = position.getArticleInstance().getId();
+            var articleInstance = articleInstanceRepo.findById(articleInstanceId)
+                    .orElseThrow(() -> new IllegalArgumentException("ArticleInstance not found with id: " + articleInstanceId));
+            position.setArticleInstance(articleInstance);
+
+            long days = ChronoUnit.DAYS.between(position.getRentalStart(), position.getRentalEnd());
+
+            BigDecimal dailyPrice = BigDecimal.valueOf(articleInstance.getArticle().getGrundpreis());
+            BigDecimal positionPrice = dailyPrice.multiply(BigDecimal.valueOf(days));
+            position.setPositionPrice(positionPrice);
+        }
+        rentalPositionRepo.saveAll(rentalPositions);
+
+        BigDecimal totalPrice = calculateTotalPrice(savedRental.getId());
+        savedRental.setTotalPrice(totalPrice);
+        rentalRepo.save(savedRental);
+
+        //TODO remove comment, make eventPublisher available
+        //eventPublisher.publishEvent(new RentalCreatedEvent(savedRental));
+
+        List<RentalPosition> savedRentalPositions = rentalPositionRepo.findByRentalId(savedRental.getId());
+
+        return RentalMapper.toDTO(savedRental, savedRentalPositions);
+
+
+    }*/
+
+/*
+    public RentalDto createRental(Rental rental, Article article, LocalDate rentalStart, LocalDate rentalEnd, int quantity) {
+        Rental savedRental = rentalRepo.save(rental);
+
+        List<ArticleInstance> allInstances = articleInstanceRepo.findByArticle(article);
+        // Filtere verfügbare Instanzen
+        List<ArticleInstance> availableInstances = allInstances.stream()
+                .filter(instance -> instance.getStatus() == Status.AVAILABLE)
+                .filter(instance -> !rentalPositionRepo.existsByArticleInstanceAndRentalPeriodOverlap(instance, rentalStart, rentalEnd))
+                .toList();
+
+        if (availableInstances.size() < quantity) {
+            throw new IllegalArgumentException("Nicht genügend Instanzen verfügbar. Gewünscht: " + quantity +
+                    ", verfügbar: " + availableInstances.size());
+        }
+
+        // Erstelle RentalPositionen für die ersten 'quantity' Instanzen
+        for (int i = 0; i < quantity; i++) {
+            ArticleInstance selectedInstance = availableInstances.get(i);
+            RentalPosition position = new RentalPosition();
+            position.setRental(savedRental);
+            position.setArticleInstance(selectedInstance);
+            position.setRentalStart(rentalStart);
+            position.setRentalEnd(rentalEnd);
+
+            long days = ChronoUnit.DAYS.between(rentalStart, rentalEnd);
+            days = days <= 0 ? 1 : days;
+            BigDecimal dailyPrice = BigDecimal.valueOf(selectedInstance.getArticle().getGrundpreis());
+            BigDecimal positionPrice = dailyPrice.multiply(BigDecimal.valueOf(days));
+            position.setPositionPrice(positionPrice);
+
+            rentalPositionRepo.save(position);
+        }
+
+        BigDecimal totalPrice = calculateTotalPrice(savedRental.getId());
+        savedRental.setTotalPrice(totalPrice);
+        rentalRepo.save(savedRental);
+
+        List<RentalPosition> savedPositions = rentalPositionRepo.findByRentalId(savedRental.getId());
+        return RentalMapper.toDTO(savedRental, savedPositions);
+    }
+*/
+
+
+    public RentalDto getRentalById(Long id) {
+        Rental rental = rentalRepo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Rental not found"));
+
+        List<RentalPosition> rentalPositions = rentalPositionRepo.findByRentalId(rental.getId());
+
+        return RentalMapper.toDTO(rental, rentalPositions);
     }
 
-    public Rental updateRental(Long id, Rental updatedRental) {
+    public List<RentalDto> getAllRentals() {
+        List<Rental> rentals = (List<Rental>) rentalRepo.findAll();
+
+        return rentals.stream().map(rental -> {
+            List<RentalPosition> rentalPositions = rentalPositionRepo.findByRentalId(rental.getId());
+            return RentalMapper.toDTO(rental, rentalPositions);
+        }).collect(Collectors.toList());
+    }
+
+    public RentalDto updateRental(Long id, Rental updatedRental) {
         Rental existingRental = rentalRepo.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Rental not found"));
 
         existingRental.setRentalStatus(updatedRental.getRentalStatus());
-        existingRental.setTotalPrice(calculateTotalPrice(updatedRental));
-        if (updatedRental.getRentalPositions() != null) {
-            existingRental.setRentalPositions(updatedRental.getRentalPositions());
-        }
 
-        return rentalRepo.save(existingRental);
+        rentalRepo.save(existingRental);
+
+        return getRentalById(id);
     }
 
     public void deleteRental(Long id) {
@@ -90,18 +148,47 @@ public class RentalService {
         rentalRepo.deleteById(id);
     }
 
-    public List<Rental> getAllRentals() {
-        return (List<Rental>) rentalRepo.findAll();
-    }
+    public BigDecimal calculateTotalPrice(Long rentalId) {
+        List<RentalPosition> rentalPositions = rentalPositionRepo.findByRentalId(rentalId);
 
-    public Rental getRentalById(Long id) {
-        return rentalRepo.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Rental not found"));
-    }
-
-    private BigDecimal calculateTotalPrice(Rental rental) {
-        return rental.getRentalPositions().stream()
+        return rentalPositions.stream()
                 .map(pos -> pos.getPositionPrice() == null ? BigDecimal.ZERO : pos.getPositionPrice())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
+
+    public void addRentalPositionsForArticle(Rental rental, Article article, LocalDate rentalStart, LocalDate rentalEnd, int quantity) {
+        List<ArticleInstance> allInstances = articleInstanceRepo.findByArticle(article);
+        // Filtere alle Instanzen, die den Status AVAILABLE haben und im gewünschten Zeitraum nicht gebucht sind
+        List<ArticleInstance> availableInstances = allInstances.stream()
+                .filter(instance -> instance.getStatus() == Status.AVAILABLE)
+                .filter(instance -> !rentalPositionRepo.existsByArticleInstanceAndRentalPeriodOverlap(instance, rentalStart, rentalEnd))
+                .toList();
+
+        if (availableInstances.size() < quantity) {
+            throw new IllegalArgumentException("Nicht genügend Instanzen verfügbar für Artikel " + article.getId() +
+                    ". Gewünscht: " + quantity + ", verfügbar: " + availableInstances.size());
+        }
+
+        // Erstelle RentalPositionen für die ersten 'quantity' verfügbaren Instanzen
+        for (int i = 0; i < quantity; i++) {
+            ArticleInstance selectedInstance = availableInstances.get(i);
+            RentalPosition position = new RentalPosition();
+            position.setRental(rental);
+            position.setArticleInstance(selectedInstance);
+            position.setRentalStart(rentalStart);
+            position.setRentalEnd(rentalEnd);
+
+            long days = ChronoUnit.DAYS.between(rentalStart, rentalEnd);
+            days = days <= 0 ? 1 : days;
+            BigDecimal dailyPrice = BigDecimal.valueOf(selectedInstance.getArticle().getGrundpreis());
+            BigDecimal positionPrice = dailyPrice.multiply(BigDecimal.valueOf(days));
+            position.setPositionPrice(positionPrice);
+
+            rentalPositionRepo.save(position);
+        }
+    }
+
 }
+
+
+

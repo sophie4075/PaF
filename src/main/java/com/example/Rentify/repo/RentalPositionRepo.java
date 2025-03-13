@@ -2,13 +2,17 @@ package com.example.Rentify.repo;
 
 import com.example.Rentify.entity.ArticleInstance;
 import com.example.Rentify.entity.RentalPosition;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.util.List;
 
-public interface RentalPositionRepo extends CrudRepository<RentalPosition, Long> {
+@Repository
+public interface RentalPositionRepo extends JpaRepository<RentalPosition, Long> {
+    List<RentalPosition> findByRentalId(Long rentalId);
 
     @Query("SELECT COUNT(rp) > 0 FROM RentalPosition rp " +
             "WHERE rp.articleInstance = :instance " +
@@ -17,4 +21,6 @@ public interface RentalPositionRepo extends CrudRepository<RentalPosition, Long>
     boolean existsByArticleInstanceAndRentalPeriodOverlap(@Param("instance") ArticleInstance instance,
                                                           @Param("startDate") LocalDate startDate,
                                                           @Param("endDate") LocalDate endDate);
+
 }
+

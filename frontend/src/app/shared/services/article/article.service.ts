@@ -91,12 +91,12 @@ export class ArticleService {
     return this.http.patch<Article>(`${this.apiUrl}/${id}`, patch);
   }
 
-  checkAvailability(articleId: number, start: Date, end: Date): Observable<{ available: boolean, totalPrice?: number }> {
+  checkAvailability(articleId: number, start: Date, end: Date): Observable<{ available: boolean, totalPrice?: number, availableInstances?: number[] }> {
     const params = new HttpParams()
         .set('articleId', articleId.toString())
         .set('startDate', start.toISOString().split('T')[0])  // Format YYYY-MM-DD
         .set('endDate', end.toISOString().split('T')[0]);
-    return this.http.get<{ available: boolean, totalPrice?: number }>(`${this.apiUrl}/availability`, { params });
+    return this.http.get<{ available: boolean, totalPrice?: number, availableInstances?: number[]}>(`${this.apiUrl}/availability`, { params });
   }
 
 

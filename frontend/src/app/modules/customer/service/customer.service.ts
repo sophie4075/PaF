@@ -10,10 +10,9 @@ export class CustomerService {
   private apiUrl = 'http://localhost:8080/api/rental';
   constructor(private http: HttpClient) { }
 
-  createRental(rental: any): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/rental`, rental);
+  rentArticle(rentArticleDto: any): Observable<any>{
+    return this.http.get(this.apiUrl + "")
   }
-
 
   createAuthHeader(): HttpHeaders {
     let authHeaders: HttpHeaders = new HttpHeaders();
@@ -22,4 +21,5 @@ export class CustomerService {
         'Bearer ' + StorageService.getToken()
     )
   }
+
 }

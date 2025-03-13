@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, inject, OnInit} from '@angular/core';
 import {
   MatDatepickerModule,
   MatDatepickerToggle,
@@ -17,10 +17,12 @@ import {
   ArticleInstanceDto,
   ArticleInstanceService
 } from "../../../../../services/article-instance/article-instance.service";
+import {CartService} from "../../../../../services/cart/cart.service";
 import {MatIcon} from "@angular/material/icon";
-import {Nl2brPipe} from "../../../../../Pipes/nl2br.pipe";
-import {MarkdownPipe} from "../../../../../Pipes/markdown.pipe";
+import {Nl2brPipe} from "../../../../../pipes/nl2br.pipe";
+import {MarkdownPipe} from "../../../../../pipes/markdown.pipe";
 import {RentalService} from "../../../../../services/rental/rental.service";
+import {MatSnackBar} from "@angular/material/snack-bar";
 
 @Component({
   selector: 'app-product-detail-page',
@@ -48,10 +50,12 @@ import {RentalService} from "../../../../../services/rental/rental.service";
 })
 export class ProductDetailPageComponent implements OnInit {
 
+  quantity: number = 1;
   articleId: number = 0
   article: Article | undefined
   statuses: string[] = [];
   instances: ArticleInstanceDto[] | undefined;
+  availableInstances: number[] | undefined = []
   isAdminOrStaff = false;
   isAdmin = false;
   showInstancesPanel = false;
@@ -59,6 +63,8 @@ export class ProductDetailPageComponent implements OnInit {
   availabilityMessage: string = '';
   available: boolean = false;
   totalPrice: number = 0;
+
+  private _snackBar = inject(MatSnackBar);
 
   readonly range = new FormGroup({
     start: new FormControl<Date | null>(null),
@@ -69,6 +75,7 @@ export class ProductDetailPageComponent implements OnInit {
               private activatedRoute: ActivatedRoute,
               private statusService: StatusService,
               private instanceService: ArticleInstanceService,
+              private cartService: CartService,
               private rentalService: RentalService,
               private router: Router
               ) {
@@ -188,12 +195,15 @@ export class ProductDetailPageComponent implements OnInit {
     if (start && end && this.articleId) {
       this.articleService.checkAvailability(this.articleId, start, end).subscribe(
           result => {
-            console.log(result)
+            console.log("Result " + result.availableInstances )
             this.available = result.available;
-            if (this.available) {
-              this.totalPrice = result.totalPrice || 0 ;
+            this.availableInstances = result.availableInstances;
+            let availableInstances = result.availableInstances?.length || 0
+            if (this.available && result.totalPrice && availableInstances >= this.quantity) {
+              this.totalPrice = result.totalPrice * this.quantity ;
             } else {
-              this.availabilityMessage = 'Nicht verfügbar in dem ausgewählten Zeitraum';
+              let amount: string | number = availableInstances === 0 ? "keine" : availableInstances
+              this.availabilityMessage = `Es sind ${amount} Artikel zu dem Zeitraum Verfügbar`;
             }
           },
           error => {
@@ -208,7 +218,46 @@ export class ProductDetailPageComponent implements OnInit {
     }
   }
 
-  onBookArticle() {
+  addToCart() {
+    const name = this.article?.bezeichnung || ""
+    const start = this.range.get('start')?.value;
+    const end = this.range.get('end')?.value;
+
+    if(!start || !end){
+      this._snackBar.open('Please select a date range ', '📅', {
+        duration: 5000,
+      });
+      return
+    }
+
+    if(this.availableInstances?.length && this.articleId){
+
+        this.cartService.addItem({
+          articleName: name,
+          articleId: this.articleId,
+          rentalStart: start,
+          rentalEnd: end,
+          dailyPrice: this.article?.grundpreis,
+          quantity: this.quantity
+        });
+
+
+      this._snackBar.open('Article(s) added to cart! ', '🛍️', {
+        duration: 5000,
+      });
+
+
+    }else {
+      this._snackBar.open('Error while adding articles to cart ', ':/', {
+        duration: 5000,
+      });
+    }
+  }
+
+
+}
+
+/*onBookArticle() {
     if (!StorageService.getToken()) {
       this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
       return;
@@ -228,11 +277,12 @@ export class ProductDetailPageComponent implements OnInit {
     }
 
     const rental = {
-      rentalStatus: 'PENDING',
+      rental: {
+        rentalStatus: 'PENDING'
+      },
       rentalPositions: [{
         rentalStart: start?.toISOString().split('T')[0],
         rentalEnd: end?.toISOString().split('T')[0],
-        //positionPrice: this.totalPrice,
         articleInstance: { id: availableInstanceId }
       }]
     };
@@ -240,12 +290,11 @@ export class ProductDetailPageComponent implements OnInit {
    this.rentalService.createRental(rental).subscribe(
         res => {
           console.log('Rental created successfully:', res);
+          console.log(rental)
         },
         err => {
           console.error('Error creating rental', err);
+          console.log(rental)
         }
     );
-  }
-
-
-}
+  }*/

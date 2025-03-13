@@ -11,7 +11,12 @@ export class RentalService {
     constructor(private http: HttpClient) { }
 
     createRental(rental: any): Observable<any> {
-        return this.http.post<any>(`${this.apiUrl}/rental`, rental);
+        const headers = new HttpHeaders({
+            'Authorization': 'Bearer ' + StorageService.getToken(),
+            'Content-Type': 'application/json'
+        });
+
+        return this.http.post<any>(`${this.apiUrl}/rental`, rental, { headers });
     }
 
 

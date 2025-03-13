@@ -350,15 +350,14 @@ public class ArticleServiceImpl implements ArticleService {
         return ArticleMapper.toDTO(saved);
     }
 
-    @Override
+    /*@Override
     public AvailabilityDto checkAvailability(Long articleId, LocalDate startDate, LocalDate endDate) {
         Article article = articleRepo.findById(articleId)
                 .orElseThrow(() -> new IllegalArgumentException("Article not found with id: " + articleId));
 
-        // Berechne die Anzahl der Tage (z. B. exklusive endDate)
         long days = ChronoUnit.DAYS.between(startDate, endDate);
         if (days <= 0) {
-            throw new IllegalArgumentException("Der End-Datum muss nach dem Start-Datum liegen.");
+            throw new IllegalArgumentException("End Date muss be after Start Date.");
         }
 
         boolean isAvailable = false;
@@ -379,7 +378,39 @@ public class ArticleServiceImpl implements ArticleService {
         }
 
         return new AvailabilityDto(isAvailable, totalPrice);
+    }*/
+
+    @Override
+    public AvailabilityDto checkAvailability(Long articleId, LocalDate startDate, LocalDate endDate) {
+        Article article = articleRepo.findById(articleId)
+                .orElseThrow(() -> new IllegalArgumentException("Article not found with id: " + articleId));
+
+        long days = ChronoUnit.DAYS.between(startDate, endDate);
+        if (days <= 0) {
+            throw new IllegalArgumentException("End Date muss be after Start Date.");
+        }
+
+        List<Long> availableInstanceNumbers = new ArrayList<>();
+        for (ArticleInstance instance : article.getArticleInstances()) {
+            if (instance.getStatus() == Status.AVAILABLE) {
+                boolean booked = rentalPositionRepo.existsByArticleInstanceAndRentalPeriodOverlap(instance, startDate, endDate);
+                if (!booked) {
+                    availableInstanceNumbers.add(instance.getId());
+                }
+            }
+        }
+        boolean isAvailable = !availableInstanceNumbers.isEmpty();
+
+        // Berechne den Preis für eine Instanz (pro Tag) – Frontend kann dann multiplizieren
+        BigDecimal totalPrice = isAvailable
+                ? BigDecimal.valueOf(article.getGrundpreis()).multiply(BigDecimal.valueOf(days))
+                : BigDecimal.ZERO;
+
+        AvailabilityDto dto = new AvailabilityDto(isAvailable, totalPrice);
+        dto.setAvailableInstanceNumbers(availableInstanceNumbers);
+        return dto;
     }
+
 
 
 }
