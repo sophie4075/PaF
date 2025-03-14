@@ -83,7 +83,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                 user2.setLastName("Musterfrau");
                 user2.setEmail("erika@musterfrau.com");
                 user2.setPassword(passwordEncoder.encode("password123"));
-                user2.setRole(Role.PRIVATE_CLIENT);
+                user2.setRole(Role.ADMIN);
                 usersToSave.add(user2);
             }
 
@@ -106,19 +106,19 @@ public class DatabaseSeeder implements CommandLineRunner {
 
         Map<String, List<Article>> laptopSubcategories = new HashMap<>();
         laptopSubcategories.put("Apple", List.of(
-                new Article("MacBook Pro", "Apple Laptop mit M2 Chip", 5, 2400.00, "https://picsum.photos/200")
+                new Article("MacBook Pro", "Apple Laptop mit M2 Chip", 5, 25.00, "https://picsum.photos/200")
         ));
         laptopSubcategories.put("Dell", List.of(
-                new Article("Dell XPS 15", "Leistungsstark und portabel", 3, 1800.00, "https://picsum.photos/200")
+                new Article("Dell XPS 15", "Leistungsstark und portabel", 3, 20.00, "https://picsum.photos/200")
         ));
         categoryMap.put("Laptop", laptopSubcategories);
 
         Map<String, List<Article>> werkzeugSubcategories = new HashMap<>();
         werkzeugSubcategories.put("Schraubenzieher", List.of(
-                new Article("Bosch Akkuschrauber", "18V Akkuschrauber-Set", 10, 199.00, "https://picsum.photos/200")
+                new Article("Bosch Akkuschrauber", "18V Akkuschrauber-Set", 10, 12.00, "https://picsum.photos/200")
         ));
         werkzeugSubcategories.put("Bohrmaschinen", List.of(
-                new Article("Makita Bohrmaschine", "Robuste Schlagbohrmaschine", 6, 150.00, "https://picsum.photos/200")
+                new Article("Makita Bohrmaschine", "Robuste Schlagbohrmaschine", 6, 19.00, "https://picsum.photos/200")
         ));
         categoryMap.put("Werkzeug", werkzeugSubcategories);
 
@@ -159,30 +159,26 @@ public class DatabaseSeeder implements CommandLineRunner {
      */
     private void seedRentals() {
         List<User> users = (List<User>) userRepository.findAll();
-        if (users.isEmpty()) {
-            System.out.println("No users found, skipping rental seeding.");
-            return;
-        }
+        User user = users.getFirst();
 
-        User user = users.get(0);
         List<ArticleInstance> articleInstances = (List<ArticleInstance>) articleInstanceRepository.findAll();
-        if (articleInstances.size() < 2) {
-            System.out.println("Not enough articles for rental seeding.");
-            return;
-        }
 
         Rental rental = new Rental();
         rental.setUser(user);
         rental.setRentalStatus(RentalStatus.PENDING);
+        rentalRepository.save(rental);
 
-        LocalDate rentalStart = (LocalDate.now().plusDays(1));
-        LocalDate rentalEnd = (LocalDate.now().plusDays(5));
+        LocalDate rentalStart = LocalDate.now().plusDays(1);
+        LocalDate rentalEnd = LocalDate.now().plusDays(5);
         int quantity = 3;
-        Article article = articleInstances.getFirst().getArticle();
+        Article article = articleInstances.get(0).getArticle();
 
-        // Rental savedRental = rentalService.createRental(rental, article, rentalStart, rentalEnd, quantity);
-
-        System.out.println("Seeded rental for user: " + user.getEmail());
+        try {
+            rentalService.createRental(rental, article, rentalStart, rentalEnd, quantity);
+            System.out.println("Successfully seeded rental for user: " + user.getEmail());
+        } catch (IllegalArgumentException e) {
+            System.out.println("Rental seeding failed: " + e.getMessage());
+        }
     }
 
 }

@@ -30,6 +30,7 @@ public class User implements UserDetails {
     private String firstName;
     private String lastName;
     private String phone;
+    @Getter
     private String email;
     @Setter
     @Getter

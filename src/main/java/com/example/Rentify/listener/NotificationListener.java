@@ -50,10 +50,7 @@ public class NotificationListener {
 
         // If the user has a chat id also send a telegram message
         if (user.getChatId() != null) {
-            String ausleiheDetails = "Hallo " + user.getFirstName() +
-                    ",\n\nDeine Ausleihe wurde erfolgreich erstellt.\nGesamtpreis: "
-                    + rental.getTotalPrice() + "€.";
-            messengerBot.sendRentalInfo(user.getChatId(), ausleiheDetails);
+            messengerBot.sendRentalInfo(user.getChatId(), text);
         }
     }
 }

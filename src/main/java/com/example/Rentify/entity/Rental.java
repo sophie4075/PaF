@@ -18,17 +18,14 @@ public class Rental {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     @Enumerated(EnumType.STRING)
     private RentalStatus rentalStatus;
-
+    @Getter
     private BigDecimal totalPrice;
-
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
+    @Getter
     private User user;
-
-
 
 //    @OneToMany(mappedBy = "rental", cascade = CascadeType.ALL, orphanRemoval = true)
 //    private List<RentalPosition> rentalPositions;

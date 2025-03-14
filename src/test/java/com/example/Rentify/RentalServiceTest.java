@@ -1,8 +1,8 @@
 package com.example.Rentify;
 
+import com.example.Rentify.dto.ArticleDto;
+import com.example.Rentify.dto.ArticleInstanceDto;
 import com.example.Rentify.entity.*;
-import com.example.Rentify.service.ArticleService;
-import com.example.Rentify.service.EmailService;
 import com.example.Rentify.service.RentalService;
 import com.example.Rentify.service.UserService;
 import com.example.Rentify.service.article.ArticleServiceImpl;
@@ -10,34 +10,28 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
+@Import(TestConfig.class)
 public class RentalServiceTest {
 
     @Autowired
     private RentalService rentalService;
 
     @Autowired
-    private ArticleService articleService;
+    private ArticleServiceImpl articleServiceImpl; // ✅ Jetzt NUR `ArticleServiceImpl` verwenden
 
     @Autowired
     private UserService userService;
 
-    @MockBean
-    private EmailService emailService;
-
     private User testUser;
-    private Article article1;
-    private Article article2;
-    @Autowired
-    private ArticleServiceImpl articleServiceImpl;
+    private ArticleDto articleDto;
 
     @BeforeEach
     void setup() {
@@ -48,65 +42,50 @@ public class RentalServiceTest {
         testUser.setChatId("493192316");
         testUser = userService.createUser(testUser);
 
-        article1 = new Article();
-        article1.setBezeichnung("Camera");
-        article1.setBeschreibung("High-quality DSLR Camera");
-        article1.setGrundpreis(50);
-        article1 = articleService.createArticle(article1);
+        articleDto = new ArticleDto();
+        articleDto.setBezeichnung("Camera");
+        articleDto.setBeschreibung("High-quality DSLR Camera");
+        articleDto.setGrundpreis(50);
+        articleDto.setStueckzahl(2);
 
-        article2 = new Article();
-        article2.setBezeichnung("Tripod");
-        article2.setBeschreibung("Professional-grade tripod");
-        article2.setGrundpreis(30);
-        article2 = articleService.createArticle(article2);
+        ArticleInstanceDto instanceDto1 = new ArticleInstanceDto();
+        instanceDto1.setInventoryNumber("INV-001");
+        instanceDto1.setStatus("AVAILABLE");
+
+        ArticleInstanceDto instanceDto2 = new ArticleInstanceDto();
+        instanceDto2.setInventoryNumber("INV-002");
+        instanceDto2.setStatus("AVAILABLE");
+
+        articleDto.setArticleInstances(List.of(instanceDto1, instanceDto2));
+
+        articleDto = articleServiceImpl.createArticle(articleDto);
     }
 
 
+
+
     @Test
-    public void testRentalWithMultiplePositionsIsCreated() {
-        // Persist ArticleInstances before using them
-        ArticleInstance articleInstance1 = new ArticleInstance();
-        articleInstance1.setArticle(article1);
-        articleInstance1 = articleServiceImpl.createArticleInstance(articleInstance1);
+    public void testRental() {
+        LocalDate rentalStart = LocalDate.of(2025, 3, 10);
+        LocalDate rentalEnd = LocalDate.of(2025, 3, 15);
+        int quantity = 2; // Anzahl der gewünschten Instanzen
 
-        ArticleInstance articleInstance2 = new ArticleInstance();
-        articleInstance2.setArticle(article2);
-        articleInstance2 = articleServiceImpl.createArticleInstance(articleInstance2);
-
-        // Create RentalPositions
-        RentalPosition position1 = new RentalPosition();
-        position1.setRentalStart(LocalDate.of(2025, 3, 10));
-        position1.setRentalEnd(LocalDate.of(2025, 3, 15));
-        position1.setPositionPrice(new BigDecimal("50.00"));
-        position1.setArticleInstance(articleInstance1);
-
-        RentalPosition position2 = new RentalPosition();
-        position2.setRentalStart(LocalDate.of(2025, 3, 12));
-        position2.setRentalEnd(LocalDate.of(2025, 3, 20));
-        position2.setPositionPrice(new BigDecimal("75.00"));
-        position2.setArticleInstance(articleInstance2);
-
-        // Create and Save Rental
         Rental rental = new Rental();
         rental.setUser(testUser);
-        rental.setTotalPrice(new BigDecimal("125.00"));
-        rental.setRentalStatus(RentalStatus.ACTIVE);
-        rental.setRentalPositions(List.of(position1, position2));
+        rental.setRentalStatus(RentalStatus.PENDING);
 
-        // Associate positions with rental
-        position1.setRental(rental);
-        position2.setRental(rental);
+        Article articleEntity = new Article();
+        articleEntity.setId(articleDto.getId());
+        articleEntity.setBezeichnung(articleDto.getBezeichnung());
+        articleEntity.setBeschreibung(articleDto.getBeschreibung());
+        articleEntity.setGrundpreis(articleDto.getGrundpreis());
 
-        Rental savedRental = rentalService.createRental(rental);
+        rentalService.createRental(rental, articleEntity, rentalStart, rentalEnd, quantity);
 
-        // Assertions
-        assertNotNull(savedRental.getId(), "Rental ID should not be null after saving.");
-        assertEquals(testUser.getId(), savedRental.getUser().getId(), "Rental should be associated with the correct user.");
-        assertEquals(2, savedRental.getRentalPositions().size(), "Rental should contain exactly 2 rental positions.");
-        assertEquals(new BigDecimal("125.00"), savedRental.getTotalPrice(), "Total price should be correctly calculated.");
+        List<Rental> userRentals = rentalService.getRentalsByUserId(testUser.getId());
 
-        // Ensure positions are persisted correctly
-        savedRental.getRentalPositions().forEach(position ->
-                assertNotNull(position.getId(), "RentalPosition ID should not be null after saving."));
+        assertFalse(userRentals.isEmpty(), "Rental should be created and retrieved.");
+        assertEquals(1, userRentals.size(), "User should have exactly one rental.");
+        assertEquals(testUser.getId(), userRentals.get(0).getUser().getId(), "Rental should be associated with the correct user.");
     }
 }

@@ -147,7 +147,7 @@ public class MessengerBot extends TelegramLongPollingBot {
     }
 
     public void sendRentalInfo(String chatId, String rentalDetails) {
-        sendMessage(chatId, "Rental Info: " + rentalDetails);
+        sendMessage(chatId, rentalDetails);
     }
 
     /**

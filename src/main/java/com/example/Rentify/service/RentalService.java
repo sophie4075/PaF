@@ -113,7 +113,8 @@ public class RentalService {
                     ". Gewünscht: " + quantity + ", verfügbar: " + availableInstances.size());
         }
 
-        // Erstelle RentalPositionen für die ersten 'quantity' verfügbaren Instanzen
+        rental = rentalRepo.save(rental);
+
         for (int i = 0; i < quantity; i++) {
             ArticleInstance selectedInstance = availableInstances.get(i);
             RentalPosition position = new RentalPosition();
@@ -123,16 +124,19 @@ public class RentalService {
             position.setRentalEnd(rentalEnd);
 
             long days = ChronoUnit.DAYS.between(rentalStart, rentalEnd);
-            days = days <= 0 ? 1 : days;
+            days = Math.max(days, 1);
             BigDecimal dailyPrice = BigDecimal.valueOf(selectedInstance.getArticle().getGrundpreis());
             BigDecimal positionPrice = dailyPrice.multiply(BigDecimal.valueOf(days));
             position.setPositionPrice(positionPrice);
 
             rentalPositionRepo.save(position);
-            eventPublisher.publishEvent(new RentalCreatedEvent(rental));
         }
+        rental.setTotalPrice(calculateTotalPrice(rental.getId()));
+        rentalRepo.save(rental);
+
+        eventPublisher.publishEvent(new RentalCreatedEvent(rental));
     }
-    }
+}
 
 
 
