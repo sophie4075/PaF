@@ -60,7 +60,7 @@ public class UserService {
 
         User savedUser = userRepository.save(existingUser);
 
-        // Statt einer direkten Benachrichtigung wird nun ein Event veröffentlicht
+        // Publish event after updating the user
         eventPublisher.publishEvent(new UserUpdatedEvent(savedUser));
 
         return savedUser;

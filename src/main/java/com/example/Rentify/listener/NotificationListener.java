@@ -29,6 +29,7 @@ public class NotificationListener {
         String subject = "Dein Benutzerprofil wurde aktualisiert";
         String text = "Hallo " + user.getFirstName() + ",\n\nDein Profil wurde aktualisiert.\n\nViele Grüße\nDein Rentify-Team";
         emailService.sendEmail(to, subject, text);
+        System.out.println("User updated. Sent email to " + to);
     }
 
     /**
@@ -45,6 +46,7 @@ public class NotificationListener {
 
         // Send EMail
         emailService.sendEmail(to, subject, text);
+        System.out.println("Rental created. Sent email to " + to);
 
         // If the user has a chat id also send a telegram message
         if (user.getChatId() != null) {

@@ -13,10 +13,8 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
-import org.springframework.scheduling.annotation.Scheduled;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 
 @Component
@@ -185,7 +183,7 @@ public class MessengerBot extends TelegramLongPollingBot {
                 .filter(position -> position.getRentalStart().equals(tomorrow))
                 .toList();
 
-        // Notify the users for each relevant RentalPosition
+        // Notify the user for each relevant RentalPosition
         positionsStartingTomorrow.forEach(position -> {
             Rental rental = position.getRental();
             User user = rental.getUser();

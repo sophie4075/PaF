@@ -2,10 +2,10 @@ package com.example.Rentify.configuration;
 
 import com.example.Rentify.entity.*;
 import com.example.Rentify.repo.*;
+import com.example.Rentify.service.RentalService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -21,6 +21,8 @@ public class DatabaseSeeder implements CommandLineRunner {
     private final RentalRepo rentalRepository;
     private final RentalPositionRepo rentalPositionRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RentalService rentalService;
+
 
     public DatabaseSeeder(
             CategoryRepo categoryRepository,
@@ -29,7 +31,8 @@ public class DatabaseSeeder implements CommandLineRunner {
             UserRepo userRepository,
             RentalRepo rentalRepository,
             RentalPositionRepo rentalPositionRepository,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            RentalService rentalService) {
         this.categoryRepository = categoryRepository;
         this.articleRepository = articleRepository;
         this.articleInstanceRepository = articleInstanceRepository;
@@ -37,7 +40,9 @@ public class DatabaseSeeder implements CommandLineRunner {
         this.rentalRepository = rentalRepository;
         this.rentalPositionRepository = rentalPositionRepository;
         this.passwordEncoder = passwordEncoder;
+        this.rentalService = rentalService;
     }
+
 
     @Override
     public void run(String... args) throws Exception {
@@ -66,6 +71,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                 user1.setFirstName("Max");
                 user1.setLastName("Mustermann");
                 user1.setEmail("max@mustermann.com");
+                user1.setChatId("493192316");
                 user1.setPassword(passwordEncoder.encode("password123"));
                 user1.setRole(Role.PRIVATE_CLIENT);
                 usersToSave.add(user1);
@@ -159,7 +165,6 @@ public class DatabaseSeeder implements CommandLineRunner {
         }
 
         User user = users.get(0);
-
         List<ArticleInstance> articleInstances = (List<ArticleInstance>) articleInstanceRepository.findAll();
         if (articleInstances.size() < 2) {
             System.out.println("Not enough articles for rental seeding.");
@@ -169,26 +174,26 @@ public class DatabaseSeeder implements CommandLineRunner {
         Rental rental = new Rental();
         rental.setUser(user);
         rental.setRentalStatus(RentalStatus.PENDING);
-        rental.setTotalPrice(BigDecimal.valueOf(50.0));
 
         RentalPosition position1 = new RentalPosition();
-        position1.setRental(rental);
         position1.setRentalStart(LocalDate.now());
-        position1.setRentalEnd(LocalDate.now().plusDays(5));
+        position1.setRentalEnd(LocalDate.now().plusDays(1));
         position1.setPositionPrice(BigDecimal.valueOf(25.0));
         position1.setArticleInstance(articleInstances.get(0));
+        position1.setRental(rental);
 
         RentalPosition position2 = new RentalPosition();
-        position2.setRental(rental);
         position2.setRentalStart(LocalDate.now().plusDays(1));
         position2.setRentalEnd(LocalDate.now().plusDays(5));
-        position2.setPositionPrice(BigDecimal.valueOf(25.0));
+        position2.setPositionPrice(BigDecimal.valueOf(285.0));
         position2.setArticleInstance(articleInstances.get(1));
+        position2.setRental(rental);
 
-        rental = rentalRepository.save(rental);
-        rentalPositionRepository.save(position1);
-        rentalPositionRepository.save(position2);
+        rental.setRentalPositions(List.of(position1, position2));
+
+        Rental savedRental = rentalService.createRental(rental);
 
         System.out.println("Seeded rental for user: " + user.getEmail());
     }
+
 }

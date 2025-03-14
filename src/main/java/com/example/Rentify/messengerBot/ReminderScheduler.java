@@ -14,7 +14,7 @@ public class ReminderScheduler {
 
     // For testing use this cron Expression to send a message every 10 seconds.
     // @Scheduled(cron = "*/10 * * * * ?")
-    // Also make sure to register your chatbot in telegram to the test email max@mustermann.com
+    // Also make sure to register your chatbot in telegram to the seeded email max@mustermann.com
 
     // Every day at 3pm
     @Scheduled(cron = "0 0 15 * * ?", zone = "Europe/Berlin")
