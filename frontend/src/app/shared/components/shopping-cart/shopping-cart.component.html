@@ -19,7 +19,7 @@
 
                 } @else {
 
-                    <ul class="space-y-4">
+                    <ul class="space-y-4 mb-8">
 
                         @for (item of cartItems; track $index){
                             <li class="flex items-center gap-4">
@@ -41,6 +41,14 @@
                                                 {{ computeItemPrice(item) | currency:'EUR':'symbol':'1.2-2':'de-DE' }}
                                             </dd>
                                         </div>
+
+                                        @if(availabilityWarnings[item.articleId + '-' + (item.rentalStart | date:'yyyy-MM-dd') + '-' + (item.rentalEnd | date:'yyyy-MM-dd')]){
+                                            <div class="text-red-600 text-xs mt-1">
+                                                {{ availabilityWarnings[item.articleId + '-' + (item.rentalStart | date:'yyyy-MM-dd') + '-' + (item.rentalEnd | date:'yyyy-MM-dd')] }}
+                                            </div>
+                                        }
+
+
                                     </dl>
                                 </div>
 
@@ -83,13 +91,24 @@
 
                     </ul>
 
-                    <div class="mt-8 flex justify-end border-t border-gray-100 pt-8">
+
+                    @if(unavailableItems.length){
+                        <div class="bg-red-100 text-red-700 p-2 rounded mb-4 mt-4">
+                            <p class="text-sm">Die folgenden Artikel sind aktuell nicht mehr verfügbar: {{ unavailableItems.join(', ') }}.
+                            </p>
+                        </div>
+                    }
+
+                    <small class="text-sm text-gray-500">Items in your cart are not reserved, availability may vary</small>
+
+
+                    <div class="flex justify-end border-t border-gray-100 pt-8">
                         <div class="w-screen max-w-lg space-y-4">
                             <dl class="space-y-0.5 text-sm text-gray-700">
 
                                 <div class="flex justify-between">
-                                    <dt>Gross Price</dt>
-                                    <dd>{{ computeGrossPrice() | currency:'EUR':'symbol':'1.2-2':'de-DE' }}</dd>
+                                    <dt>Net Price</dt>
+                                    <dd>{{ computeNetPrice() | currency:'EUR':'symbol':'1.2-2':'de-DE' }}</dd>
                                 </div>
 
                                 <div class="flex justify-between">
@@ -110,8 +129,11 @@
                                     Rent
                                 </button>
                             </div>
+
+
                         </div>
                     </div>
+
                 }
             </div>
         </div>

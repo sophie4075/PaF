@@ -158,7 +158,7 @@ public class RentalService {
 
     public void addRentalPositionsForArticle(Rental rental, Article article, LocalDate rentalStart, LocalDate rentalEnd, int quantity) {
         List<ArticleInstance> allInstances = articleInstanceRepo.findByArticle(article);
-        // Filtere alle Instanzen, die den Status AVAILABLE haben und im gewünschten Zeitraum nicht gebucht sind
+
         List<ArticleInstance> availableInstances = allInstances.stream()
                 .filter(instance -> instance.getStatus() == Status.AVAILABLE)
                 .filter(instance -> !rentalPositionRepo.existsByArticleInstanceAndRentalPeriodOverlap(instance, rentalStart, rentalEnd))

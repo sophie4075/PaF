@@ -49,46 +49,28 @@ public class RentalController {
 
     }
 
-    /*@PostMapping
-    public ResponseEntity<RentalDto> createRental(@RequestBody RentalReqDto rentalReqDto) {
-        try {
-            User currentUser = getCurrentUser();
-            Rental rental = rentalReqDto.getRental();
-
-            rental.setUser(currentUser);
-
-            RentalDto rentalDto = rentalService.createRental(rental, rentalReqDto.getRentalPositions());
-            return ResponseEntity.status(HttpStatus.CREATED).body(rentalDto);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }*/
-
     @PostMapping
     public ResponseEntity<RentalDto> createRental(@RequestBody RentalReqDto rentalReqDto) {
         try {
-            // Hole den aktuell authentifizierten User
+            //Get auth User
             User currentUser = getCurrentUser();
             Rental rental = rentalReqDto.getRental();
             rental.setUser(currentUser);
 
-            // Speichere den Rental-Eintrag vorab, damit wir seine ID haben
+            //  Save rental to get id
             Rental savedRental = rentalRepo.save(rental);
 
-            // Für jeden Artikel im Payload:
+            // Für each article withing Payload:
             for (RentalReqDto.ArticleRentalReqDto req : rentalReqDto.getArticleRentals()) {
-                // Lade den Artikel als DTO und wandle ihn in ein Article um
+                // Load article as DTO and turn into Article
                 ArticleDto articleDto = articleService.getArticleById(req.getArticleId())
                         .orElseThrow(() -> new IllegalArgumentException("Article not found with id: " + req.getArticleId()));
                 Article article = ArticleMapper.toEntity(articleDto);
 
-                // Rufe den Service auf, der RentalPositions für diesen Artikel hinzufügt
                 rentalService.addRentalPositionsForArticle(savedRental, article, req.getRentalStart(), req.getRentalEnd(), req.getQuantity());
             }
 
-            // Gesamtpreis berechnen und Rental updaten
+            // Calculate total price and update rental
             BigDecimal totalPrice = rentalService.calculateTotalPrice(savedRental.getId());
             savedRental.setTotalPrice(totalPrice);
             rentalRepo.save(savedRental);
@@ -97,7 +79,6 @@ public class RentalController {
             RentalDto rentalDto = RentalMapper.toDTO(savedRental, savedPositions);
             return ResponseEntity.status(HttpStatus.CREATED).body(rentalDto);
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
