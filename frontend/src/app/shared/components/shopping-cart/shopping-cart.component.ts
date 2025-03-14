@@ -1,11 +1,12 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, inject, OnDestroy, OnInit} from '@angular/core';
 import {CartItem, CartService} from "../../services/cart/cart.service";
 import {RentalService} from "../../services/rental/rental.service";
 import {CurrencyPipe, DatePipe, JsonPipe, NgOptimizedImage} from "@angular/common";
-import {RouterLink} from "@angular/router";
+import {Router, RouterLink} from "@angular/router";
 import {FormsModule} from "@angular/forms";
 import {interval, Subscription} from "rxjs";
 import {ArticleService} from "../../services/article/article.service";
+import {MatSnackBar} from "@angular/material/snack-bar";
 
 @Component({
     selector: 'app-shopping-cart',
@@ -26,13 +27,15 @@ export class ShoppingCartComponent implements OnInit, OnDestroy {
     cartItems: CartItem[] = [];
     totalPrice: number = 0;
     availabilityWarnings: { [key: string]: string } = {};
+    private _snackBar = inject(MatSnackBar);
 
     private availabilitySubscription!: Subscription;
 
 
     constructor(private cartService: CartService,
                 private rentalService: RentalService,
-                private articleService: ArticleService) {
+                private articleService: ArticleService,
+                private router: Router) {
     }
 
 
@@ -104,12 +107,22 @@ export class ShoppingCartComponent implements OnInit, OnDestroy {
             };
 
             this.rentalService.createRental(rentalPayload).subscribe(
-                res => {
-                    console.log('Rental created successfully:', res);
-                    this.cartService.clearCart();
-                },
-                err => {
-                    console.error('Error creating rental', err);
+                {
+                    next: (res) => {
+                        this.cartService.clearCart();
+                        this._snackBar.open('Articles rented!', '🎉', {
+                            duration: 5000,
+                            panelClass: ['success-snackbar'],
+                        });
+                        this.router.navigateByUrl("/admin");
+                    },
+                    error: (err) => {
+                        const errorMessage = err.error?.message || 'Ein Fehler ist aufgetreten.';
+                        this._snackBar.open(`Error: ${errorMessage}`, '🤖', {
+                            duration: 5000,
+                            panelClass: ['error-snackbar'],
+                        });
+                    },
                 }
             );
         }).catch(error => {
@@ -129,7 +142,6 @@ export class ShoppingCartComponent implements OnInit, OnDestroy {
     }
 
     unavailableItems: string[] = [];
-
 
     refreshAvailability(): Promise<any>[] {
         const formatDate = (date: string | Date): string => {
@@ -188,7 +200,5 @@ export class ShoppingCartComponent implements OnInit, OnDestroy {
             }
         });
     }
-
-
 
 }

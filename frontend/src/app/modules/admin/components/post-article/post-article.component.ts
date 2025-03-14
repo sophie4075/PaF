@@ -100,18 +100,27 @@ export class PostArticleComponent implements OnInit {
   }
 
   loadCategories() {
-    this.categoryService.getCategories().subscribe((data: Category[]) => {
-      this.categories = data;
-    }, (err: any) => {
-      console.error('Fehler beim Laden der Kategorien', err);
-    });
+
+    this.categoryService.getCategories().subscribe({
+      next: (data: Category[]) => {
+        this.categories = data;
+      },
+      error: (err: any) => {
+        console.error('Error loading  categories', err)
+      }
+    })
   }
 
   loadStatuses() {
-    this.statusService.getStatuses().subscribe(
-        (data: string[]) => {this.statuses = data;},
-        (error: any) => { console.error('Fehler beim Laden der Status', error); }
-    );
+
+    this.statusService.getStatuses().subscribe({
+      next: (data: string[]) => {
+        this.statuses = data;
+      },
+      error: (err) => {
+        console.error('Error while loading the status', err);
+      },
+    });
   }
 
   get instanceStatuses(): FormArray {
@@ -136,57 +145,61 @@ export class PostArticleComponent implements OnInit {
     if (this.articleForm.valid) {
       // Upload Image first
       if (this.selectedFile) {
-        this.fileUploadService.uploadImage(this.selectedFile).subscribe(
-            (uploadResponse) => {
-              // Get URL from Upload response
-              const imageUrl = uploadResponse.fileDownloadUri;
+        this.fileUploadService.uploadImage(this.selectedFile).subscribe({
+              next: (uploadResponse) => {
+                // Get URL from Upload response
+                const imageUrl = uploadResponse.fileDownloadUri;
 
-              // Erstelle den Artikel, wobei das Bild über die URL referenziert wird
-              const formValue = this.articleForm.value;
+                // Create article, referencing the image via the URL
+                const formValue = this.articleForm.value;
 
-              let articleInstances = [];
+                let articleInstances = [];
 
-              if (formValue.sameStatus) {
-                articleInstances.push({
-                  status: formValue.status,
-                  inventoryNumber: null // Generated in Backend
+                if (formValue.sameStatus) {
+                  articleInstances.push({
+                    status: formValue.status,
+                    inventoryNumber: null // Generated in Backend
+                  });
+                } else {
+                  articleInstances = formValue.instanceStatuses.map((s: string) => ({ status: s, inventoryNumber: null }));
+                }
+
+                const newArticle = {
+                  bezeichnung: formValue.bezeichnung,
+                  beschreibung: formValue.beschreibung,
+                  stueckzahl: formValue.stueckzahl,
+                  grundpreis: formValue.grundpreis,
+                  bildUrl: imageUrl,
+                  categories: this.selectedCategories,
+                  articleInstances: articleInstances
+                };
+                this.articleService.createArticle(newArticle).subscribe(
+                    {
+                      next: (response) => {
+                        this.router.navigateByUrl('/admin')
+                        this._snackBar.open('Created article successfully ', '🎉', {
+                          duration: 5000,
+                        });
+                      },error: (err) => {
+                        console.error('Error while creating the article', err);
+                        this.router.navigateByUrl("/admin/post-article")
+                        this._snackBar.open('Error while creating the article ', '(╥﹏╥)', {
+                          duration: 5000,
+                        });
+                      }
+
+                    }
+                );
+              },
+              error: (err) => {
+                console.error('Error while uploading image', err);
+                this._snackBar.open('Error while uploading image ', '(╥﹏╥)', {
+                  duration: 5000,
                 });
-              } else {
-                articleInstances = formValue.instanceStatuses.map((s: string) => ({ status: s, inventoryNumber: null }));
-              }
+              },
 
-              const newArticle = {
-                bezeichnung: formValue.bezeichnung,
-                beschreibung: formValue.beschreibung,
-                stueckzahl: formValue.stueckzahl,
-                grundpreis: formValue.grundpreis,
-                bildUrl: imageUrl,
-                categories: this.selectedCategories,
-                articleInstances: articleInstances
-              };
-              //TODO: remove deprecated implementation
-              this.articleService.createArticle(newArticle).subscribe(
-                  (response: any) => {
-                    this.router.navigateByUrl('/admin')
-                    this._snackBar.open('Created article successfully ', '🎉', {
-                      duration: 5000,
-                    });
-                  },
-                  (error: any) => {
-                    console.error('Error while creating the article', error);
-                    this.router.navigateByUrl("/admin/post-article")
-                    this._snackBar.open('Error while creating the article ', '(╥﹏╥)', {
-                      duration: 5000,
-                    });
-                  }
-              );
-            },
-            (error) => {
-              console.error('Error while uploading image', error);
-              this._snackBar.open('Error while uploading image ', '(╥﹏╥)', {
-                duration: 5000,
-              });
             }
+
         );
       } else {
         console.error('No Image selected');
@@ -231,8 +244,8 @@ export class PostArticleComponent implements OnInit {
             this.loading = false;
           },
           error => {
-            console.error('Fehler beim Generieren der Beschreibung', error);
-            this.articleForm.patchValue({ beschreibung: '**Fehler beim Generieren der Beschreibung**' });
+            console.error('*Error generating Description', error);
+            this.articleForm.patchValue({ beschreibung: '**Error generating Description**' });
             this.loading = false;
           }
       );

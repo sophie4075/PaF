@@ -175,43 +175,51 @@ export class ProductDetailPageComponent implements OnInit {
     if (!this.article || !this.article.id) return;
     // ID and inventoryNumber are set within the backend
     const newInstance: ArticleInstanceDto = { status: 'PRE_LAUNCH' };
-    this.instanceService.addInstance(this.article.id, newInstance).subscribe(
-        createdInstance => {
-          if(this.instances){
-            this.instances.push(createdInstance);
-          }
 
-          if (this.article) {
-            this.article.articleInstances.push(createdInstance);
-          }
-        },
-        error => console.error('Fehler beim Hinzufügen der Instanz', error)
-    );
+    this.instanceService.addInstance(this.article.id, newInstance).subscribe({
+      next: (createdInstance) => {
+        if(this.instances){
+          this.instances.push(createdInstance);
+        }
+        if (this.article) {
+          this.article.articleInstances.push(createdInstance);
+        }
+      },
+      error: (err) => {
+        console.error('Error adding instance', err)
+        const errorMessage = err.error?.message || 'Error adding instance.';
+        this._snackBar.open(`Error: ${errorMessage}`, '🤖', {
+          duration: 5000,
+        });
+
+      },
+    });
   }
 
   checkAvailability() {
     const start = this.range.get('start')?.value;
     const end = this.range.get('end')?.value;
     if (start && end && this.articleId) {
-      this.articleService.checkAvailability(this.articleId, start, end).subscribe(
-          result => {
-            console.log("Result " + result.availableInstances )
-            this.available = result.available;
-            this.availableInstances = result.availableInstances;
-            let availableInstances = result.availableInstances?.length || 0
-            if (this.available && result.totalPrice && availableInstances >= this.quantity) {
-              this.totalPrice = result.totalPrice * this.quantity ;
-            } else {
-              let amount: string | number = availableInstances === 0 ? "keine" : availableInstances
-              this.availabilityMessage = `Es sind ${amount} Artikel zu dem Zeitraum Verfügbar`;
-            }
-          },
-          error => {
-            console.error(error);
-            this.availabilityMessage = 'Fehler beim Prüfen der Verfügbarkeit';
-            this.available = false;
+      this.articleService.checkAvailability(this.articleId, start, end).subscribe({
+        next: (result) => {
+          console.log("Result " + result.availableInstances )
+          this.available = result.available;
+          this.availableInstances = result.availableInstances;
+          let availableInstances = result.availableInstances?.length || 0
+          if (this.available && result.totalPrice && availableInstances >= this.quantity) {
+            this.totalPrice = result.totalPrice * this.quantity ;
+          } else {
+            let amount: string | number = availableInstances === 0 ? "keine" : availableInstances
+            this.availabilityMessage = `Es sind ${amount} Artikel zu dem Zeitraum Verfügbar`;
           }
-      );
+        },
+        error: (err) => {
+          console.error(err);
+          this.availabilityMessage = 'Error while checking availability';
+          this.available = false;
+        },
+      });
+
     } else {
       this.availabilityMessage = '';
       this.available = false;
@@ -242,12 +250,13 @@ export class ProductDetailPageComponent implements OnInit {
         });
 
 
+      this.router.navigateByUrl('/products');
       this._snackBar.open('Article(s) added to cart! ', '🛍️', {
         duration: 5000,
       });
 
 
-    }else {
+    } else {
       this._snackBar.open('Error while adding articles to cart ', ':/', {
         duration: 5000,
       });
@@ -257,44 +266,3 @@ export class ProductDetailPageComponent implements OnInit {
 
 }
 
-/*onBookArticle() {
-    if (!StorageService.getToken()) {
-      this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
-      return;
-    }
-
-    this.bookArticle();
-  }
-
-  bookArticle(){
-    const start = this.range.get('start')?.value
-    const end = this.range.get('end')?.value
-
-
-    const availableInstanceId = this.instances?.find(inst => inst.status === 'AVAILABLE')?.id;
-    if (!availableInstanceId) {
-      return;
-    }
-
-    const rental = {
-      rental: {
-        rentalStatus: 'PENDING'
-      },
-      rentalPositions: [{
-        rentalStart: start?.toISOString().split('T')[0],
-        rentalEnd: end?.toISOString().split('T')[0],
-        articleInstance: { id: availableInstanceId }
-      }]
-    };
-
-   this.rentalService.createRental(rental).subscribe(
-        res => {
-          console.log('Rental created successfully:', res);
-          console.log(rental)
-        },
-        err => {
-          console.error('Error creating rental', err);
-          console.log(rental)
-        }
-    );
-  }*/
