@@ -40,6 +40,7 @@ public class WebSecConfig {
                         .requestMatchers("/api/admin/**").hasAnyAuthority(Role.ADMIN.name())
                         .requestMatchers("/api/customer/**").hasAnyAuthority(Role.BUSINESS_CLIENT.name())
                         .requestMatchers("/api/customer/**").hasAnyAuthority(Role.PRIVATE_CLIENT.name())
+                        .requestMatchers("api/rental/**").permitAll()
                         .requestMatchers("/api/articles/**").permitAll()
                         .requestMatchers("/api/uploads/**").permitAll()
                         .requestMatchers(

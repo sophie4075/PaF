@@ -19,4 +19,6 @@ public interface UserRepo extends CrudRepository<User, Long> {
     Optional<User> findFirstByEmail(String email);
     Optional<User> findByChatId(String chatId);
     List<User> findAllByRole(Role role);  // Hier wurde findByRole zu findAllByRole geändert
+    Optional<User> findByEmail(String email);
+    User findByRole(Role role);
 }

@@ -1,13 +1,18 @@
 package com.example.Rentify.service.article;
 
 import com.example.Rentify.dto.ArticleDto;
+import com.example.Rentify.dto.ArticleInstanceDto;
+import com.example.Rentify.dto.AvailabilityDto;
 import com.example.Rentify.entity.Article;
 import com.example.Rentify.entity.ArticleInstance;
 import com.example.Rentify.entity.Category;
+import com.example.Rentify.entity.Status;
 import com.example.Rentify.mapper.ArticleMapper;
 import com.example.Rentify.repo.ArticleRepo;
 import com.example.Rentify.repo.ArticleInstanceRepo;
 import com.example.Rentify.repo.CategoryRepo;
+import com.example.Rentify.repo.RentalPositionRepo;
+import com.example.Rentify.service.StorageService;
 import com.example.Rentify.utils.ArticleSpecification;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,11 +24,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,17 +37,23 @@ public class ArticleServiceImpl implements ArticleService {
     private final ObjectMapper objectMapper;
     private final CategoryRepo categoryRepo;
     private final ArticleInstanceRepo articleInstanceRepo;
+    private final StorageService storageService;
+    private final RentalPositionRepo rentalPositionRepo;
 
     @Value("${gemini.api.key}")
     private String apiKey;
 
     public ArticleServiceImpl(ArticleRepo articleRepo,
                               ArticleInstanceRepo articleInstanceRepo,
-                              CategoryRepo categoryRepo) {
+                              CategoryRepo categoryRepo,
+                              StorageService storageService,
+                              RentalPositionRepo rentalPositionRepo) {
         this.articleRepo = articleRepo;
         this.articleInstanceRepo = articleInstanceRepo;
         this.categoryRepo = categoryRepo;
         this.objectMapper = new ObjectMapper();
+        this.storageService = storageService;
+        this.rentalPositionRepo = rentalPositionRepo;
     }
 
     @Override
@@ -79,6 +89,32 @@ public class ArticleServiceImpl implements ArticleService {
         }
 
         Article saved = articleRepo.save(article);
+
+        List<ArticleInstanceDto> instanceDtos = articleDto.getArticleInstances();
+
+        if (instanceDtos.size() == 1) {
+            String statusValue = instanceDtos.getFirst().getStatus();
+            for (int i = 1; i <= saved.getStueckzahl(); i++) {
+                ArticleInstance instance = new ArticleInstance();
+                instance.setArticle(saved);
+                instance.setStatus(Status.valueOf(statusValue.toUpperCase()));
+                instance.setInventoryNumber("ART-" + saved.getId() + "-" + i);
+                articleInstanceRepo.save(instance);
+            }
+        } else if (instanceDtos.size() == saved.getStueckzahl()) {
+            int counter = 1;
+            for (ArticleInstanceDto dto : instanceDtos) {
+                ArticleInstance instance = new ArticleInstance();
+                instance.setArticle(saved);
+                instance.setStatus(Status.valueOf(dto.getStatus().toUpperCase()));
+                instance.setInventoryNumber("ART-" + saved.getId() + "-" + counter);
+                articleInstanceRepo.save(instance);
+                counter++;
+            }
+        } else {
+            throw new IllegalArgumentException("The number of instances does not match the number of units.");
+        }
+
         return ArticleMapper.toDTO(saved);
     }
 
@@ -139,6 +175,7 @@ public class ArticleServiceImpl implements ArticleService {
                 .orElseThrow(() -> new IllegalArgumentException("Article not found with id: " + id));
         return ArticleMapper.toDTO(updated);
     }
+
 
     @Override
     public void deleteArticle(Long id) {
@@ -237,8 +274,7 @@ public class ArticleServiceImpl implements ArticleService {
             spec = spec.and(ArticleSpecification.hasPriceBetween(minPrice, maxPrice));
         }
         if(startDate != null && endDate != null) {
-            //TODO!
-            //spec = spec.and(ArticleSpecification.isAvailableBetween(startDate, endDate));
+            spec = spec.and(ArticleSpecification.isAvailableBetween(startDate, endDate));
         }
         if(categoryIds != null && !categoryIds.isEmpty()){
             spec = spec.and(ArticleSpecification.hasCategory(categoryIds));
@@ -248,6 +284,139 @@ public class ArticleServiceImpl implements ArticleService {
                 .map(ArticleMapper::toDTO)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public ArticleDto patchArticle(Long id, Map<String, Object> updates) {
+        Article updated = articleRepo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Article not found with id: " + id));
+
+        if (updates.containsKey("beschreibung")) {
+            String newBeschreibung = (String) updates.get("beschreibung");
+            if (newBeschreibung != null && !newBeschreibung.trim().isEmpty() &&
+                    !newBeschreibung.equals(updated.getBeschreibung())) {
+                updated.setBeschreibung(newBeschreibung);
+            }
+        }
+
+        if (updates.containsKey("grundpreis")) {
+            Double newGrundpreis = Double.valueOf(updates.get("grundpreis").toString());
+            if (!newGrundpreis.equals(updated.getGrundpreis())) {
+                updated.setGrundpreis(newGrundpreis);
+            }
+        }
+
+        if (updates.containsKey("bildUrl")) {
+            String newBildUrl = (String) updates.get("bildUrl");
+            if (newBildUrl != null && !newBildUrl.trim().isEmpty() &&
+                    !newBildUrl.equals(updated.getBildUrl())) {
+                if (updated.getBildUrl() != null && !updated.getBildUrl().trim().isEmpty()) {
+                    try {
+                        storageService.deleteImage(updated.getBildUrl());
+                    } catch (Exception e) {
+                        System.err.println("Error deleting existing image: " + e.getMessage());
+                    }
+                }
+                updated.setBildUrl(newBildUrl);
+            }
+        }
+
+        if (updates.containsKey("categories")) {
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> catDtos = (List<Map<String, Object>>) updates.get("categories");
+            if (catDtos != null && !catDtos.isEmpty()) {
+                Set<Category> newCategories = new HashSet<>();
+                catDtos.forEach(catDto -> {
+                    Category category;
+                    Object idObj = catDto.get("id");
+                    String name = (String) catDto.get("name");
+                    if (idObj != null) {
+                        Long catId = Long.valueOf(idObj.toString());
+                        category = categoryRepo.findById(catId)
+                                .orElseGet(() -> {
+                                    Category newCategory = new Category();
+                                    newCategory.setName(name);
+                                    return categoryRepo.save(newCategory);
+                                });
+                    } else {
+                        category = new Category();
+                        category.setName(name);
+                        category = categoryRepo.save(category);
+                    }
+                    newCategories.add(category);
+                });
+                // Beispielhafter Vergleich: Falls sich die neuen Kategorien unterscheiden, aktualisieren.
+                if (!newCategories.equals(updated.getCategories())) {
+                    updated.setCategories(newCategories);
+                }
+            }
+        }
+
+        Article saved = articleRepo.save(updated);
+        return ArticleMapper.toDTO(saved);
+    }
+
+    /*@Override
+    public AvailabilityDto checkAvailability(Long articleId, LocalDate startDate, LocalDate endDate) {
+        Article article = articleRepo.findById(articleId)
+                .orElseThrow(() -> new IllegalArgumentException("Article not found with id: " + articleId));
+
+        long days = ChronoUnit.DAYS.between(startDate, endDate);
+        if (days <= 0) {
+            throw new IllegalArgumentException("End Date muss be after Start Date.");
+        }
+
+        boolean isAvailable = false;
+        for (ArticleInstance instance : article.getArticleInstances()) {
+            if (instance.getStatus() == Status.AVAILABLE) {
+                boolean booked = rentalPositionRepo.existsByArticleInstanceAndRentalPeriodOverlap(instance, startDate, endDate);
+                if (!booked) {
+                    isAvailable = true;
+                    break;
+                }
+            }
+        }
+
+        BigDecimal totalPrice = BigDecimal.ZERO;
+        if (isAvailable) {
+            totalPrice = BigDecimal.valueOf(article.getGrundpreis())
+                    .multiply(BigDecimal.valueOf(days));
+        }
+
+        return new AvailabilityDto(isAvailable, totalPrice);
+    }*/
+
+    @Override
+    public AvailabilityDto checkAvailability(Long articleId, LocalDate startDate, LocalDate endDate) {
+        Article article = articleRepo.findById(articleId)
+                .orElseThrow(() -> new IllegalArgumentException("Article not found with id: " + articleId));
+
+        long days = ChronoUnit.DAYS.between(startDate, endDate);
+        if (days <= 0) {
+            throw new IllegalArgumentException("End Date muss be after Start Date.");
+        }
+
+        List<Long> availableInstanceNumbers = new ArrayList<>();
+        for (ArticleInstance instance : article.getArticleInstances()) {
+            if (instance.getStatus() == Status.AVAILABLE) {
+                boolean booked = rentalPositionRepo.existsByArticleInstanceAndRentalPeriodOverlap(instance, startDate, endDate);
+                if (!booked) {
+                    availableInstanceNumbers.add(instance.getId());
+                }
+            }
+        }
+        boolean isAvailable = !availableInstanceNumbers.isEmpty();
+
+        // Berechne den Preis für eine Instanz (pro Tag) – Frontend kann dann multiplizieren
+        BigDecimal totalPrice = isAvailable
+                ? BigDecimal.valueOf(article.getGrundpreis()).multiply(BigDecimal.valueOf(days))
+                : BigDecimal.ZERO;
+
+        AvailabilityDto dto = new AvailabilityDto(isAvailable, totalPrice);
+        dto.setAvailableInstanceNumbers(availableInstanceNumbers);
+        return dto;
+    }
+
+
 
 }
 

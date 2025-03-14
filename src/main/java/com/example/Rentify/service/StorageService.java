@@ -49,4 +49,10 @@ public class StorageService {
         Path filePath = Paths.get(uploadDir).resolve(fileName);
         return Files.probeContentType(filePath);
     }
+
+    public void deleteImage(String fileName) throws IOException {
+        Path filePath = Paths.get(uploadDir).resolve(fileName);
+        Files.deleteIfExists(filePath);
+    }
+
 }

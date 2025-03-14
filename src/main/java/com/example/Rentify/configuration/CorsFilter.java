@@ -38,7 +38,7 @@ public class CorsFilter implements Filter {
         httpResponse.setHeader("Access-Control-Allow-Origin", originHeader);
 
         // Allow specific HTTP methods for cross-origin requests
-        httpResponse.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        httpResponse.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
 
         // Specify how long the results of a preflight request can be cached by the browser.
         httpResponse.setHeader("Access-Control-Max-Age", "3600");

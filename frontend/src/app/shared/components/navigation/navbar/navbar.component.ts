@@ -51,11 +51,11 @@ export class NavbarComponent implements AfterViewInit{
 
   get dashboardRoute(): string {
     if (this.isAdminLoggedIn) {
-      return '/admin/dashboard';
+      return '/admin';
     } else if (this.isCustomerLoggedIn) {
-      return '/customer/dashboard';
+      return '/customer';
     } else if (this.isStaffLoggedIn) {
-      return '/staff/dashboard';
+      return '/staff';
     } else {
       return '/';
     }

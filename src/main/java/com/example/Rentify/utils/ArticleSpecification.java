@@ -1,7 +1,6 @@
 package com.example.Rentify.utils;
 
-import com.example.Rentify.entity.Article;
-import com.example.Rentify.entity.Category;
+import com.example.Rentify.entity.*;
 import jakarta.persistence.criteria.*;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -14,22 +13,30 @@ public class ArticleSpecification {
                 cb.between(root.get("grundpreis"), minPrice, maxPrice);
     }
 
-    //TODO!
-    /*public static Specification<Article> isAvailableBetween(LocalDate startDate, LocalDate endDate) {
+    public static Specification<Article> isAvailableBetween(LocalDate startDate, LocalDate endDate) {
+        return (root, query, cb) -> {
+            // Inner join to Article Instances
+            Join<Article, ArticleInstance> instanceJoin = root.join("articleInstances", JoinType.INNER);
+            // Get Available Instances
+            // (Hier gehen wir davon aus, dass Status.AVAILABLE in deinem Enum existiert)
+            var availableStatus = cb.equal(instanceJoin.get("status"), Status.AVAILABLE);
 
-        return (Root<Article> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {
             assert query != null;
-            Subquery<Long> subquery = query.subquery(Long.class);
-            Root<?> rentalPos = subquery.from();
-            subquery.select(rentalPos.get("id"))
-                    .where(
-                            cb.equal(rentalPos.get("article"), root),
-                            cb.lessThan(rentalPos.get("rentalStart"), endDate),
-                            cb.greaterThan(rentalPos.get("rentalEnd"), startDate)
-                    );
-            return cb.not(cb.exists(subquery));
+            Subquery<Long> rentalSubquery = query.subquery(Long.class);
+            Root<RentalPosition> rentalPosRoot = rentalSubquery.from(RentalPosition.class);
+            rentalSubquery.select(rentalPosRoot.get("id"));
+            rentalSubquery.where(
+                    cb.equal(rentalPosRoot.get("articleInstance"), instanceJoin),
+                    cb.lessThan(rentalPosRoot.get("rentalStart"), endDate),
+                    cb.greaterThan(rentalPosRoot.get("rentalEnd"), startDate)
+            );
+
+
+            var notBooked = cb.not(cb.exists(rentalSubquery));
+
+            return cb.and(availableStatus, notBooked);
         };
-    } */
+    }
 
     public static Specification<Article> hasCategory(List<Long> categoryIds) {
         return (Root<Article> root, CriteriaQuery<?> query, CriteriaBuilder cb) -> {

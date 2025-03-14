@@ -175,23 +175,12 @@ public class DatabaseSeeder implements CommandLineRunner {
         rental.setUser(user);
         rental.setRentalStatus(RentalStatus.PENDING);
 
-        RentalPosition position1 = new RentalPosition();
-        position1.setRentalStart(LocalDate.now());
-        position1.setRentalEnd(LocalDate.now().plusDays(1));
-        position1.setPositionPrice(BigDecimal.valueOf(25.0));
-        position1.setArticleInstance(articleInstances.get(0));
-        position1.setRental(rental);
+        LocalDate rentalStart = (LocalDate.now().plusDays(1));
+        LocalDate rentalEnd = (LocalDate.now().plusDays(5));
+        int quantity = 3;
+        Article article = articleInstances.getFirst().getArticle();
 
-        RentalPosition position2 = new RentalPosition();
-        position2.setRentalStart(LocalDate.now().plusDays(1));
-        position2.setRentalEnd(LocalDate.now().plusDays(5));
-        position2.setPositionPrice(BigDecimal.valueOf(285.0));
-        position2.setArticleInstance(articleInstances.get(1));
-        position2.setRental(rental);
-
-        rental.setRentalPositions(List.of(position1, position2));
-
-        Rental savedRental = rentalService.createRental(rental);
+        // Rental savedRental = rentalService.createRental(rental, article, rentalStart, rentalEnd, quantity);
 
         System.out.println("Seeded rental for user: " + user.getEmail());
     }

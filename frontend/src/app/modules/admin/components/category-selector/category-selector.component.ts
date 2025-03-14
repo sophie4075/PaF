@@ -1,6 +1,6 @@
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges} from '@angular/core';
 import {MatFormField, MatLabel} from "@angular/material/form-field";
-import {MatChipGrid, MatChipInput, MatChipRow} from "@angular/material/chips";;
+import {MatChipGrid, MatChipInput, MatChipRow, MatChipRemove, MatChip} from "@angular/material/chips";;
 import {MatIconModule} from "@angular/material/icon";
 import {MatAutocomplete, MatAutocompleteTrigger, MatOption} from "@angular/material/autocomplete";
 import {FormControl, ReactiveFormsModule} from "@angular/forms";
@@ -16,6 +16,8 @@ import {Category} from "../../../../shared/services/category/category.service";
     MatFormField,
     MatChipGrid,
     MatChipRow,
+    MatChipRemove,
+    MatChip,
     MatIconModule,
     MatLabel,
     MatAutocomplete,
@@ -29,8 +31,9 @@ import {Category} from "../../../../shared/services/category/category.service";
   templateUrl: './category-selector.component.html',
   styleUrl: './category-selector.component.css'
 })
-export class CategorySelectorComponent implements OnInit {
+export class CategorySelectorComponent implements OnInit, OnChanges{
   @Input() allCategories: Category[] = [];
+  @Input() existingCategories: Category[] = [];
   @Output() categoriesChanged = new EventEmitter<Category[]>();
 
   categoryCtrl = new FormControl('');
@@ -39,16 +42,37 @@ export class CategorySelectorComponent implements OnInit {
   selectedCategories: Category[] = [];
 
   ngOnInit(): void {
+    this.selectedCategories = [...this.existingCategories];
+
     this.filteredCategories = this.categoryCtrl.valueChanges.pipe(
         startWith(''),
         map((value: string | Category | null) => typeof value === 'string' ? value : value?.name),
-        map(name => name ? this._filter(name) : this.allCategories.slice())
+        //map(name => name ? this._filter(name) : this.allCategories.slice())
+        map(name =>
+            name
+                ? this._filter(name)
+                : this.allCategories.slice().filter(cat =>
+                    !this.selectedCategories.some(selected => selected.id === cat.id)
+                )
+        )
     );
   }
 
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['existingCategories'] && !changes['existingCategories'].firstChange) {
+      this.selectedCategories = [...changes['existingCategories'].currentValue];
+    }
+  }
+
+
   private _filter(name: string): Category[] {
     const filterValue = name.toLowerCase();
-    return this.allCategories.filter(cat => cat.name.toLowerCase().includes(filterValue));
+    //return this.allCategories.filter(cat => cat.name.toLowerCase().includes(filterValue));
+    return this.allCategories.filter(cat => {
+      const matchesName = cat.name.toLowerCase().includes(filterValue);
+      const notSelected = !this.selectedCategories.some(selected => selected.id === cat.id);
+      return matchesName && notSelected;
+    });
   }
 
   addCategory(event: any): void {
@@ -56,8 +80,9 @@ export class CategorySelectorComponent implements OnInit {
     const value = (event.value || '').trim();
     if (value) {
       const existing = this.allCategories.find(cat => cat.name.toLowerCase() === value.toLowerCase());
-      const category = existing ? existing : { name: value };
-      if (!this.selectedCategories.find(cat => cat.name.toLowerCase() === category.name.toLowerCase())) {
+      const category: Category = existing ? existing : { name: value };
+      const alreadySelected = this.selectedCategories.some(cat => cat.name.toLowerCase() === category.name.toLowerCase());
+      if (!alreadySelected) {
         this.selectedCategories.push(category);
         this.categoriesChanged.emit(this.selectedCategories);
       }
@@ -78,7 +103,8 @@ export class CategorySelectorComponent implements OnInit {
 
   selectedCategory(event: any): void {
     const category: Category = event.option.value;
-    if (!this.selectedCategories.find(cat => cat.name.toLowerCase() === category.name.toLowerCase())) {
+    const alreadySelected = this.selectedCategories.some(cat => cat.name.toLowerCase() === category.name.toLowerCase());
+    if (!alreadySelected) {
       this.selectedCategories.push(category);
       this.categoriesChanged.emit(this.selectedCategories);
     }

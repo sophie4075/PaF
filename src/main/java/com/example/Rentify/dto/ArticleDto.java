@@ -10,6 +10,8 @@ public class ArticleDto {
     private double grundpreis;
     private String bildUrl;
 
+    private List<ArticleInstanceDto> articleInstances;
+
     private List<CategoryDto> categories;
 
     public Long getId() {
@@ -53,5 +55,12 @@ public class ArticleDto {
     }
     public void setCategories(List<CategoryDto> categories) {
         this.categories = categories;
+    }
+
+    public List<ArticleInstanceDto> getArticleInstances() {
+        return articleInstances;
+    }
+    public void setArticleInstances(List<ArticleInstanceDto> articleInstances) {
+        this.articleInstances = articleInstances;
     }
 }

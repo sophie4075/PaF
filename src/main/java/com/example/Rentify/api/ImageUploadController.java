@@ -20,6 +20,7 @@ import java.util.Map;
 // https://medium.com/@dulanjayasandaruwan1998/uploading-images-in-a-spring-boot-project-a-step-by-step-guide-8a55248ea520
 @RestController
 @RequestMapping("/api/uploads")
+@CrossOrigin(origins = "http://localhost:4200")
 public class ImageUploadController {
     private final StorageService storageService;
 
@@ -32,7 +33,7 @@ public class ImageUploadController {
     public ResponseEntity<Map<String, String>> uploadImage(@RequestParam("file") MultipartFile file) {
         try {
             String fileName = storageService.saveImage(file);
-            String fileDownloadUri = "/api/uploads/images/" + fileName;
+            String fileDownloadUri = "http://localhost:8080/api/uploads/images/" + fileName;
             //return ResponseEntity.ok("Image uploaded successfully: " + fileDownloadUri);
             Map<String, String> response = new HashMap<>();
             response.put("fileDownloadUri", fileDownloadUri);
