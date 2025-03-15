@@ -141,4 +141,28 @@ public class RentalController {
         }
         throw new UsernameNotFoundException("User not found");
     }
+
+    //TODO get auth user -> make sure role is Admin
+    @GetMapping("/admin/current")
+    public ResponseEntity<List<AdminRentalInfoDto>> getCurrentRentals() {
+        LocalDate now = LocalDate.now();
+        List<AdminRentalInfoDto> currentRentals = rentalPositionRepo.findCurrentRentalInfo(now);
+        return ResponseEntity.ok(currentRentals);
+    }
+
+    @GetMapping("/admin/due")
+    public ResponseEntity<List<AdminRentalInfoDto>> getDueRentals() {
+        LocalDate now = LocalDate.now();
+        LocalDate threeDaysLater = now.plusDays(3);
+        List<AdminRentalInfoDto> dueRentals = rentalPositionRepo.findDueRentalInfo(now, threeDaysLater);
+        return ResponseEntity.ok(dueRentals);
+    }
+
+    @GetMapping("/admin/upcoming-under-repair")
+    public ResponseEntity<List<AdminRentalInfoDto>> getUpcomingUnderRepairRentals() {
+        LocalDate now = LocalDate.now();
+        LocalDate sevenDaysLater = now.plusDays(7);
+        List<AdminRentalInfoDto> upcomingRentals = rentalPositionRepo.findUpcomingUnderRepairRentalInfo(now, sevenDaysLater);
+        return ResponseEntity.ok(upcomingRentals);
+    }
 }
