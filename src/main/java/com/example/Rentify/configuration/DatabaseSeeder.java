@@ -51,7 +51,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         articleInstanceRepository.deleteAll();
         articleRepository.deleteAll();
         categoryRepository.deleteAll();
-        userRepository.deleteAll();
+        //userRepository.deleteAll();
 
         seedUsers();
         seedArticles();

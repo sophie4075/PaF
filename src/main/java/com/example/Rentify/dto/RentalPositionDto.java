@@ -10,6 +10,7 @@ public class RentalPositionDto {
     private BigDecimal positionPrice;
     private Long articleInstanceId;
 
+
     public Long getId() {
         return id;
     }
@@ -49,4 +50,6 @@ public class RentalPositionDto {
     public void setArticleInstanceId(Long articleInstanceId) {
         this.articleInstanceId = articleInstanceId;
     }
+
+
 }

@@ -19,16 +19,19 @@ public class ArticleController {
     private final ArticleService articleService;
     private final CategoryRepo categoryRepo;
 
+    //TODO add try catch
     public ArticleController(ArticleService articleService, CategoryRepo categoryRepo) {
         this.articleService = articleService;
         this.categoryRepo = categoryRepo;
     }
 
+    //TODO add try catch
     @GetMapping
     public List<ArticleDto> getAllArticles() {
         return articleService.getAllArticles();
     }
 
+    //TODO add try catch
     @GetMapping("/{id}")
     public ResponseEntity<ArticleDto> getArticleById(@PathVariable Long id) {
         return articleService.getArticleById(id)
@@ -36,6 +39,7 @@ public class ArticleController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    //TODO add try catch
     @PostMapping
     public ResponseEntity<ArticleDto> createArticle(@RequestBody ArticleDto articleDto) {
         ArticleDto createdArticle = articleService.createArticle(articleDto);
@@ -72,6 +76,7 @@ public class ArticleController {
         }
     }
 
+    //TODO add try catch
     @PostMapping("/generate-description-by-name")
     public ResponseEntity<String> generateDescriptionByName(@RequestBody Map<String, String> body) {
         String bezeichnung = body.get("bezeichnung");
@@ -84,6 +89,7 @@ public class ArticleController {
     }
 
 
+    //TODO add try catch
     @GetMapping("/filter")
     public ResponseEntity<List<ArticleDto>> getFilteredArticles(
             @RequestParam(required = false) Double minPrice,
@@ -112,7 +118,7 @@ public class ArticleController {
             @RequestParam Long articleId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-       try{
+        try{
             AvailabilityDto response = articleService.checkAvailability(articleId, startDate, endDate);
             return ResponseEntity.ok(response.toMap());
         }catch (IllegalArgumentException e) {
@@ -120,6 +126,7 @@ public class ArticleController {
             errorResponse.put("error", e.getMessage());
             return ResponseEntity.badRequest().body(errorResponse);
         }
+
     }
 
 

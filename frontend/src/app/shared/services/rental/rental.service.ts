@@ -3,6 +3,14 @@ import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {Observable} from "rxjs";
 import {StorageService} from "../storage/storage.service";
 
+export interface RentalPositionDto {
+    id: number;
+    rentalStart: string;
+    rentalEnd: string;
+    positionPrice: number;
+    articleInstanceId: number;
+}
+
 @Injectable({
     providedIn: 'root'
 })
@@ -27,4 +35,5 @@ export class RentalService {
             'Bearer ' + StorageService.getToken()
         )
     }
+
 }

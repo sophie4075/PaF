@@ -357,35 +357,6 @@ public class ArticleServiceImpl implements ArticleService {
         return ArticleMapper.toDTO(saved);
     }
 
-    /*@Override
-    public AvailabilityDto checkAvailability(Long articleId, LocalDate startDate, LocalDate endDate) {
-        Article article = articleRepo.findById(articleId)
-                .orElseThrow(() -> new IllegalArgumentException("Article not found with id: " + articleId));
-
-        long days = ChronoUnit.DAYS.between(startDate, endDate);
-        if (days <= 0) {
-            throw new IllegalArgumentException("End Date muss be after Start Date.");
-        }
-
-        boolean isAvailable = false;
-        for (ArticleInstance instance : article.getArticleInstances()) {
-            if (instance.getStatus() == Status.AVAILABLE) {
-                boolean booked = rentalPositionRepo.existsByArticleInstanceAndRentalPeriodOverlap(instance, startDate, endDate);
-                if (!booked) {
-                    isAvailable = true;
-                    break;
-                }
-            }
-        }
-
-        BigDecimal totalPrice = BigDecimal.ZERO;
-        if (isAvailable) {
-            totalPrice = BigDecimal.valueOf(article.getGrundpreis())
-                    .multiply(BigDecimal.valueOf(days));
-        }
-
-        return new AvailabilityDto(isAvailable, totalPrice);
-    }*/
 
     @Override
     public AvailabilityDto checkAvailability(Long articleId, LocalDate startDate, LocalDate endDate) {
