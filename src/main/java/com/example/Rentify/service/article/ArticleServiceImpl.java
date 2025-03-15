@@ -186,12 +186,14 @@ public class ArticleServiceImpl implements ArticleService {
         }
     }
 
+    public String Prompt = "Erstelle eine Beschreibung für eine Verleihplattform für einen Artikel mit folgendem Namen: %s. Bitte benutze keine Platzhalter, sondern erstelle einen fertigen Text";
+
     @Override
     public String generateDescription(Long id) {
         Optional<Article> articleOpt = articleRepo.findById(id);
         if (articleOpt.isPresent()) {
             Article article = articleOpt.get();
-            String prompt = String.format("Erstelle eine Beschreibung für einen Artikel mit folgendem Namen: %s.", article.getBezeichnung());
+            String prompt = String.format(Prompt, article.getBezeichnung());
             String apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + apiKey;
             HttpHeaders headers = new HttpHeaders();
             headers.set("Content-Type", "application/json");
@@ -225,7 +227,7 @@ public class ArticleServiceImpl implements ArticleService {
     @Override
     public String generateDescriptionForName(String bezeichnung) {
         String prompt = String.format(
-                "Erstelle eine Beschreibung für eine Verleihplattform für einen Artikel mit folgendem Namen: %s.",
+                Prompt,
                 bezeichnung
         );
 
