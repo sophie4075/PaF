@@ -1,1 +1,45 @@
-<p>admin-dashboard works!</p>
+<!--WIP-->
+<div class="dashboard-section">
+    <h2>Aktuell verliehene Instanzen</h2>
+    <ul>
+
+        @if (currentRentals.length) {
+            @for (rental of currentRentals; track $index){
+                <p>
+                    Instanz {{ rental.articleInstanceInventoryNumber }} – Von: {{ rental.rentalStart }} bis {{ rental.rentalEnd }}
+                </p>
+            }
+        } @else {
+            Zurzeit sind keine Instanzen ausgeliehen
+        }
+
+    </ul>
+</div>
+
+<div class="dashboard-section">
+    <h2>Fällig in den nächsten 3 Tagen</h2>
+    @if (dueRentals.length) {
+        @for (rental of dueRentals; track $index){
+            <p>
+                Instanz {{ rental.articleInstanceInventoryNumber }} – Rückgabe: {{ rental.rentalEnd }}
+            </p>
+        }
+    } @else {
+        Es sind innerhalb der nächsten 3 tage keine Rückgaben fällig
+    }
+</div>
+
+<div class="dashboard-section">
+
+    <h2>n den nächsten 7 Tagen verliehene Instanzen, die aktuell noch in Reparatur sind</h2>
+    @if (upcomingUnderRepair.length) {
+        @for (rental of upcomingUnderRepair; track $index){
+            <p>
+                Instanz {{ rental.articleInstanceInventoryNumber }} – Start: {{ rental.rentalStart }}
+            </p>
+        }
+    } @else {
+        Nichts dringendes in Reparatur :)
+    }
+
+</div>
