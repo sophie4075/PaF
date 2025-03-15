@@ -25,7 +25,7 @@ public class RentalServiceTest {
     private RentalService rentalService;
 
     @Autowired
-    private ArticleServiceImpl articleServiceImpl; // ✅ Jetzt NUR `ArticleServiceImpl` verwenden
+    private ArticleServiceImpl articleServiceImpl;
 
     @Autowired
     private UserService userService;
@@ -63,7 +63,6 @@ public class RentalServiceTest {
 
 
 
-
     @Test
     public void testRental() {
         LocalDate rentalStart = LocalDate.of(2025, 3, 10);
@@ -87,5 +86,29 @@ public class RentalServiceTest {
         assertFalse(userRentals.isEmpty(), "Rental should be created and retrieved.");
         assertEquals(1, userRentals.size(), "User should have exactly one rental.");
         assertEquals(testUser.getId(), userRentals.get(0).getUser().getId(), "Rental should be associated with the correct user.");
+    }
+
+    @Test
+    public void testOverdueRentalUpdate() {
+        LocalDate rentalStart = LocalDate.now().minusDays(5);
+        LocalDate rentalEnd = LocalDate.now().minusDays(2);
+        int quantity = 1;
+
+        Rental rental = new Rental();
+        rental.setUser(testUser);
+        rental.setRentalStatus(RentalStatus.ACTIVE);
+
+        Article articleEntity = new Article();
+        articleEntity.setId(articleDto.getId());
+        articleEntity.setBezeichnung(articleDto.getBezeichnung());
+        articleEntity.setBeschreibung(articleDto.getBeschreibung());
+        articleEntity.setGrundpreis(articleDto.getGrundpreis());
+
+        rentalService.createRental(rental, articleEntity, rentalStart, rentalEnd, quantity);
+
+        rentalService.checkAndUpdateOverdueRentals();
+
+        Rental updatedRental = rentalService.getRentalsByUserId(testUser.getId()).get(0);
+        assertEquals(RentalStatus.OVERDUE, updatedRental.getRentalStatus(), "Rental status should be OVERDUE.");
     }
 }
