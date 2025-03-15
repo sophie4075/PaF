@@ -112,8 +112,14 @@ public class ArticleController {
             @RequestParam Long articleId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        AvailabilityDto response = articleService.checkAvailability(articleId, startDate, endDate);
-        return ResponseEntity.ok(response.toMap());
+       try{
+            AvailabilityDto response = articleService.checkAvailability(articleId, startDate, endDate);
+            return ResponseEntity.ok(response.toMap());
+        }catch (IllegalArgumentException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
     }
 
 
