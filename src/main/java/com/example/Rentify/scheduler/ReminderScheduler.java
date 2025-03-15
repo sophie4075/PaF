@@ -1,5 +1,6 @@
-package com.example.Rentify.messengerBot;
+package com.example.Rentify.scheduler;
 
+import com.example.Rentify.messengerBot.MessengerBot;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 

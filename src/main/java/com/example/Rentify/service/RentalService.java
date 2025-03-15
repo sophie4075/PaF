@@ -99,6 +99,25 @@ public class RentalService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
+    public void checkAndUpdateOverdueRentals() {
+        LocalDate today = LocalDate.now();
+        List<Rental> rentals = (List<Rental>) rentalRepo.findAll();
+        System.out.println("Checking for overdue rentals");
+
+        for (Rental rental : rentals) {
+            List<RentalPosition> positions = rentalPositionRepo.findByRentalId(rental.getId());
+            boolean isOverdue = positions.stream().anyMatch(pos -> pos.getRentalEnd().isBefore(today));
+
+            if (isOverdue && rental.getRentalStatus() == RentalStatus.ACTIVE) {
+                rental.setRentalStatus(RentalStatus.OVERDUE);
+                System.out.println("Rental " + rental.getId() + " is overdue");
+                rentalRepo.save(rental);
+            }
+            else {
+                System.out.println("Rental " + rental.getId() + " is not overdue");
+            }
+        }
+    }
 
     public void createRental(Rental rental, Article article, LocalDate rentalStart, LocalDate rentalEnd, int quantity) {
         List<ArticleInstance> allInstances = articleInstanceRepo.findByArticle(article);
@@ -109,8 +128,8 @@ public class RentalService {
                 .toList();
 
         if (availableInstances.size() < quantity) {
-            throw new IllegalArgumentException("Nicht genügend Instanzen verfügbar für Artikel " + article.getId() +
-                    ". Gewünscht: " + quantity + ", verfügbar: " + availableInstances.size());
+            throw new IllegalArgumentException("Not enough instances available for article " + article.getId() +
+                    ". Requested: " + quantity + ", available: " + availableInstances.size());
         }
 
         rental = rentalRepo.save(rental);
