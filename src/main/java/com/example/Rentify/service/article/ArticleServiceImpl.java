@@ -186,7 +186,7 @@ public class ArticleServiceImpl implements ArticleService {
         }
     }
 
-    public String Prompt = "Erstelle eine Beschreibung für eine Verleihplattform für einen Artikel mit folgendem Namen: %s. Bitte benutze keine Platzhalter, sondern erstelle einen fertigen Text";
+    public String Prompt = "Erstelle eine Beschreibung für eine Verleihplattform für einen Artikel mit folgendem Namen: %s. Bitte benutze keine Platzhalter, sondern erstelle einen fertigen Text. Der text darf gerne ganz leicht humoristisch sein.";
 
     @Override
     public String generateDescription(Long id) {

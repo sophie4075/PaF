@@ -78,8 +78,10 @@ public class RentalController {
             RentalDto rentalDto = RentalMapper.toDTO(savedRental, savedPositions);
             return ResponseEntity.status(HttpStatus.CREATED).body(rentalDto);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
+
     }
 
 
