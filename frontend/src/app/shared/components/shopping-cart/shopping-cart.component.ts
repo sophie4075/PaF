@@ -7,6 +7,7 @@ import {FormsModule} from "@angular/forms";
 import {interval, Subscription} from "rxjs";
 import {ArticleService} from "../../services/article/article.service";
 import {MatSnackBar} from "@angular/material/snack-bar";
+import {MatProgressSpinner} from "@angular/material/progress-spinner";
 
 @Component({
     selector: 'app-shopping-cart',
@@ -17,7 +18,8 @@ import {MatSnackBar} from "@angular/material/snack-bar";
         NgOptimizedImage,
         RouterLink,
         FormsModule,
-        JsonPipe
+        JsonPipe,
+        MatProgressSpinner
     ],
     templateUrl: './shopping-cart.component.html',
     styleUrl: './shopping-cart.component.css'
@@ -26,6 +28,7 @@ export class ShoppingCartComponent implements OnInit, OnDestroy {
 
     cartItems: CartItem[] = [];
     totalPrice: number = 0;
+    loading: boolean = false
     availabilityWarnings: { [key: string]: string } = {};
     private _snackBar = inject(MatSnackBar);
 
@@ -86,22 +89,24 @@ export class ShoppingCartComponent implements OnInit, OnDestroy {
 
     onCheckout() {
 
+        this.loading = true;
         Promise.all(this.refreshAvailability()).then(() => {
 
             if (this.unavailableItems.length > 0) {
                 const message = `Not all items are available::\n${this.unavailableItems.join("\n")}\nWould you like to continue anyway?`;
                 if (!confirm(message)) {
+                    this.loading = false;
                     return;
                 }
             }
             const rentalPayload = {
                 rental: {
-                    rentalStatus: 'PENDING'
+                    rentalStatus: 'ACTIVE'
                 },
                 articleRentals: this.cartItems.map(item => ({
                     articleId: item.articleId,
-                    rentalStart: item.rentalStart.toISOString().split('T')[0],
-                    rentalEnd: item.rentalEnd.toISOString().split('T')[0],
+                    rentalStart: this.cartService.formatLocalDate(item.rentalStart),
+                    rentalEnd: this.cartService.formatLocalDate(item.rentalEnd),
                     quantity: item.quantity
                 }))
             };
@@ -109,6 +114,7 @@ export class ShoppingCartComponent implements OnInit, OnDestroy {
             this.rentalService.createRental(rentalPayload).subscribe(
                 {
                     next: (res) => {
+                        this.loading = false
                         this.cartService.clearCart();
                         this._snackBar.open('Articles rented!', '🎉', {
                             duration: 5000,
@@ -117,6 +123,7 @@ export class ShoppingCartComponent implements OnInit, OnDestroy {
                         this.router.navigateByUrl("/admin");
                     },
                     error: (err) => {
+                        this.loading = false
                         const errorMessage = err.error?.message || 'Ein Fehler ist aufgetreten.';
                         this._snackBar.open(`Error: ${errorMessage}`, '🤖', {
                             duration: 5000,
@@ -126,6 +133,7 @@ export class ShoppingCartComponent implements OnInit, OnDestroy {
                 }
             );
         }).catch(error => {
+            this.loading = false
             console.error("Error while checking availability", error);
         });
 

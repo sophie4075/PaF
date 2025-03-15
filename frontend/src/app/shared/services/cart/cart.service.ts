@@ -28,8 +28,8 @@ export class CartService {
         const items = this.itemsSubject.getValue();
         const index = items.findIndex(item =>
             item.articleId === newItem.articleId &&
-            new Date(item.rentalStart).toISOString() === newItem.rentalStart.toISOString() &&
-            new Date(item.rentalEnd).toISOString() === newItem.rentalEnd.toISOString()
+            this.formatLocalDate(new Date(item.rentalStart)) === this.formatLocalDate(new Date(newItem.rentalStart)) &&
+            this.formatLocalDate(new Date(item.rentalEnd)) === this.formatLocalDate(new Date(newItem.rentalEnd))
         );
         if (index > -1) {
             items[index].quantity += newItem.quantity;
@@ -62,7 +62,13 @@ export class CartService {
     }
 
     private saveToStorage(items: CartItem[]): void {
-        localStorage.setItem(this.storageKey, JSON.stringify(items));
+        //localStorage.setItem(this.storageKey, JSON.stringify(items));
+        const itemsToSave = items.map(item => ({
+            ...item,
+            rentalStart: this.formatLocalDate(item.rentalStart),
+            rentalEnd: this.formatLocalDate(item.rentalEnd)
+        }));
+        localStorage.setItem(this.storageKey, JSON.stringify(itemsToSave));
     }
 
     private dateReviver(key: string, value: any): any {
@@ -70,6 +76,13 @@ export class CartService {
             return new Date(value);
         }
         return value;
+    }
+
+    formatLocalDate(date: Date): string {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
     }
 
 }

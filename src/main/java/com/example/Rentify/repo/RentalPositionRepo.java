@@ -1,5 +1,6 @@
 package com.example.Rentify.repo;
 
+import com.example.Rentify.dto.AdminRentalInfoDto;
 import com.example.Rentify.entity.ArticleInstance;
 import com.example.Rentify.entity.RentalPosition;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,6 +14,8 @@ import java.util.List;
 @Repository
 public interface RentalPositionRepo extends JpaRepository<RentalPosition, Long> {
     List<RentalPosition> findByRentalId(Long rentalId);
+    List<RentalPosition> findByRentalStartLessThanEqualAndRentalEndGreaterThanEqual(LocalDate date1, LocalDate date2);
+
 
     @Query("SELECT COUNT(rp) > 0 FROM RentalPosition rp " +
             "WHERE rp.articleInstance = :instance " +
@@ -24,7 +27,7 @@ public interface RentalPositionRepo extends JpaRepository<RentalPosition, Long> 
 
         @Query("SELECT new com.example.Rentify.dto.AdminRentalInfoDto(" +
             "rp.id, rp.rentalStart, rp.rentalEnd, rp.positionPrice, " +
-            "rp.rental.user.email, rp.rental.user.id, " +
+            "rp.rental.user.email, rp.rental.user.id, rp.rental.user.firstName, rp.rental.user.lastName, " +
             "rp.articleInstance.article.bezeichnung, rp.articleInstance.inventoryNumber" +
             ") " +
             "FROM RentalPosition rp " +
@@ -33,7 +36,7 @@ public interface RentalPositionRepo extends JpaRepository<RentalPosition, Long> 
 
     @Query("SELECT new com.example.Rentify.dto.AdminRentalInfoDto(" +
             "rp.id, rp.rentalStart, rp.rentalEnd, rp.positionPrice, " +
-            "rp.rental.user.email, rp.rental.user.id, " +
+            "rp.rental.user.email, rp.rental.user.id, rp.rental.user.firstName, rp.rental.user.lastName," +
             "rp.articleInstance.article.bezeichnung, rp.articleInstance.inventoryNumber" +
             ") " +
             "FROM RentalPosition rp " +
@@ -42,13 +45,23 @@ public interface RentalPositionRepo extends JpaRepository<RentalPosition, Long> 
 
     @Query("SELECT new com.example.Rentify.dto.AdminRentalInfoDto(" +
             "rp.id, rp.rentalStart, rp.rentalEnd, rp.positionPrice, " +
-            "rp.rental.user.email, rp.rental.user.id, " +
+            "rp.rental.user.email, rp.rental.user.id, rp.rental.user.firstName, rp.rental.user.lastName, " +
             "rp.articleInstance.article.bezeichnung, rp.articleInstance.inventoryNumber" +
             ") " +
             "FROM RentalPosition rp " +
             "WHERE rp.rentalStart > :now AND rp.rentalStart <= :sevenDaysLater " +
             "AND rp.articleInstance.status = 'UNDER_REPAIR'")
     List<AdminRentalInfoDto> findUpcomingUnderRepairRentalInfo(@Param("now") LocalDate now, @Param("sevenDaysLater") LocalDate sevenDaysLater);
+
+    @Query("SELECT COUNT(rp) > 0 FROM RentalPosition rp " +
+            "WHERE rp.articleInstance = :instance " +
+            "AND rp.id <> :currentRentalPositionId " +
+            "AND rp.rentalStart < :newRentalEnd " +
+            "AND rp.rentalEnd > :currentRentalEnd")
+    boolean existsOverlapExcludingCurrent(@Param("instance") ArticleInstance instance,
+                                          @Param("currentRentalPositionId") Long currentRentalPositionId,
+                                          @Param("currentRentalEnd") LocalDate currentRentalEnd,
+                                          @Param("newRentalEnd") LocalDate newRentalEnd);
 
 }
 

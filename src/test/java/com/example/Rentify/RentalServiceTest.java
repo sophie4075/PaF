@@ -3,6 +3,8 @@ package com.example.Rentify;
 import com.example.Rentify.dto.ArticleDto;
 import com.example.Rentify.dto.ArticleInstanceDto;
 import com.example.Rentify.entity.*;
+import com.example.Rentify.repo.ArticleInstanceRepo;
+import com.example.Rentify.repo.RentalPositionRepo;
 import com.example.Rentify.service.RentalService;
 import com.example.Rentify.service.UserService;
 import com.example.Rentify.service.article.ArticleServiceImpl;
@@ -29,6 +31,12 @@ public class RentalServiceTest {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private RentalPositionRepo rentalPositionRepo;
+
+    @Autowired
+    ArticleInstanceRepo articleInstanceRepo;
 
     private User testUser;
     private ArticleDto articleDto;
@@ -106,9 +114,33 @@ public class RentalServiceTest {
 
         rentalService.createRental(rental, articleEntity, rentalStart, rentalEnd, quantity);
 
+        List<RentalPosition> positionsBefore = rentalPositionRepo.findByRentalId(rental.getId());
+        for (RentalPosition pos : positionsBefore) {
+            ArticleInstance instance = articleInstanceRepo.findById(pos.getArticleInstance().getId())
+                    .orElseThrow(() -> new AssertionError("ArticleInstance not found"));
+
+            if (instance.getStatus() != Status.RENTED) {
+                instance.setStatus(Status.RENTED);
+                articleInstanceRepo.save(instance);
+            }
+
+            //assertNotEquals(Status.OVERDUE, pos.getArticleInstance().getStatus());
+
+            assertEquals(Status.RENTED, instance.getStatus(), "ArticleInstance should be RENTED initially.");
+        }
+
         rentalService.checkAndUpdateOverdueRentals();
 
-        Rental updatedRental = rentalService.getRentalsByUserId(testUser.getId()).get(0);
-        assertEquals(RentalStatus.OVERDUE, updatedRental.getRentalStatus(), "Rental status should be OVERDUE.");
+        //Rental updatedRental = rentalService.getRentalsByUserId(testUser.getId()).get(0);
+        //assertEquals(RentalStatus.OVERDUE, updatedRental.getRentalStatus(), "Rental status should be OVERDUE.");
+
+        List<RentalPosition> positionsAfter = rentalPositionRepo.findByRentalId(rental.getId());
+        for (RentalPosition pos : positionsAfter) {
+            ArticleInstance updatedInstance = articleInstanceRepo.findById(pos.getArticleInstance().getId())
+                    .orElseThrow(() -> new AssertionError("ArticleInstance not found"));
+            assertEquals(Status.OVERDUE, updatedInstance.getStatus(),
+                    "ArticleInstance with id " + updatedInstance.getId() + " should be OVERDUE.");
+        }
+
     }
 }

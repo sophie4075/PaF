@@ -1,14 +1,11 @@
 package com.example.Rentify.entity;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.List;
 
 @NoArgsConstructor
 @Getter
@@ -27,6 +24,4 @@ public class Rental {
     @Getter
     private User user;
 
-//    @OneToMany(mappedBy = "rental", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<RentalPosition> rentalPositions;
 }

@@ -11,11 +11,17 @@ public class RentalStatusScheduler {
 
     public RentalStatusScheduler(RentalService rentalService) {
         this.rentalService = rentalService;
+
     }
 
     // Every day at Midnight
     @Scheduled(cron = "0 0 0 * * ?", zone = "Europe/Berlin")
     public void scheduleDailyOverdueCheck() {
         rentalService.checkAndUpdateOverdueRentals();
+    }
+
+    @Scheduled(cron = "0 0 0 * * ?", zone = "Europe/Berlin")
+    public void updateArticleInstanceStatus() {
+       rentalService.changeAvailableToRented();
     }
 }

@@ -1,8 +1,6 @@
 package com.example.Rentify.api;
 
-import com.example.Rentify.dto.ArticleDto;
-import com.example.Rentify.dto.RentalDto;
-import com.example.Rentify.dto.RentalReqDto;
+import com.example.Rentify.dto.*;
 import com.example.Rentify.entity.Article;
 import com.example.Rentify.entity.Rental;
 import com.example.Rentify.entity.RentalPosition;
@@ -23,7 +21,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/rental")
@@ -165,4 +166,61 @@ public class RentalController {
         List<AdminRentalInfoDto> upcomingRentals = rentalPositionRepo.findUpcomingUnderRepairRentalInfo(now, sevenDaysLater);
         return ResponseEntity.ok(upcomingRentals);
     }
+
+    @PatchMapping("/admin/update-rental/{rentalPositionId}")
+    public ResponseEntity<AdminRentalInfoDto> updateRentalPeriod(
+            @PathVariable Long rentalPositionId,
+            @RequestBody RentalPositionDto updateDto) {
+
+        Optional<RentalPosition> optPosition = rentalPositionRepo.findById(rentalPositionId);
+        if (optPosition.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        RentalPosition rentalPosition = optPosition.get();
+        LocalDate currentStart = rentalPosition.getRentalStart();
+        LocalDate currentEnd = rentalPosition.getRentalEnd();
+        LocalDate newEnd = updateDto.getRentalEnd();
+
+        boolean overlapExists = rentalPositionRepo.existsOverlapExcludingCurrent(
+                rentalPosition.getArticleInstance(),
+                rentalPosition.getId(),
+                currentEnd,
+                newEnd
+        );
+
+        if (overlapExists) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(null);
+        }
+
+        rentalPosition.setRentalEnd(newEnd);
+        long days = ChronoUnit.DAYS.between(currentStart, newEnd);
+        days = days < 1 ? 1 : days;
+        BigDecimal dailyPrice = BigDecimal.valueOf(rentalPosition.getArticleInstance().getArticle().getGrundpreis());
+        rentalPosition.setPositionPrice(dailyPrice.multiply(BigDecimal.valueOf(days)));
+
+        rentalPositionRepo.save(rentalPosition);
+
+        Rental rental = rentalPosition.getRental();
+        BigDecimal totalPrice = rentalService.calculateTotalPrice(rental.getId());
+        rental.setTotalPrice(totalPrice);
+        rentalRepo.save(rental);
+
+        AdminRentalInfoDto updatedDto = new AdminRentalInfoDto(
+                rentalPosition.getId(),
+                currentStart,
+                rentalPosition.getRentalEnd(),
+                rentalPosition.getPositionPrice(),
+                rentalPosition.getRental().getUser().getEmail(),
+                rentalPosition.getRental().getUser().getId(),
+                rentalPosition.getRental().getUser().getFirstName(),
+                rentalPosition.getRental().getUser().getLastName(),
+                rentalPosition.getArticleInstance().getArticle().getBezeichnung(),
+                rentalPosition.getArticleInstance().getInventoryNumber()
+        );
+        return ResponseEntity.ok(updatedDto);
+    }
+
+
+
 }

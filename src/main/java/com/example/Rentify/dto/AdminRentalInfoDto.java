@@ -10,17 +10,22 @@ public class AdminRentalInfoDto {
     private BigDecimal positionPrice;
     private String userEmail;
     private Long userId;
+    private String userFirstName;
+    private String userLastName;
     private String articleDesignation;
     private String articleInstanceInventoryNumber;
 
+
     public AdminRentalInfoDto(Long rentalPositionId, LocalDate rentalStart, LocalDate rentalEnd, BigDecimal positionPrice,
-                              String userEmail, Long userId, String articleDesignation, String articleInstanceInventoryNumber) {
+                              String userEmail, Long userId, String userFirstName, String userLastName, String articleDesignation, String articleInstanceInventoryNumber) {
         this.rentalPositionId = rentalPositionId;
         this.rentalStart = rentalStart;
         this.rentalEnd = rentalEnd;
         this.positionPrice = positionPrice;
         this.userEmail = userEmail;
         this.userId = userId;
+        this.userFirstName = userFirstName;
+        this.userLastName = userLastName;
         this.articleDesignation = articleDesignation;
         this.articleInstanceInventoryNumber = articleInstanceInventoryNumber;
     }
@@ -88,5 +93,21 @@ public class AdminRentalInfoDto {
 
     public void setArticleInstanceInventoryNumber(String articleInstanceInventoryNumber) {
         this.articleInstanceInventoryNumber = articleInstanceInventoryNumber;
+    }
+
+    public String getUserFirstName() {
+        return userFirstName;
+    }
+
+    public void setUserFirstName(String userFirstName) {
+        this.userFirstName = userFirstName;
+    }
+
+    public String getUserLastName() {
+        return userLastName;
+    }
+
+    public void setUserLastName(String userLastName) {
+        this.userLastName = userLastName;
     }
 }

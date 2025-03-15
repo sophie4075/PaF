@@ -101,20 +101,33 @@ public class RentalService {
 
     public void checkAndUpdateOverdueRentals() {
         LocalDate today = LocalDate.now();
-        List<Rental> rentals = (List<Rental>) rentalRepo.findAll();
-        System.out.println("Checking for overdue rentals");
+        List<RentalPosition> rentals = rentalPositionRepo.findAll();
+        System.out.println("Checking for overdue articleInstances");
 
-        for (Rental rental : rentals) {
-            List<RentalPosition> positions = rentalPositionRepo.findByRentalId(rental.getId());
-            boolean isOverdue = positions.stream().anyMatch(pos -> pos.getRentalEnd().isBefore(today));
+        for (RentalPosition rental : rentals) {
 
-            if (isOverdue && rental.getRentalStatus() == RentalStatus.ACTIVE) {
-                rental.setRentalStatus(RentalStatus.OVERDUE);
-                System.out.println("Rental " + rental.getId() + " is overdue");
-                rentalRepo.save(rental);
-            }
-            else {
+            if (rental.getRentalEnd().isBefore(today)) {
+                ArticleInstance instance = rental.getArticleInstance();
+                if (instance.getStatus() != Status.OVERDUE && instance.getStatus() == Status.RENTED) {
+                    instance.setStatus(Status.OVERDUE);
+                    articleInstanceRepo.save(instance);
+                    System.out.println("ArticleInstance " + instance.getId() + " set to OVER_DUE");
+                }
+            } else {
+                // TODO if state == returned auto set available?
                 System.out.println("Rental " + rental.getId() + " is not overdue");
+            }
+        }
+    }
+
+    public void changeAvailableToRented(){
+        LocalDate today = LocalDate.now();
+        List<RentalPosition> activeRentalPositions = rentalPositionRepo.findByRentalStartLessThanEqualAndRentalEndGreaterThanEqual(today, today);
+        for (RentalPosition rp : activeRentalPositions) {
+            ArticleInstance instance = rp.getArticleInstance();
+            if (instance.getStatus() == Status.AVAILABLE) {
+                instance.setStatus(Status.RENTED);
+                articleInstanceRepo.save(instance);
             }
         }
     }

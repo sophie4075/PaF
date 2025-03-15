@@ -125,8 +125,12 @@
 
 
                             <div class="flex justify-end">
-                                <button (click)="onCheckout()" class="bg-blue-500 text-white py-2 px-4 rounded">
-                                    Rent
+                                <button (click)="onCheckout()" class="bg-blue-500 text-white py-2 px-4 rounded" [disabled]="loading">
+                                    @if(!loading){
+                                        Rent
+                                    }@else{
+                                        <mat-progress-spinner diameter="20" mode="indeterminate"></mat-progress-spinner>
+                                    }
                                 </button>
                             </div>
 
