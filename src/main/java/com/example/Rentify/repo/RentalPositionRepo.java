@@ -22,5 +22,33 @@ public interface RentalPositionRepo extends JpaRepository<RentalPosition, Long> 
                                                           @Param("startDate") LocalDate startDate,
                                                           @Param("endDate") LocalDate endDate);
 
+        @Query("SELECT new com.example.Rentify.dto.AdminRentalInfoDto(" +
+            "rp.id, rp.rentalStart, rp.rentalEnd, rp.positionPrice, " +
+            "rp.rental.user.email, rp.rental.user.id, " +
+            "rp.articleInstance.article.bezeichnung, rp.articleInstance.inventoryNumber" +
+            ") " +
+            "FROM RentalPosition rp " +
+            "WHERE rp.rentalStart <= :now AND rp.rentalEnd >= :now")
+    List<AdminRentalInfoDto> findCurrentRentalInfo(@Param("now") LocalDate now);
+
+    @Query("SELECT new com.example.Rentify.dto.AdminRentalInfoDto(" +
+            "rp.id, rp.rentalStart, rp.rentalEnd, rp.positionPrice, " +
+            "rp.rental.user.email, rp.rental.user.id, " +
+            "rp.articleInstance.article.bezeichnung, rp.articleInstance.inventoryNumber" +
+            ") " +
+            "FROM RentalPosition rp " +
+            "WHERE rp.rentalEnd > :now AND rp.rentalEnd <= :threeDaysLater")
+    List<AdminRentalInfoDto> findDueRentalInfo(@Param("now") LocalDate now, @Param("threeDaysLater") LocalDate threeDaysLater);
+
+    @Query("SELECT new com.example.Rentify.dto.AdminRentalInfoDto(" +
+            "rp.id, rp.rentalStart, rp.rentalEnd, rp.positionPrice, " +
+            "rp.rental.user.email, rp.rental.user.id, " +
+            "rp.articleInstance.article.bezeichnung, rp.articleInstance.inventoryNumber" +
+            ") " +
+            "FROM RentalPosition rp " +
+            "WHERE rp.rentalStart > :now AND rp.rentalStart <= :sevenDaysLater " +
+            "AND rp.articleInstance.status = 'UNDER_REPAIR'")
+    List<AdminRentalInfoDto> findUpcomingUnderRepairRentalInfo(@Param("now") LocalDate now, @Param("sevenDaysLater") LocalDate sevenDaysLater);
+
 }
 
