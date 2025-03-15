@@ -1,5 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {ArticleService} from "../../../../shared/services/article/article.service";
+import {RentalPositionDto} from "../../../../shared/services/rental/rental.service";
+import {AdminRentalInfoDto, AdminService} from "../../service/admin.service";
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -10,15 +12,34 @@ import {ArticleService} from "../../../../shared/services/article/article.servic
 })
 export class AdminDashboardComponent implements OnInit{
 
-  constructor(private articleService: ArticleService) {}
+  currentRentals: AdminRentalInfoDto[] = [];
+  dueRentals: AdminRentalInfoDto[] = [];
+  upcomingUnderRepair: AdminRentalInfoDto[] = [];
+
+  constructor(private adminService: AdminService) {}
 
   ngOnInit() {
-    this.getAllCars()
+    this.loadCurrentRentals();
+    this.loadUpcomingUnderRepair();
+    this.loadDueRentals();
   }
 
-  getAllCars(){
-    this.articleService.getArticles().subscribe((res) => {
-      console.log(res)
-    })
+  loadCurrentRentals() {
+    this.adminService.getCurrentRentals().subscribe((data) => {
+      this.currentRentals = data;
+    });
   }
+
+  loadDueRentals() {
+    this.adminService.getDueRentals().subscribe((data) => {
+      this.dueRentals = data;
+    });
+  }
+
+  loadUpcomingUnderRepair() {
+    this.adminService.getUpcomingUnderRepairRentals().subscribe((data) => {
+      this.upcomingUnderRepair = data;
+    });
+  }
+
 }
