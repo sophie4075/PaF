@@ -12,7 +12,7 @@ import com.example.Rentify.repo.ArticleRepo;
 import com.example.Rentify.repo.ArticleInstanceRepo;
 import com.example.Rentify.repo.CategoryRepo;
 import com.example.Rentify.repo.RentalPositionRepo;
-import com.example.Rentify.service.Storage.StorageServiceImpl;
+import com.example.Rentify.service.storage.StorageServiceImpl;
 import com.example.Rentify.utils.ArticleSpecification;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

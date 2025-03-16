@@ -2,7 +2,7 @@ package com.example.Rentify.configuration;
 
 import com.example.Rentify.entity.*;
 import com.example.Rentify.repo.*;
-import com.example.Rentify.service.Rental.RentalServiceImpl;
+import com.example.Rentify.service.rental.RentalServiceImpl;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;

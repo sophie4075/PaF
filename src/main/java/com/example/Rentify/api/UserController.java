@@ -2,7 +2,7 @@ package com.example.Rentify.api;
 
 import com.example.Rentify.entity.Address;
 import com.example.Rentify.entity.User;
-import com.example.Rentify.service.User.UserServiceImpl;
+import com.example.Rentify.service.user.UserServiceImpl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

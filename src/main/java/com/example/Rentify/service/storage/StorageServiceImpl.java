@@ -1,4 +1,4 @@
-package com.example.Rentify.service.Storage;
+package com.example.Rentify.service.storage;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;

@@ -1,4 +1,4 @@
-package com.example.Rentify.service.Rental;
+package com.example.Rentify.service.rental;
 
 import com.example.Rentify.dto.RentalDto;
 import com.example.Rentify.entity.*;

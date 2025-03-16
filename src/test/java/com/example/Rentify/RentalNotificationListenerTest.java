@@ -5,7 +5,7 @@ import com.example.Rentify.entity.User;
 import com.example.Rentify.events.RentalCreatedEvent;
 import com.example.Rentify.listener.NotificationListener;
 import com.example.Rentify.messengerBot.MessengerBot;
-import com.example.Rentify.service.User.UserServiceImpl;
+import com.example.Rentify.service.user.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

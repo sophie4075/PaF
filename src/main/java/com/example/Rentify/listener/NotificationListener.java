@@ -5,7 +5,7 @@ import com.example.Rentify.entity.User;
 import com.example.Rentify.events.RentalCreatedEvent;
 import com.example.Rentify.events.UserUpdatedEvent;
 import com.example.Rentify.messengerBot.MessengerBot;
-import com.example.Rentify.service.Email.EmailServiceImpl;
+import com.example.Rentify.service.email.EmailServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;

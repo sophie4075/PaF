@@ -1,6 +1,6 @@
 package com.example.Rentify.scheduler;
 
-import com.example.Rentify.service.Rental.RentalServiceImpl;
+import com.example.Rentify.service.rental.RentalServiceImpl;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 

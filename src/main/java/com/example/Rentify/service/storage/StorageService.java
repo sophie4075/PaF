@@ -1,4 +1,4 @@
-package com.example.Rentify.service.Storage;
+package com.example.Rentify.service.storage;
 
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;

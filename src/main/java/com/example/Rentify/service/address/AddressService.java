@@ -1,4 +1,4 @@
-package com.example.Rentify.service.Address;
+package com.example.Rentify.service.address;
 
 import com.example.Rentify.entity.Address;
 

@@ -10,7 +10,7 @@ import com.example.Rentify.mapper.RentalMapper;
 import com.example.Rentify.repo.RentalPositionRepo;
 import com.example.Rentify.repo.RentalRepo;
 import com.example.Rentify.repo.UserRepo;
-import com.example.Rentify.service.Rental.RentalServiceImpl;
+import com.example.Rentify.service.rental.RentalServiceImpl;
 import com.example.Rentify.service.article.ArticleServiceImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

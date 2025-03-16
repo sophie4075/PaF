@@ -1,6 +1,6 @@
 package com.example.Rentify.api;
 
-import com.example.Rentify.service.Storage.StorageServiceImpl;
+import com.example.Rentify.service.storage.StorageServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;

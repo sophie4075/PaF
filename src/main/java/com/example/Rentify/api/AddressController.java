@@ -1,7 +1,7 @@
 package com.example.Rentify.api;
 
 import com.example.Rentify.entity.Address;
-import com.example.Rentify.service.Address.AddressServiceImpl;
+import com.example.Rentify.service.address.AddressServiceImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
