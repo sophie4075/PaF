@@ -1,4 +1,4 @@
-package com.example.Rentify.service;
+package com.example.Rentify.service.Email;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
@@ -6,7 +6,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 @Service
-public class EmailService {
+public class EmailServiceImpl implements EmailService {
 
     @Autowired
     private JavaMailSender mailSender;
@@ -18,6 +18,7 @@ public class EmailService {
      * @param subject subject of E-Mail
      * @param text    content of E-Mail
      */
+    @Override
     public void sendEmail(String to, String subject, String text) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);

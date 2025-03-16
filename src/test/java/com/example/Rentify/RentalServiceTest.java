@@ -5,8 +5,8 @@ import com.example.Rentify.dto.ArticleInstanceDto;
 import com.example.Rentify.entity.*;
 import com.example.Rentify.repo.ArticleInstanceRepo;
 import com.example.Rentify.repo.RentalPositionRepo;
-import com.example.Rentify.service.RentalService;
-import com.example.Rentify.service.UserService;
+import com.example.Rentify.service.Rental.RentalServiceImpl;
+import com.example.Rentify.service.User.UserServiceImpl;
 import com.example.Rentify.service.article.ArticleServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,13 +24,13 @@ import static org.junit.jupiter.api.Assertions.*;
 public class RentalServiceTest {
 
     @Autowired
-    private RentalService rentalService;
+    private RentalServiceImpl rentalServiceImpl;
 
     @Autowired
     private ArticleServiceImpl articleServiceImpl;
 
     @Autowired
-    private UserService userService;
+    private UserServiceImpl userServiceImpl;
 
     @Autowired
     private RentalPositionRepo rentalPositionRepo;
@@ -48,7 +48,7 @@ public class RentalServiceTest {
         testUser.setLastName("Mustermann");
         testUser.setEmail("max@mustermann.com");
         testUser.setChatId("493192316");
-        testUser = userService.createUser(testUser);
+        testUser = userServiceImpl.createUser(testUser);
 
         articleDto = new ArticleDto();
         articleDto.setBezeichnung("Camera");
@@ -87,9 +87,9 @@ public class RentalServiceTest {
         articleEntity.setBeschreibung(articleDto.getBeschreibung());
         articleEntity.setGrundpreis(articleDto.getGrundpreis());
 
-        rentalService.createRental(rental, articleEntity, rentalStart, rentalEnd, quantity);
+        rentalServiceImpl.createRental(rental, articleEntity, rentalStart, rentalEnd, quantity);
 
-        List<Rental> userRentals = rentalService.getRentalsByUserId(testUser.getId());
+        List<Rental> userRentals = rentalServiceImpl.getRentalsByUserId(testUser.getId());
 
         assertFalse(userRentals.isEmpty(), "Rental should be created and retrieved.");
         assertEquals(1, userRentals.size(), "User should have exactly one rental.");
@@ -112,7 +112,7 @@ public class RentalServiceTest {
         articleEntity.setBeschreibung(articleDto.getBeschreibung());
         articleEntity.setGrundpreis(articleDto.getGrundpreis());
 
-        rentalService.createRental(rental, articleEntity, rentalStart, rentalEnd, quantity);
+        rentalServiceImpl.createRental(rental, articleEntity, rentalStart, rentalEnd, quantity);
 
         List<RentalPosition> positionsBefore = rentalPositionRepo.findByRentalId(rental.getId());
         for (RentalPosition pos : positionsBefore) {
@@ -129,7 +129,7 @@ public class RentalServiceTest {
             assertEquals(Status.RENTED, instance.getStatus(), "ArticleInstance should be RENTED initially.");
         }
 
-        rentalService.checkAndUpdateOverdueRentals();
+        rentalServiceImpl.checkAndUpdateOverdueRentals();
 
         //Rental updatedRental = rentalService.getRentalsByUserId(testUser.getId()).get(0);
         //assertEquals(RentalStatus.OVERDUE, updatedRental.getRentalStatus(), "Rental status should be OVERDUE.");

@@ -5,7 +5,7 @@ import com.example.Rentify.entity.User;
 import com.example.Rentify.events.RentalCreatedEvent;
 import com.example.Rentify.listener.NotificationListener;
 import com.example.Rentify.messengerBot.MessengerBot;
-import com.example.Rentify.service.UserService;
+import com.example.Rentify.service.User.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -28,7 +28,7 @@ public class RentalNotificationListenerTest {
     private MessengerBot messengerBot; // Mocked MessengerBot for testing
 
     @Mock
-    private UserService userService;
+    private UserServiceImpl userServiceImpl;
 
     @Autowired
     private ApplicationEventPublisher eventPublisher;
@@ -61,7 +61,7 @@ public class RentalNotificationListenerTest {
         testRental.setUser(testUser);
         testRental.setTotalPrice(BigDecimal.valueOf(199.99));
 
-        when(userService.getUserById(testUser.getId())).thenReturn(testUser);
+        when(userServiceImpl.getUserById(testUser.getId())).thenReturn(testUser);
     }
 
     /**

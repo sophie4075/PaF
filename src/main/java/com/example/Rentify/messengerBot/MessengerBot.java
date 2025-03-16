@@ -3,8 +3,8 @@ package com.example.Rentify.messengerBot;
 import com.example.Rentify.entity.Rental;
 import com.example.Rentify.entity.RentalPosition;
 import com.example.Rentify.entity.User;
-import com.example.Rentify.service.RentalService;
-import com.example.Rentify.service.UserService;
+import com.example.Rentify.service.Rental.RentalServiceImpl;
+import com.example.Rentify.service.User.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -21,16 +21,16 @@ import java.util.List;
 public class MessengerBot extends TelegramLongPollingBot {
 
     private final String botToken;
-    private final UserService userService;
-    private final RentalService rentalService; // Added RentalService
+    private final UserServiceImpl userServiceImpl;
+    private final RentalServiceImpl rentalServiceImpl; // Added RentalService
 
     public MessengerBot(@Value("${telegram.bot.token}") String botToken,
-                        UserService userService,
-                        RentalService rentalService) {
+                        UserServiceImpl userServiceImpl,
+                        RentalServiceImpl rentalServiceImpl) {
         super(botToken);
         this.botToken = botToken;
-        this.userService = userService;
-        this.rentalService = rentalService;
+        this.userServiceImpl = userServiceImpl;
+        this.rentalServiceImpl = rentalServiceImpl;
 
         try {
             TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
@@ -85,7 +85,7 @@ public class MessengerBot extends TelegramLongPollingBot {
     }
 
     private void handleStartCommand(String chatId) {
-        User user = userService.getUserByChatId(chatId);
+        User user = userServiceImpl.getUserByChatId(chatId);
         if (user == null) {
             sendMessage(chatId, "You are not registered yet. Please enter your email to link your account.");
         } else {
@@ -94,9 +94,9 @@ public class MessengerBot extends TelegramLongPollingBot {
     }
 
     private void handleStopCommand(String chatId) {
-        User user = userService.getUserByChatId(chatId);
+        User user = userServiceImpl.getUserByChatId(chatId);
         if (user != null) {
-            userService.updateChatId(user.getId(), null);
+            userServiceImpl.updateChatId(user.getId(), null);
             sendMessage(chatId, "You have unsubscribed from notifications.");
         } else {
             sendMessage(chatId, "You were not subscribed.");
@@ -104,9 +104,9 @@ public class MessengerBot extends TelegramLongPollingBot {
     }
 
     public void removeChatId(String chatId) {
-        User user = userService.getUserByChatId(chatId);
+        User user = userServiceImpl.getUserByChatId(chatId);
         if (user != null) {
-            userService.updateChatId(user.getId(), null);
+            userServiceImpl.updateChatId(user.getId(), null);
             sendMessage(chatId, "Your Telegram chat link has been removed. You will no longer receive notifications. Enter a new email address to resubscribe.");
         } else {
             sendMessage(chatId, "No linked Rentify account found for this chat.");
@@ -114,9 +114,9 @@ public class MessengerBot extends TelegramLongPollingBot {
     }
 
     public void linkChatIdToUser(String chatId, String email) {
-        User user = userService.getUserByEmail(email);
+        User user = userServiceImpl.getUserByEmail(email);
         if (user != null) {
-            userService.updateChatId(user.getId(), chatId);
+            userServiceImpl.updateChatId(user.getId(), chatId);
             sendMessage(chatId, "Your Rentify account has been linked to this Telegram chat.");
         } else {
             sendMessage(chatId, "No Rentify account found with this email.");
@@ -154,13 +154,13 @@ public class MessengerBot extends TelegramLongPollingBot {
      * Sends information about all rentals of a user to their Telegram chat.
      */
     public void sendAllUserRentals(String chatId) {
-        User user = userService.getUserByChatId(chatId);
+        User user = userServiceImpl.getUserByChatId(chatId);
         if (user == null) {
             sendMessage(chatId, "No user account is linked to this chat. Please register first.");
             return;
         }
 
-        List<Rental> rentals = rentalService.getRentalsByUserId(user.getId());
+        List<Rental> rentals = rentalServiceImpl.getRentalsByUserId(user.getId());
         if (rentals.isEmpty()) {
             sendMessage(chatId, "You currently have no rentals.");
             return;
@@ -175,7 +175,7 @@ public class MessengerBot extends TelegramLongPollingBot {
 
     public void sendRemindersForTomorrow() {
         // Fetches all RentalPositions from the database
-        List<RentalPosition> rentalPositions = rentalService.getAllRentalPositions();
+        List<RentalPosition> rentalPositions = rentalServiceImpl.getAllRentalPositions();
         LocalDate tomorrow = LocalDate.now().plusDays(1);
 
         // Filters RentalPositions whose rentalStart date is tomorrow

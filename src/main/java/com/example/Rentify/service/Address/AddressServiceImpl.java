@@ -1,4 +1,4 @@
-package com.example.Rentify.service;
+package com.example.Rentify.service.Address;
 
 import com.example.Rentify.entity.Address;
 import com.example.Rentify.repo.AddressRepo;
@@ -8,12 +8,12 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class AddressService {
+public class AddressServiceImpl implements AddressService {
 
     private final AddressRepo addressRepo;
 
     @Autowired
-    public AddressService(AddressRepo addressRepo) {
+    public AddressServiceImpl(AddressRepo addressRepo) {
         this.addressRepo = addressRepo;
     }
 
@@ -23,6 +23,7 @@ public class AddressService {
      * @param address The address entity to create.
      * @return The created address.
      */
+    @Override
     public Address createAddress(Address address) {
         return addressRepo.save(address);
     }
@@ -33,6 +34,7 @@ public class AddressService {
      * @return The address entity.
      * @throws IllegalArgumentException if the address is not found.
      */
+    @Override
     public Address getAddressById(Long id) {
         return addressRepo.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Address with ID " + id + " not found"));
@@ -42,6 +44,7 @@ public class AddressService {
      * Retrieve all addresses.
      * @return A list of all addresses.
      */
+    @Override
     public List<Address> getAllAddresses() {
         return (List<Address>) addressRepo.findAll();
     }
@@ -53,6 +56,7 @@ public class AddressService {
      * @return The updated address entity.
      * @throws RuntimeException if the address is not found.
      */
+    @Override
     public Address updateAddress(Long id, Address updatedAddress) {
         Address existingAddress = addressRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Address not found"));
@@ -70,6 +74,7 @@ public class AddressService {
      * Delete an address by ID.
      * @param id Address ID.
      */
+    @Override
     public void deleteAddressById(Long id) {
         if (!addressRepo.existsById(id)) {
             throw new IllegalArgumentException("Address not found");

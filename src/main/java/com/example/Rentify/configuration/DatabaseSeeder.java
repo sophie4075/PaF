@@ -2,12 +2,11 @@ package com.example.Rentify.configuration;
 
 import com.example.Rentify.entity.*;
 import com.example.Rentify.repo.*;
-import com.example.Rentify.service.RentalService;
+import com.example.Rentify.service.Rental.RentalServiceImpl;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -21,7 +20,7 @@ public class DatabaseSeeder implements CommandLineRunner {
     private final RentalRepo rentalRepository;
     private final RentalPositionRepo rentalPositionRepository;
     private final PasswordEncoder passwordEncoder;
-    private final RentalService rentalService;
+    private final RentalServiceImpl rentalServiceImpl;
 
 
     public DatabaseSeeder(
@@ -32,7 +31,7 @@ public class DatabaseSeeder implements CommandLineRunner {
             RentalRepo rentalRepository,
             RentalPositionRepo rentalPositionRepository,
             PasswordEncoder passwordEncoder,
-            RentalService rentalService) {
+            RentalServiceImpl rentalServiceImpl) {
         this.categoryRepository = categoryRepository;
         this.articleRepository = articleRepository;
         this.articleInstanceRepository = articleInstanceRepository;
@@ -40,7 +39,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         this.rentalRepository = rentalRepository;
         this.rentalPositionRepository = rentalPositionRepository;
         this.passwordEncoder = passwordEncoder;
-        this.rentalService = rentalService;
+        this.rentalServiceImpl = rentalServiceImpl;
     }
 
 
@@ -174,7 +173,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         Article article = articleInstances.get(0).getArticle();
 
         try {
-            rentalService.createRental(rental, article, rentalStart, rentalEnd, quantity);
+            rentalServiceImpl.createRental(rental, article, rentalStart, rentalEnd, quantity);
             System.out.println("Successfully seeded rental for user: " + user.getEmail());
         } catch (IllegalArgumentException e) {
             System.out.println("Rental seeding failed: " + e.getMessage());

@@ -1,4 +1,4 @@
-package com.example.Rentify.service;
+package com.example.Rentify.service.Rental;
 
 import com.example.Rentify.dto.RentalDto;
 import com.example.Rentify.entity.*;
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
  * The RentalService class provides business logic for rental-related operations.
  */
 @Service
-public class RentalService {
+public class RentalServiceImpl implements RentalService {
     private final RentalRepo rentalRepo;
     private final RentalPositionRepo rentalPositionRepo;
     private final ArticleInstanceRepo articleInstanceRepo;
@@ -37,16 +37,17 @@ public class RentalService {
      * @param eventPublisher  ApplicationEventPublisher for publishing events.
      */
     @Autowired
-    public RentalService(RentalRepo rentalRepo,
-                         RentalPositionRepo rentalPositionRepo,
-                         ArticleInstanceRepo articleInstanceRepo,
-                         ApplicationEventPublisher eventPublisher) {
+    public RentalServiceImpl(RentalRepo rentalRepo,
+                             RentalPositionRepo rentalPositionRepo,
+                             ArticleInstanceRepo articleInstanceRepo,
+                             ApplicationEventPublisher eventPublisher) {
         this.rentalRepo = rentalRepo;
         this.rentalPositionRepo = rentalPositionRepo;
         this.articleInstanceRepo = articleInstanceRepo;
         this.eventPublisher = eventPublisher;
     }
 
+    @Override
     public RentalDto getRentalById(Long id) {
         Rental rental = rentalRepo.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Rental not found"));
@@ -56,6 +57,7 @@ public class RentalService {
         return RentalMapper.toDTO(rental, rentalPositions);
     }
 
+    @Override
     public List<RentalDto> getAllRentals() {
         List<Rental> rentals = (List<Rental>) rentalRepo.findAll();
 
@@ -65,14 +67,17 @@ public class RentalService {
         }).collect(Collectors.toList());
     }
 
+    @Override
     public List<Rental> getRentalsByUserId(Long userId) {
         return rentalRepo.findByUserId(userId);
     }
 
+    @Override
     public List<RentalPosition> getAllRentalPositions() {
         return rentalPositionRepo.findAll();
     }
 
+    @Override
     public RentalDto updateRental(Long id, Rental updatedRental) {
         Rental existingRental = rentalRepo.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Rental not found"));
@@ -84,6 +89,7 @@ public class RentalService {
         return getRentalById(id);
     }
 
+    @Override
     public void deleteRental(Long id) {
         if (!rentalRepo.existsById(id)) {
             throw new IllegalArgumentException("Rental with ID " + id + " not found");
@@ -91,6 +97,7 @@ public class RentalService {
         rentalRepo.deleteById(id);
     }
 
+    @Override
     public BigDecimal calculateTotalPrice(Long rentalId) {
         List<RentalPosition> rentalPositions = rentalPositionRepo.findByRentalId(rentalId);
 
@@ -99,6 +106,7 @@ public class RentalService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
+    @Override
     public void checkAndUpdateOverdueRentals() {
         LocalDate today = LocalDate.now();
         List<RentalPosition> rentals = rentalPositionRepo.findAll();
@@ -120,6 +128,7 @@ public class RentalService {
         }
     }
 
+    @Override
     public void changeAvailableToRented(){
         LocalDate today = LocalDate.now();
         List<RentalPosition> activeRentalPositions = rentalPositionRepo.findByRentalStartLessThanEqualAndRentalEndGreaterThanEqual(today, today);
@@ -132,6 +141,7 @@ public class RentalService {
         }
     }
 
+    @Override
     public void createRental(Rental rental, Article article, LocalDate rentalStart, LocalDate rentalEnd, int quantity) {
         List<ArticleInstance> allInstances = articleInstanceRepo.findByArticle(article);
 

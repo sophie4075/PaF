@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class ArticleInstanceServiceImpl {
+public class ArticleInstanceServiceImpl implements ArticleInstanceService {
     private final ArticleRepo articleRepo;
     private final ArticleInstanceRepo instanceRepo;
 
@@ -23,6 +23,7 @@ public class ArticleInstanceServiceImpl {
         this.instanceRepo = instanceRepo;
     }
 
+    @Override
     public void deleteInstance(Long articleId, Long instanceId) {
         Article article = articleRepo.findById(articleId)
                 .orElseThrow(() -> new IllegalArgumentException("Article not found"));
@@ -36,6 +37,7 @@ public class ArticleInstanceServiceImpl {
         updateArticleQuantity(article);
     }
 
+    @Override
     public ArticleInstanceDto addInstance(Long articleId, ArticleInstanceDto instanceDto) {
         Article article = articleRepo.findById(articleId)
                 .orElseThrow(() -> new IllegalArgumentException("Article not found"));
@@ -61,6 +63,7 @@ public class ArticleInstanceServiceImpl {
         return ArticleMapper.toInstanceDto(newInstance);
     }
 
+    @Override
     public ArticleInstanceDto updateInstance(Long articleId, Long instanceId, ArticleInstanceDto instanceDto) {
         ArticleInstance instance = instanceRepo.findById(instanceId)
                 .orElseThrow(() -> new IllegalArgumentException("Instance not found"));
@@ -72,12 +75,7 @@ public class ArticleInstanceServiceImpl {
         return ArticleMapper.toInstanceDto(instance);
     }
 
-    private void updateArticleQuantity(Article article) {
-        int count = instanceRepo.findByArticle(article).size();
-        article.setStueckzahl(count);
-        articleRepo.save(article);
-    }
-
+    @Override
     public List<ArticleInstanceDto> getInstancesForArticle(Long articleId) {
         Article article = articleRepo.findById(articleId)
                 .orElseThrow(() -> new IllegalArgumentException("Article not found"));
@@ -85,5 +83,11 @@ public class ArticleInstanceServiceImpl {
         return instances.stream()
                 .map(ArticleMapper::toInstanceDto)
                 .collect(Collectors.toList());
+    }
+
+    private void updateArticleQuantity(Article article) {
+        int count = instanceRepo.findByArticle(article).size();
+        article.setStueckzahl(count);
+        articleRepo.save(article);
     }
 }

@@ -1,6 +1,6 @@
 package com.example.Rentify;
 
-import com.example.Rentify.service.EmailService;
+import com.example.Rentify.service.Email.EmailServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -20,7 +20,7 @@ class EmailServiceTest {
     private JavaMailSender mailSender;
 
     @InjectMocks
-    private EmailService emailService;
+    private EmailServiceImpl emailServiceImpl;
 
     @Test
     void testSendEmail_ShouldSendCorrectEmail() {
@@ -30,7 +30,7 @@ class EmailServiceTest {
         String content = "Test Content";
 
         // Act
-        emailService.sendEmail(to, subject, content);
+        emailServiceImpl.sendEmail(to, subject, content);
 
         // Assert
         ArgumentCaptor<SimpleMailMessage> messageCaptor = ArgumentCaptor.forClass(SimpleMailMessage.class);

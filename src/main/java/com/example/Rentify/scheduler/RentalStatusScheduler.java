@@ -1,27 +1,27 @@
 package com.example.Rentify.scheduler;
 
-import com.example.Rentify.service.RentalService;
+import com.example.Rentify.service.Rental.RentalServiceImpl;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
 public class RentalStatusScheduler {
 
-    private final RentalService rentalService;
+    private final RentalServiceImpl rentalServiceImpl;
 
-    public RentalStatusScheduler(RentalService rentalService) {
-        this.rentalService = rentalService;
+    public RentalStatusScheduler(RentalServiceImpl rentalServiceImpl) {
+        this.rentalServiceImpl = rentalServiceImpl;
 
     }
 
     // Every day at Midnight
     @Scheduled(cron = "0 0 0 * * ?", zone = "Europe/Berlin")
     public void scheduleDailyOverdueCheck() {
-        rentalService.checkAndUpdateOverdueRentals();
+        rentalServiceImpl.checkAndUpdateOverdueRentals();
     }
 
     @Scheduled(cron = "0 0 0 * * ?", zone = "Europe/Berlin")
     public void updateArticleInstanceStatus() {
-       rentalService.changeAvailableToRented();
+       rentalServiceImpl.changeAvailableToRented();
     }
 }

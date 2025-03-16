@@ -1,6 +1,6 @@
 package com.example.Rentify.api;
 
-import com.example.Rentify.service.StorageService;
+import com.example.Rentify.service.Storage.StorageServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
@@ -22,17 +22,17 @@ import java.util.Map;
 @RequestMapping("/api/uploads")
 @CrossOrigin(origins = "http://localhost:4200")
 public class ImageUploadController {
-    private final StorageService storageService;
+    private final StorageServiceImpl storageServiceImpl;
 
     @Autowired
-    public ImageUploadController(StorageService storageService) {
-        this.storageService = storageService;
+    public ImageUploadController(StorageServiceImpl storageServiceImpl) {
+        this.storageServiceImpl = storageServiceImpl;
     }
 
     @PostMapping("/images")
     public ResponseEntity<Map<String, String>> uploadImage(@RequestParam("file") MultipartFile file) {
         try {
-            String fileName = storageService.saveImage(file);
+            String fileName = storageServiceImpl.saveImage(file);
             String fileDownloadUri = "http://localhost:8080/api/uploads/images/" + fileName;
             //return ResponseEntity.ok("Image uploaded successfully: " + fileDownloadUri);
             Map<String, String> response = new HashMap<>();
@@ -49,8 +49,8 @@ public class ImageUploadController {
     @GetMapping("/images/{filename}")
     public ResponseEntity<Resource> getImage(@PathVariable String filename) {
         try {
-            Resource resource = storageService.loadImageAsResource(filename);
-            String contentType = storageService.getContentType(filename);
+            Resource resource = storageServiceImpl.loadImageAsResource(filename);
+            String contentType = storageServiceImpl.getContentType(filename);
             return ResponseEntity.ok()
                     .contentType(MediaType.valueOf(contentType))
                     .body(resource);

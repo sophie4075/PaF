@@ -53,7 +53,7 @@ public class ArticleMapper {
         article.setStueckzahl(dto.getStueckzahl());
         article.setGrundpreis(dto.getGrundpreis());
         article.setBildUrl(dto.getBildUrl());
-        // Optional: Kategorien mappen, falls nötig
+        // Map Categories?
         return article;
     }
 

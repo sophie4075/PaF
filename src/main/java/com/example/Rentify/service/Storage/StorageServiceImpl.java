@@ -1,4 +1,4 @@
-package com.example.Rentify.service;
+package com.example.Rentify.service.Storage;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -17,10 +17,11 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Service
-public class StorageService {
+public class StorageServiceImpl implements StorageService {
     @Value("${file.upload-dir}")
     private String uploadDir;
 
+    @Override
     public String saveImage(MultipartFile file) throws IOException {
         Path uploadPath = Paths.get(uploadDir);
         if (!Files.exists(uploadPath)) {
@@ -35,6 +36,7 @@ public class StorageService {
         return fileName;
     }
 
+    @Override
     public Resource loadImageAsResource(String fileName) throws MalformedURLException {
         Path filePath = Paths.get(uploadDir).resolve(fileName);
         Resource resource = new UrlResource(filePath.toUri());
@@ -45,11 +47,13 @@ public class StorageService {
         }
     }
 
+    @Override
     public String getContentType(String fileName) throws IOException {
         Path filePath = Paths.get(uploadDir).resolve(fileName);
         return Files.probeContentType(filePath);
     }
 
+    @Override
     public void deleteImage(String fileName) throws IOException {
         Path filePath = Paths.get(uploadDir).resolve(fileName);
         Files.deleteIfExists(filePath);

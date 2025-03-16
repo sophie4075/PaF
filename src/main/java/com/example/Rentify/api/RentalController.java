@@ -10,7 +10,7 @@ import com.example.Rentify.mapper.RentalMapper;
 import com.example.Rentify.repo.RentalPositionRepo;
 import com.example.Rentify.repo.RentalRepo;
 import com.example.Rentify.repo.UserRepo;
-import com.example.Rentify.service.RentalService;
+import com.example.Rentify.service.Rental.RentalServiceImpl;
 import com.example.Rentify.service.article.ArticleServiceImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,19 +29,19 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/rental")
 public class RentalController {
-    private final RentalService rentalService;
+    private final RentalServiceImpl rentalServiceImpl;
     private final UserRepo userRepo;
     private final ArticleServiceImpl articleService;
     private final RentalRepo rentalRepo;
     private final RentalPositionRepo rentalPositionRepo;
 
-    public RentalController(RentalService rentalService,
+    public RentalController(RentalServiceImpl rentalServiceImpl,
                             UserRepo userRepo,
                             ArticleServiceImpl articleService,
                             RentalRepo rentalRepo,
                             RentalPositionRepo rentalPositionRepo
                             ) {
-        this.rentalService = rentalService;
+        this.rentalServiceImpl = rentalServiceImpl;
         this.userRepo = userRepo;
         this.articleService = articleService;
         this.rentalRepo = rentalRepo;
@@ -67,11 +67,11 @@ public class RentalController {
                         .orElseThrow(() -> new IllegalArgumentException("Article not found with id: " + req.getArticleId()));
                 Article article = ArticleMapper.toEntity(articleDto);
 
-                rentalService.createRental(savedRental, article, req.getRentalStart(), req.getRentalEnd(), req.getQuantity());
+                rentalServiceImpl.createRental(savedRental, article, req.getRentalStart(), req.getRentalEnd(), req.getQuantity());
             }
 
             // Calculate total price and update rental
-            BigDecimal totalPrice = rentalService.calculateTotalPrice(savedRental.getId());
+            BigDecimal totalPrice = rentalServiceImpl.calculateTotalPrice(savedRental.getId());
             savedRental.setTotalPrice(totalPrice);
             rentalRepo.save(savedRental);
 
@@ -91,7 +91,7 @@ public class RentalController {
     @PutMapping("/{id}")
     public ResponseEntity<RentalDto> updateRental(@PathVariable Long id, @RequestBody Rental rental) {
         try {
-            return ResponseEntity.ok(rentalService.updateRental(id, rental));
+            return ResponseEntity.ok(rentalServiceImpl.updateRental(id, rental));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         } catch (Exception e) {
@@ -103,7 +103,7 @@ public class RentalController {
     @GetMapping("/{id}")
     public ResponseEntity<RentalDto> getRentalById(@PathVariable Long id) {
         try {
-            return ResponseEntity.ok(rentalService.getRentalById(id));
+            return ResponseEntity.ok(rentalServiceImpl.getRentalById(id));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
@@ -112,7 +112,7 @@ public class RentalController {
     @GetMapping
     public ResponseEntity<List<RentalDto>> getAllRentals() {
         try {
-            return ResponseEntity.ok(rentalService.getAllRentals());
+            return ResponseEntity.ok(rentalServiceImpl.getAllRentals());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
@@ -121,7 +121,7 @@ public class RentalController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteRental(@PathVariable Long id) {
         try {
-            rentalService.deleteRental(id);
+            rentalServiceImpl.deleteRental(id);
             return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -202,7 +202,7 @@ public class RentalController {
         rentalPositionRepo.save(rentalPosition);
 
         Rental rental = rentalPosition.getRental();
-        BigDecimal totalPrice = rentalService.calculateTotalPrice(rental.getId());
+        BigDecimal totalPrice = rentalServiceImpl.calculateTotalPrice(rental.getId());
         rental.setTotalPrice(totalPrice);
         rentalRepo.save(rental);
 

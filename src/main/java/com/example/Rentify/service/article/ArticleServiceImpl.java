@@ -12,7 +12,7 @@ import com.example.Rentify.repo.ArticleRepo;
 import com.example.Rentify.repo.ArticleInstanceRepo;
 import com.example.Rentify.repo.CategoryRepo;
 import com.example.Rentify.repo.RentalPositionRepo;
-import com.example.Rentify.service.StorageService;
+import com.example.Rentify.service.Storage.StorageServiceImpl;
 import com.example.Rentify.utils.ArticleSpecification;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,7 +37,7 @@ public class ArticleServiceImpl implements ArticleService {
     private final ObjectMapper objectMapper;
     private final CategoryRepo categoryRepo;
     private final ArticleInstanceRepo articleInstanceRepo;
-    private final StorageService storageService;
+    private final StorageServiceImpl storageServiceImpl;
     private final RentalPositionRepo rentalPositionRepo;
 
     @Value("${gemini.api.key}")
@@ -46,13 +46,13 @@ public class ArticleServiceImpl implements ArticleService {
     public ArticleServiceImpl(ArticleRepo articleRepo,
                               ArticleInstanceRepo articleInstanceRepo,
                               CategoryRepo categoryRepo,
-                              StorageService storageService,
+                              StorageServiceImpl storageServiceImpl,
                               RentalPositionRepo rentalPositionRepo) {
         this.articleRepo = articleRepo;
         this.articleInstanceRepo = articleInstanceRepo;
         this.categoryRepo = categoryRepo;
         this.objectMapper = new ObjectMapper();
-        this.storageService = storageService;
+        this.storageServiceImpl = storageServiceImpl;
         this.rentalPositionRepo = rentalPositionRepo;
     }
 
@@ -313,7 +313,7 @@ public class ArticleServiceImpl implements ArticleService {
                     !newBildUrl.equals(updated.getBildUrl())) {
                 if (updated.getBildUrl() != null && !updated.getBildUrl().trim().isEmpty()) {
                     try {
-                        storageService.deleteImage(updated.getBildUrl());
+                        storageServiceImpl.deleteImage(updated.getBildUrl());
                     } catch (Exception e) {
                         System.err.println("Error deleting existing image: " + e.getMessage());
                     }

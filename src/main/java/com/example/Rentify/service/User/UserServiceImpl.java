@@ -1,4 +1,4 @@
-package com.example.Rentify.service;
+package com.example.Rentify.service.User;
 
 import com.example.Rentify.entity.Address;
 import com.example.Rentify.entity.User;
@@ -9,13 +9,12 @@ import org.springframework.context.ApplicationEventPublisher; // Neuer Import fÃ
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * The UserService class provides the business logic for User-related operations.
  */
 @Service
-public class UserService {
+public class UserServiceImpl implements UserService {
     private final UserRepo userRepository;
     private final ApplicationEventPublisher eventPublisher;  // ApplicationEventPublisher als AbhÃ¤ngigkeit
 
@@ -26,7 +25,7 @@ public class UserService {
      * @param eventPublisher ApplicationEventPublisher for publishing events.
      */
     @Autowired
-    public UserService(UserRepo userRepository, ApplicationEventPublisher eventPublisher) {
+    public UserServiceImpl(UserRepo userRepository, ApplicationEventPublisher eventPublisher) {
         this.userRepository = userRepository;
         this.eventPublisher = eventPublisher;
     }
@@ -37,6 +36,7 @@ public class UserService {
      * @param user The user entity to create.
      * @return The created user.
      */
+    @Override
     public User createUser(User user) {
         return userRepository.save(user);
     }
@@ -44,10 +44,11 @@ public class UserService {
     /**
      * Update an existing user.
      *
-     * @param id The ID of the user to update.
+     * @param id          The ID of the user to update.
      * @param updatedUser The user entity with updated information.
      * @return The updated user.
      */
+    @Override
     public User updateUser(Long id, User updatedUser) {
         User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -74,6 +75,7 @@ public class UserService {
      * @return The user entity.
      * @throws IllegalArgumentException if the user is not found.
      */
+    @Override
     public User getUserById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("User could not be retrieved"));
@@ -84,6 +86,7 @@ public class UserService {
      *
      * @return A list of all users.
      */
+    @Override
     public List<User> getAllUsers() {
         Iterable<User> users = userRepository.findAll();
         return (List<User>) users;
@@ -95,6 +98,7 @@ public class UserService {
      * @param idFilter The ID filter to apply.
      * @return A list of users matching the filter.
      */
+    @Override
     public List<User> findUsers(Long idFilter) {
         return idFilter == null
                 ? (List<User>) userRepository.findAll()
@@ -108,6 +112,7 @@ public class UserService {
      *
      * @param id User ID.
      */
+    @Override
     public void deleteUserById(Long id) {
         if (!userRepository.existsById(id)) {
             throw new IllegalArgumentException("User with ID " + id + " not found");
@@ -122,6 +127,7 @@ public class UserService {
      * @return The billing address.
      * @throws IllegalArgumentException if the user is not found.
      */
+    @Override
     public Address getBillingAddressByUserId(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("No results found"));
@@ -135,6 +141,7 @@ public class UserService {
      * @return The shipping address.
      * @throws IllegalArgumentException if the user is not found.
      */
+    @Override
     public Address getShippingAddressByUserId(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("No results found"));
@@ -142,10 +149,12 @@ public class UserService {
     }
 
 
+    @Override
     public User getUserByChatId(String chatId) {
         return userRepository.findByChatId(chatId).orElse(null);
     }
 
+    @Override
     public void updateChatId(Long userId, String chatId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
@@ -153,10 +162,10 @@ public class UserService {
         userRepository.save(user);
     }
 
+    @Override
     public User getUserByEmail(String email) {
         return userRepository.findFirstByEmail(email).orElse(null);
     }
-
 
 
 }
