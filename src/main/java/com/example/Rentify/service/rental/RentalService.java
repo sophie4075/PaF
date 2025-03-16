@@ -1,6 +1,8 @@
 package com.example.Rentify.service.rental;
 
+import com.example.Rentify.dto.AdminRentalInfoDto;
 import com.example.Rentify.dto.RentalDto;
+import com.example.Rentify.dto.RentalPositionDto;
 import com.example.Rentify.entity.Article;
 import com.example.Rentify.entity.Rental;
 import com.example.Rentify.entity.RentalPosition;
@@ -22,5 +24,9 @@ public interface RentalService {
     void checkAndUpdateOverdueRentals();
     void changeAvailableToRented();
     void createRental(Rental rental, Article article, LocalDate rentalStart, LocalDate rentalEnd, int quantity);
+    List<AdminRentalInfoDto> getCurrentRentals();
+    List<AdminRentalInfoDto> getDueRentals();
+    List<AdminRentalInfoDto> getUpcomingUnderRepairRentals();
+    AdminRentalInfoDto updateRentalPeriod(Long rentalPositionId, RentalPositionDto updateDto);
 }
 

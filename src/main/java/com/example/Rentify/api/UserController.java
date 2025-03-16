@@ -5,6 +5,8 @@ import com.example.Rentify.entity.User;
 import com.example.Rentify.service.user.UserServiceImpl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.example.Rentify.utils.ResponseHandler;
+
 
 /**
  * The UserController class defines REST endpoints for User-related operations.
@@ -21,35 +23,37 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<User> createUser(@RequestBody User user) {
-        return ResponseEntity.ok(userServiceImpl.createUser(user));
+        return ResponseHandler.handle(() -> userServiceImpl.createUser(user));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User user) {
-        return ResponseEntity.ok(userServiceImpl.updateUser(id, user));
+        return ResponseHandler.handle(() -> userServiceImpl.updateUser(id, user));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
-        return ResponseEntity.ok(userServiceImpl.getUserById(id));
+        return ResponseHandler.handle(() -> userServiceImpl.getUserById(id));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        userServiceImpl.deleteUserById(id);
-        return ResponseEntity.noContent().build();
+        return ResponseHandler.handle(() -> {
+            userServiceImpl.deleteUserById(id);
+            return null;
+        });
     }
 
 
     @GetMapping("/{userId}/billing-address")
     public ResponseEntity<Address> getBillingAddress(@PathVariable Long userId) {
-        return ResponseEntity.ok(userServiceImpl.getBillingAddressByUserId(userId));
+        return ResponseHandler.handle(() -> userServiceImpl.getBillingAddressByUserId(userId));
     }
 
 
     @GetMapping("/{userId}/shipping-address")
     public ResponseEntity<Address> getShippingAddress(@PathVariable Long userId) {
-        return ResponseEntity.ok(userServiceImpl.getShippingAddressByUserId(userId));
+        return ResponseHandler.handle(() -> userServiceImpl.getShippingAddressByUserId(userId));
     }
 
 

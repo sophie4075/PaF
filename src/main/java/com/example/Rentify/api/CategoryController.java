@@ -1,9 +1,8 @@
 package com.example.Rentify.api;
 
 import com.example.Rentify.dto.CategoryDto;
-import com.example.Rentify.entity.Category;
-import com.example.Rentify.repo.CategoryRepo;
 import com.example.Rentify.service.category.CategoryService;
+import com.example.Rentify.utils.ResponseHandler;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,13 +21,11 @@ public class CategoryController {
 
     @GetMapping
     public ResponseEntity<List<CategoryDto>> getAllCategories() {
-        List<CategoryDto> categories = categoryService.getAllCategories();
-        return ResponseEntity.ok(categories);
+        return ResponseHandler.handle(categoryService::getAllCategories);
     }
 
     @PostMapping
     public ResponseEntity<CategoryDto> createCategory(@RequestBody CategoryDto categoryDTO) {
-        CategoryDto savedCategory = categoryService.createCategory(categoryDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedCategory);
+        return ResponseHandler.handleWithStatus(() -> categoryService.createCategory(categoryDTO), HttpStatus.CREATED);
     }
 }

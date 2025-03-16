@@ -1,5 +1,6 @@
 package com.example.Rentify.api;
 
+import com.example.Rentify.utils.ResponseHandler;
 import com.example.Rentify.dto.ArticleDto;
 import com.example.Rentify.dto.AvailabilityDto;
 import com.example.Rentify.repo.CategoryRepo;
@@ -19,61 +20,40 @@ public class ArticleController {
     private final ArticleService articleService;
     private final CategoryRepo categoryRepo;
 
-    //TODO add try catch
     public ArticleController(ArticleService articleService, CategoryRepo categoryRepo) {
         this.articleService = articleService;
         this.categoryRepo = categoryRepo;
     }
 
-    //TODO add try catch
     @GetMapping
     public List<ArticleDto> getAllArticles() {
         return articleService.getAllArticles();
     }
 
-    //TODO add try catch
     @GetMapping("/{id}")
     public ResponseEntity<ArticleDto> getArticleById(@PathVariable Long id) {
-        return articleService.getArticleById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseHandler.handleOptional(() -> articleService.getArticleById(id));
     }
 
-    //TODO add try catch
     @PostMapping
     public ResponseEntity<ArticleDto> createArticle(@RequestBody ArticleDto articleDto) {
-        ArticleDto createdArticle = articleService.createArticle(articleDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdArticle);
+        return ResponseHandler.handleWithStatus(() -> articleService.createArticle(articleDto), HttpStatus.CREATED);
+
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ArticleDto> updateArticle(@PathVariable Long id, @RequestBody ArticleDto articleDto) {
-        try {
-            ArticleDto updated = articleService.updateArticle(id, articleDto);
-            return ResponseEntity.ok(updated);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
+        return ResponseHandler.handle(() -> articleService.updateArticle(id, articleDto));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteArticle(@PathVariable Long id) {
-        try {
-            articleService.deleteArticle(id);
-            return ResponseEntity.noContent().build();
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
+        return ResponseHandler.handleVoid(() -> articleService.deleteArticle(id));
     }
 
     @PostMapping("/{id}/generate-description")
     public ResponseEntity<String> generateDescription(@PathVariable Long id) {
-        try {
-            String description = articleService.generateDescription(id);
-            return ResponseEntity.ok(description);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
+        return ResponseHandler.handle(() -> articleService.generateDescription(id));
     }
 
     //TODO add try catch
@@ -81,11 +61,9 @@ public class ArticleController {
     public ResponseEntity<String> generateDescriptionByName(@RequestBody Map<String, String> body) {
         String bezeichnung = body.get("bezeichnung");
         if (bezeichnung == null || bezeichnung.isEmpty()) {
-            return ResponseEntity.badRequest().body("Bezeichnung fehlt.");
+            return ResponseEntity.badRequest().body("Description is missing.");
         }
-        // Erstelle den Prompt und rufe die Gemini-API auf
-        String description = articleService.generateDescriptionForName(bezeichnung);
-        return ResponseEntity.ok(description);
+        return ResponseHandler.handle(() -> articleService.generateDescriptionForName(bezeichnung));
     }
 
 
@@ -105,12 +83,7 @@ public class ArticleController {
     @CrossOrigin(origins = "http://localhost:4200")
     @PatchMapping("/{id}")
     public ResponseEntity<ArticleDto> patchArticle(@PathVariable Long id, @RequestBody Map<String, Object> updates) {
-        try {
-            ArticleDto updated = articleService.patchArticle(id, updates);
-            return ResponseEntity.ok(updated);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
+        return ResponseHandler.handle(() -> articleService.patchArticle(id, updates));
     }
 
     @GetMapping("/availability")
@@ -131,4 +104,3 @@ public class ArticleController {
 
 
 }
-

@@ -35,7 +35,7 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> registerCustomer(@RequestBody RegisterRequest registerRequest) {
 
-        log.info("registerCustomer() - Eingehender Request: {}", registerRequest);
+        log.info("registerCustomer() - Incoming req: {}", registerRequest);
 
        if(authService.hasCustomerWithEmail(registerRequest.getEmail())) {
            //406

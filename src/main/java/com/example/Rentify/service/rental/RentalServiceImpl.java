@@ -1,6 +1,8 @@
 package com.example.Rentify.service.rental;
 
+import com.example.Rentify.dto.AdminRentalInfoDto;
 import com.example.Rentify.dto.RentalDto;
+import com.example.Rentify.dto.RentalPositionDto;
 import com.example.Rentify.entity.*;
 import com.example.Rentify.events.RentalCreatedEvent;
 import com.example.Rentify.mapper.RentalMapper;
@@ -178,6 +180,74 @@ public class RentalServiceImpl implements RentalService {
 
         eventPublisher.publishEvent(new RentalCreatedEvent(rental));
     }
+
+    @Override
+    public List<AdminRentalInfoDto> getCurrentRentals() {
+        LocalDate now = LocalDate.now();
+        return rentalPositionRepo.findCurrentRentalInfo(now);
+    }
+
+    @Override
+    public List<AdminRentalInfoDto> getDueRentals() {
+        LocalDate now = LocalDate.now();
+        LocalDate threeDaysLater = now.plusDays(3);
+        return rentalPositionRepo.findDueRentalInfo(now, threeDaysLater);
+    }
+
+    @Override
+    public List<AdminRentalInfoDto> getUpcomingUnderRepairRentals() {
+        LocalDate now = LocalDate.now();
+        LocalDate sevenDaysLater = now.plusDays(7);
+        return rentalPositionRepo.findUpcomingUnderRepairRentalInfo(now, sevenDaysLater);
+    }
+
+    @Override
+    public AdminRentalInfoDto updateRentalPeriod(Long rentalPositionId, RentalPositionDto updateDto){
+        RentalPosition rentalPosition = rentalPositionRepo.findById(rentalPositionId)
+                .orElseThrow(() -> new IllegalArgumentException("RentalPosition not found"));
+
+        LocalDate currentStart = rentalPosition.getRentalStart();
+        LocalDate newEnd = updateDto.getRentalEnd();
+
+        boolean overlapExists = rentalPositionRepo.existsOverlapExcludingCurrent(
+                rentalPosition.getArticleInstance(),
+                rentalPosition.getId(),
+                rentalPosition.getRentalEnd(),
+                newEnd
+        );
+        if (overlapExists) {
+            throw new IllegalStateException("Overlap with another rental");
+        }
+
+        // Update Dates & Price
+        rentalPosition.setRentalEnd(newEnd);
+        long days = ChronoUnit.DAYS.between(currentStart, newEnd);
+        days = Math.max(days, 1);
+        BigDecimal dailyPrice = BigDecimal.valueOf(rentalPosition.getArticleInstance().getArticle().getGrundpreis());
+        rentalPosition.setPositionPrice(dailyPrice.multiply(BigDecimal.valueOf(days)));
+
+        rentalPositionRepo.save(rentalPosition);
+
+        // Update Rental
+        Rental rental = rentalPosition.getRental();
+        BigDecimal totalPrice = calculateTotalPrice(rental.getId());
+        rental.setTotalPrice(totalPrice);
+        rentalRepo.save(rental);
+
+        return new AdminRentalInfoDto(
+                rentalPosition.getId(),
+                currentStart,
+                newEnd,
+                rentalPosition.getPositionPrice(),
+                rental.getUser().getEmail(),
+                rental.getUser().getId(),
+                rental.getUser().getFirstName(),
+                rental.getUser().getLastName(),
+                rentalPosition.getArticleInstance().getArticle().getBezeichnung(),
+                rentalPosition.getArticleInstance().getInventoryNumber()
+        );
+    }
+
 }
 
 

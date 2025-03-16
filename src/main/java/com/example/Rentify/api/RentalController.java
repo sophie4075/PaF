@@ -19,6 +19,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
+import com.example.Rentify.utils.ResponseHandler;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -86,49 +87,25 @@ public class RentalController {
     }
 
 
-
-
     @PutMapping("/{id}")
     public ResponseEntity<RentalDto> updateRental(@PathVariable Long id, @RequestBody Rental rental) {
-        try {
-            return ResponseEntity.ok(rentalServiceImpl.updateRental(id, rental));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
+        return ResponseHandler.handle(() -> rentalServiceImpl.updateRental(id, rental));
     }
 
 
     @GetMapping("/{id}")
     public ResponseEntity<RentalDto> getRentalById(@PathVariable Long id) {
-        try {
-            return ResponseEntity.ok(rentalServiceImpl.getRentalById(id));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
+        return ResponseHandler.handle(() -> rentalServiceImpl.getRentalById(id));
     }
 
     @GetMapping
     public ResponseEntity<List<RentalDto>> getAllRentals() {
-        try {
-            return ResponseEntity.ok(rentalServiceImpl.getAllRentals());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
+        return ResponseHandler.handle(rentalServiceImpl::getAllRentals);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteRental(@PathVariable Long id) {
-        try {
-            rentalServiceImpl.deleteRental(id);
-            return ResponseEntity.noContent().build();
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-
+        return ResponseHandler.handleVoid(() -> rentalServiceImpl.deleteRental(id));
     }
 
     //Helper to get current User
@@ -146,25 +123,17 @@ public class RentalController {
     //TODO get auth user -> make sure role is Admin
     @GetMapping("/admin/current")
     public ResponseEntity<List<AdminRentalInfoDto>> getCurrentRentals() {
-        LocalDate now = LocalDate.now();
-        List<AdminRentalInfoDto> currentRentals = rentalPositionRepo.findCurrentRentalInfo(now);
-        return ResponseEntity.ok(currentRentals);
+        return ResponseHandler.handle(rentalServiceImpl::getCurrentRentals);
     }
 
     @GetMapping("/admin/due")
     public ResponseEntity<List<AdminRentalInfoDto>> getDueRentals() {
-        LocalDate now = LocalDate.now();
-        LocalDate threeDaysLater = now.plusDays(3);
-        List<AdminRentalInfoDto> dueRentals = rentalPositionRepo.findDueRentalInfo(now, threeDaysLater);
-        return ResponseEntity.ok(dueRentals);
+        return ResponseHandler.handle(rentalServiceImpl::getDueRentals);
     }
 
     @GetMapping("/admin/upcoming-under-repair")
     public ResponseEntity<List<AdminRentalInfoDto>> getUpcomingUnderRepairRentals() {
-        LocalDate now = LocalDate.now();
-        LocalDate sevenDaysLater = now.plusDays(7);
-        List<AdminRentalInfoDto> upcomingRentals = rentalPositionRepo.findUpcomingUnderRepairRentalInfo(now, sevenDaysLater);
-        return ResponseEntity.ok(upcomingRentals);
+        return ResponseHandler.handle(rentalServiceImpl::getUpcomingUnderRepairRentals);
     }
 
     @PatchMapping("/admin/update-rental/{rentalPositionId}")
@@ -172,53 +141,10 @@ public class RentalController {
             @PathVariable Long rentalPositionId,
             @RequestBody RentalPositionDto updateDto) {
 
-        Optional<RentalPosition> optPosition = rentalPositionRepo.findById(rentalPositionId);
-        if (optPosition.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        RentalPosition rentalPosition = optPosition.get();
-        LocalDate currentStart = rentalPosition.getRentalStart();
-        LocalDate currentEnd = rentalPosition.getRentalEnd();
-        LocalDate newEnd = updateDto.getRentalEnd();
-
-        boolean overlapExists = rentalPositionRepo.existsOverlapExcludingCurrent(
-                rentalPosition.getArticleInstance(),
-                rentalPosition.getId(),
-                currentEnd,
-                newEnd
+        return ResponseHandler.handle(() ->
+                rentalServiceImpl.updateRentalPeriod(rentalPositionId, updateDto)
         );
 
-        if (overlapExists) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(null);
-        }
-
-        rentalPosition.setRentalEnd(newEnd);
-        long days = ChronoUnit.DAYS.between(currentStart, newEnd);
-        days = days < 1 ? 1 : days;
-        BigDecimal dailyPrice = BigDecimal.valueOf(rentalPosition.getArticleInstance().getArticle().getGrundpreis());
-        rentalPosition.setPositionPrice(dailyPrice.multiply(BigDecimal.valueOf(days)));
-
-        rentalPositionRepo.save(rentalPosition);
-
-        Rental rental = rentalPosition.getRental();
-        BigDecimal totalPrice = rentalServiceImpl.calculateTotalPrice(rental.getId());
-        rental.setTotalPrice(totalPrice);
-        rentalRepo.save(rental);
-
-        AdminRentalInfoDto updatedDto = new AdminRentalInfoDto(
-                rentalPosition.getId(),
-                currentStart,
-                rentalPosition.getRentalEnd(),
-                rentalPosition.getPositionPrice(),
-                rentalPosition.getRental().getUser().getEmail(),
-                rentalPosition.getRental().getUser().getId(),
-                rentalPosition.getRental().getUser().getFirstName(),
-                rentalPosition.getRental().getUser().getLastName(),
-                rentalPosition.getArticleInstance().getArticle().getBezeichnung(),
-                rentalPosition.getArticleInstance().getInventoryNumber()
-        );
-        return ResponseEntity.ok(updatedDto);
     }
 
 

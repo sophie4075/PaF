@@ -18,7 +18,6 @@ public class ArticleSpecification {
             // Inner join to Article Instances
             Join<Article, ArticleInstance> instanceJoin = root.join("articleInstances", JoinType.INNER);
             // Get Available Instances
-            // (Hier gehen wir davon aus, dass Status.AVAILABLE in deinem Enum existiert)
             var availableStatus = cb.equal(instanceJoin.get("status"), Status.AVAILABLE);
 
             assert query != null;

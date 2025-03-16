@@ -39,8 +39,6 @@ public class ImageUploadController {
             response.put("fileDownloadUri", fileDownloadUri);
             return ResponseEntity.ok(response);
         } catch (IOException e) {
-            /*return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error uploading image");*/
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Collections.singletonMap("error", "Error uploading image"));
         }

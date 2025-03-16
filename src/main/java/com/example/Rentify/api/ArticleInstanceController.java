@@ -2,6 +2,7 @@ package com.example.Rentify.api;
 
 import com.example.Rentify.dto.ArticleInstanceDto;
 import com.example.Rentify.service.instance.ArticleInstanceServiceImpl;
+import com.example.Rentify.utils.ResponseHandler;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,29 +21,25 @@ public class ArticleInstanceController {
 
     @DeleteMapping("/{instanceId}")
     public ResponseEntity<Void> deleteInstance(@PathVariable Long articleId, @PathVariable Long instanceId) {
-        instanceService.deleteInstance(articleId, instanceId);
-        return ResponseEntity.noContent().build();
+        return ResponseHandler.handleVoid(() -> instanceService.deleteInstance(articleId, instanceId));
     }
 
     @PostMapping
     public ResponseEntity<ArticleInstanceDto> addInstance(@PathVariable Long articleId,
                                                           @RequestBody ArticleInstanceDto instanceDto) {
-        ArticleInstanceDto created = instanceService.addInstance(articleId, instanceDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        return ResponseHandler.handleWithStatus(() -> instanceService.addInstance(articleId, instanceDto), HttpStatus.CREATED);
     }
 
     @PutMapping("/{instanceId}")
     public ResponseEntity<ArticleInstanceDto> updateInstance(@PathVariable Long articleId,
                                                              @PathVariable Long instanceId,
                                                              @RequestBody ArticleInstanceDto instanceDto) {
-        ArticleInstanceDto updated = instanceService.updateInstance(articleId, instanceId, instanceDto);
-        return ResponseEntity.ok(updated);
+        return ResponseHandler.handle(() -> instanceService.updateInstance(articleId, instanceId, instanceDto));
     }
 
     @GetMapping
     public ResponseEntity<List<ArticleInstanceDto>> getInstances(@PathVariable Long articleId) {
-        List<ArticleInstanceDto> dtos = instanceService.getInstancesForArticle(articleId);
-        return ResponseEntity.ok(dtos);
+        return ResponseHandler.handle(() -> instanceService.getInstancesForArticle(articleId));
     }
 
 }
