@@ -28,8 +28,32 @@ import {Category} from "../../../../shared/services/category/category.service";
     AsyncPipe,
     NgForOf
   ],
-  templateUrl: './category-selector.component.html',
-  styleUrl: './category-selector.component.css'
+  template: `
+    <mat-form-field appearance="outline" class="w-full">
+      <mat-chip-grid #chipGrid aria-label="Kategorien Auswahl">
+        @for (cat of selectedCategories; track $index){
+          <mat-chip-row (removed)="removeCategory(cat)">
+            {{cat.name}}
+            <button matChipRemove [attr.aria-label]="'remove ' + cat.name">
+              <mat-icon fontIcon="cancel">cancel</mat-icon>
+            </button>
+          </mat-chip-row>
+        }
+      </mat-chip-grid>
+      <input
+          [formControl]="categoryCtrl"
+          [matChipInputFor]="chipGrid"
+          [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+          [matAutocomplete]="auto"
+          (matChipInputTokenEnd)="addCategory($event)"
+      />
+      <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selectedCategory($event)">
+        <mat-option *ngFor="let cat of filteredCategories | async" [value]="cat">
+          {{ cat.name }}
+        </mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
+  `,
 })
 export class CategorySelectorComponent implements OnInit, OnChanges{
   @Input() allCategories: Category[] = [];

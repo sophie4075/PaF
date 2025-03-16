@@ -38,8 +38,146 @@ import {NgxCurrencyDirective} from "ngx-currency";
     MatProgressSpinner,
     NgxCurrencyDirective,
   ],
-  templateUrl: './post-article.component.html',
-  styleUrl: './post-article.component.css'
+  template: `
+    <section class="">
+      <div class="flex flex-col items-center justify-center px-6 py-8 mx-auto">
+
+        <div class="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-xl xl:p-0">
+          <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
+            <h1 class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-4xl">
+              Add a new Article
+            </h1>
+            <img [src]="url" height="200" alt="">
+            <form class="space-y-4 md:space-y-6" [formGroup]="articleForm" (ngSubmit)="onSubmit()">
+
+              <div class="mb-4">
+                <label for="bezeichnung"
+                       class="block mb-2 text-sm font-medium text-gray-900">Bezeichnung</label>
+                <input id="bezeichnung" type="text" formControlName="bezeichnung"
+                       class="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:focus:ring-blue-500 dark:focus:border-blue-500"/>
+                @if (articleForm.get('bezeichnung')?.hasError('required') && articleForm.get('bezeichnung')?.touched) {
+                  <div>
+                    <p class="text-red-600 text-sm">Bezeichnung ist erforderlich.</p>
+                  </div>
+                }
+              </div>
+
+              <div class="mb-4">
+                <label for="beschreibung"
+                       class="block mb-2 text-sm font-medium text-gray-900">Beschreibung</label>
+                <textarea id="beschreibung" formControlName="beschreibung"
+                          class="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:focus:ring-blue-500 dark:focus:border-blue-500"></textarea>
+                @if (articleForm.get('beschreibung')?.hasError('required') && articleForm.get('beschreibung')?.touched) {
+                  <div>
+                    <p class="text-red-600 text-sm">Beschreibung ist erforderlich.</p>
+                  </div>
+                }
+                @if (showGenerateDescriptionButton && !loading) {
+                  <button type="button" (click)="onGenerateDescription()"
+                          class="bg-blue-500 text-white py-1 px-2 rounded mt-2">
+                    KI Beschreibung generieren ✨
+                  </button>
+                } @else if (showGenerateDescriptionButton && loading) {
+                  <mat-progress-spinner diameter="20" mode="indeterminate"></mat-progress-spinner>
+                }
+              </div>
+
+              <div class="mb-4">
+                <label for="stueckzahl" class="block mb-1 text-sm font-medium text-gray-900">Stückzahl</label>
+                <input id="stueckzahl" type="number" formControlName="stueckzahl"
+                       class="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:focus:ring-blue-500 dark:focus:border-blue-500"/>
+                @if (articleForm.get('stueckzahl')?.hasError('required') && articleForm.get('stueckzahl')?.touched) {
+                  <div>
+                    <p class="text-red-600 text-sm">Stückzahl ist erforderlich.</p>
+                  </div>
+                }
+              </div>
+
+
+              <div class="mb-4">
+                <label for="grundpreis" class="block mb-2 text-sm font-medium text-gray-900">Grundpreis pro
+                  Tag</label>
+                <input id="grundpreis"
+                       type="number"
+                       formControlName="grundpreis"
+                       [currencyMask]="{ suffix: '€ ', thousands: '.', decimal: ',', precision: 2 }"
+                       class="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:focus:ring-blue-500 dark:focus:border-blue-500"/>
+                @if (articleForm.get('grundpreis')?.hasError('required') && articleForm.get('grundpreis')?.touched) {
+                  <div>
+                    <p class="text-red-600 text-sm">Grundpreis pro Tag ist erforderlich.</p>
+                  </div>
+                }
+              </div>
+
+              <div class="mb-4">
+                <label for="bildUrl" class="block mb-2 text-sm font-medium text-gray-900">Bild</label>
+                <input (change)="onSelectFile($event)" id="bildUrl" type="file" formControlName="bildUrl"
+                       accept="image/png, image/jpeg"
+                       class="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:focus:ring-blue-500 dark:focus:border-blue-500"/>
+              </div>
+
+
+              <div class="mb-4">
+                <label class="block mb-2 text-sm font-medium text-gray-900">Kategorie</label>
+                <app-category-selector
+                    [allCategories]="categories"
+                    (categoriesChanged)="onCategoriesChanged($event)">
+                </app-category-selector>
+              </div>
+
+
+              @if (articleForm.get('sameStatus')?.value) {
+                <div class="mb-4">
+                  <label for="status" class="block mb-2 text-sm font-medium text-gray-900">Status</label>
+                  <select id="status" formControlName="status"
+                          class="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                    <option value="">Bitte wählen</option>
+                    <option *ngFor="let s of statuses" [value]="s">{{ s }}</option>
+                  </select>
+                  @if (articleForm.get('status')?.hasError('required') && articleForm.get('status')?.touched) {
+                    <div>
+                      <p class="text-red-600 text-sm">Status wählen.</p>
+                    </div>
+                  }
+                </div>
+              } @else {
+
+                @for (instanceStatus of instanceStatuses.controls; track $index) {
+                  <div formArrayName="instanceStatuses" class="mb-4">
+                    <label for="instanceStatus-{{$index}}"
+                           class="block mb-2 text-sm font-medium text-gray-900">
+                      Status für Instanz {{ $index + 1 }}
+                    </label>
+                    <select [formControlName]="$index" id="instanceStatus-{{$index}}"
+                            class="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:focus:ring-blue-500 dark:focus:border-blue-500 ng-untouched ng-pristine ng-valid">
+                      <option value="">Bitte wählen</option>
+                      <option *ngFor="let s of statuses" [value]="s">{{ s }}</option>
+                    </select>
+                  </div>
+                }
+              }
+
+              <div class="mb-4 flex items-center">
+                <label class="block mb-2 text-sm font-medium text-gray-900">
+                  <input type="checkbox" formControlName="sameStatus"/>
+                  Alle Artikel Instanzen haben denselben Status
+                </label>
+              </div>
+
+
+              <div>
+                <button type="submit" [disabled]="articleForm.invalid"
+                        class="bg-blue-500 text-white py-2 px-4 rounded">
+                  Artikel anlegen
+                </button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  `,
 })
 export class PostArticleComponent implements OnInit {
   articleForm!: FormGroup;

@@ -9,7 +9,7 @@ export class AdminGuard implements CanActivate {
   constructor(private router: Router) {}
 
   canActivate(): boolean {
-    if (StorageService.isAdminLoggedIn()) {
+    if (StorageService.isAdminLoggedIn() || StorageService.isStaffLoggedIn()) {
       return true;
     } else {
       this.router.navigate(['/']);

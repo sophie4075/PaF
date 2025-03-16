@@ -11,7 +11,38 @@ import {NgStyle} from "@angular/common";
     RouterLinkActive,
     NgStyle
   ],
-  templateUrl: './navbar.component.html',
+  template: `
+  <header>
+  <div>
+    <a routerLink="/" >
+    <img src="" alt="Logo" id="logo">
+    </a>
+  </div>
+
+
+  <button class="mobile-nav-toggle" aria-controls="navigation" aria-expanded="false"><span class="sr-only">Menu</span>
+  </button>
+
+  <nav id="navbar">
+      <ul data-visible="false" id="navigation">
+          <li><a routerLink="/products" routerLinkActive="active">Products</a></li>
+          @if(!isCustomerLoggedIn && !isStaffLoggedIn && !isAdminLoggedIn){
+              <li><a routerLink="/login" routerLinkActive="active">Login</a></li>
+              <li><a routerLink="/register" routerLinkActive="active">Register</a></li>
+          }
+          @else if(isCustomerLoggedIn || isStaffLoggedIn || isAdminLoggedIn) {
+              @if(isStaffLoggedIn || isAdminLoggedIn){
+                  <!-- TODO make Link update dynamically -->
+                  <li><a routerLink="/admin/post-article" routerLinkActive="active">Add Article</a></li>
+              }
+              <li><a [routerLink]="dashboardRoute" routerLinkActive="active">Dashboard</a></li>
+              <li><a routerLink="/cart" routerLinkActive="active">Cart</a></li>
+              <li><a routerLinkActive="active" (click)="logout()" [ngStyle]="{'cursor': 'pointer'}">Logout</a></li>
+          }
+      </ul>
+  </nav>
+</header>
+  `,
   styleUrl: '../../../../app.component.css'
 })
 export class NavbarComponent implements AfterViewInit{

@@ -7,7 +7,14 @@ import {StorageService} from "./shared/services/storage/storage.service";
   selector: 'app-root',
   standalone: true,
   imports: [RouterOutlet, NavbarComponent, RouterLink],
-  templateUrl: './app.component.html',
+  template: `
+    <app-navbar
+        [isCustomerLoggedIn]="isCustomerLoggedIn"
+        [isAdminLoggedIn]="isAdminLoggedIn"
+        [isStaffLoggedIn]="isStaffLoggedIn"
+    ></app-navbar>
+    <router-outlet></router-outlet>
+  `,
   styleUrl: './app.component.css',
 })
 export class AppComponent implements OnInit{
