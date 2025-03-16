@@ -1,6 +1,7 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, inject, OnInit} from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import {AdminRentalInfoDto, AdminService} from "../../service/admin.service";
-import {DatePipe} from "@angular/common";
+import {DatePipe, NgForOf} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {
   MatExpansionPanelHeader,
@@ -10,6 +11,15 @@ import {
   MatExpansionPanelTitle
 } from "@angular/material/expansion";
 import {MatProgressSpinner} from "@angular/material/progress-spinner";
+import {FilterPipe} from "../../../../shared/pipes/filter.pipe";
+import {
+  UpdateRentalPeriodComponent
+} from "../../../../shared/components/dashboard/update-rental-period/update-rental-period.component";
+import {MatSnackBar} from "@angular/material/snack-bar";
+import {OrderByPipe} from "../../../../shared/pipes/oder.pipe";
+import {
+  SortableHeaderComponent
+} from "../../../../shared/components/dashboard/sortable-header/sortable-header.component";
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -22,144 +32,84 @@ import {MatProgressSpinner} from "@angular/material/progress-spinner";
     MatExpansionPanel,
     MatExpansionPanelTitle,
     MatExpansionPanelDescription,
-    MatProgressSpinner
+    MatProgressSpinner,
+    FilterPipe,
+    NgForOf,
+    OrderByPipe,
+    SortableHeaderComponent
   ],
   template: `
-    <!--WIP-->
+    
+    <div class="max-w-7xl mx-auto px-4 py-8">
+      <div class="overflow-auto shadow-md rounded py">
 
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex justify-center flex-col gap-8 items-center">
-      <h1 class="font-bold text-xl mb-2 mt-8">Hi, hier das wichtigste auf einem Blick!</h1>
-
-      <div class="md:w-1/2 w-full rounded overflow-hidden shadow-lg">
-        <div class="px-6 py-4 ">
-          <h2  class="font-bold text-xl mb-2">Aktuell verliehene Instanzen</h2>
-          @if (currentRentals.length) {
-            @for (rental of currentRentals; track $index) {
-
-              <div class="mb-4 mt-4">
-                <h3>{{ rental.articleDesignation }}</h3>
-                <p class="text-gray-700 text-sm">{{ rental.articleInstanceInventoryNumber }}, rented by: {{rental.userFirstName}}</p>
-                <p class="text-gray-700 text-base">
-                  Rental period: {{rental.rentalStart | date: 'dd.MM.yyyy'}} - {{rental.rentalEnd | date: 'dd.MM.yyyy'}}
-                </p>
-              </div>
-
-              <mat-accordion>
-                <mat-expansion-panel>
-                  <mat-expansion-panel-header>
-                    <mat-panel-title>
-                      Edit rental period
-                    </mat-panel-title>
-                  </mat-expansion-panel-header>
-                  <div>
-                    <form (ngSubmit)="onUpdateRentalPeriod(rental)" class="flex flex-col">
-                      <label>Rental Start:</label>
-                      <input type="date" name="newRentalStart" [value]="rental.rentalStart | date:'yyyy-MM-dd'" disabled>
-                      <label>Rental end:</label>
-                      <input type="date" [(ngModel)]="rental.newRentalEnd" name="newRentalEnd" required>
-                      <div class="w-full flex justify-end">
-                        <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded mt-8 " >
-                          Update
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-                </mat-expansion-panel>
-              </mat-accordion>
-
-
-            }
-          } @else {
-            <p class="text-gray-700 text-base italic">No instances are currently borrowed</p>
-          }
+        <div class="flex justify-between items-center m-4">
+          <h1 class="text-xl font-bold">Items in rental</h1>
+          <input
+              [(ngModel)]="searchTerm"
+              placeholder="Search..."
+              class="border p-2 rounded w-1/3 bg-transparent" />
         </div>
+
+        @if (currentRentals.length){
+
+          <table class="w-full text-sm text-left rtl:text-right text-gray-500">
+            <thead class="text xs text-gray-700 uppercase">
+            <tr class="text-nowrap flex justify-between items-center">
+              <app-sortable-header label="Artikel" field="articleDesignation"
+                                   [sortField]="sortField" [sortDirection]="sortDirection"
+                                   (sort)="onSortChange($event)">
+              </app-sortable-header>
+              <app-sortable-header label="Inventory Number" field="articleInstanceInventoryNumber"
+                                   [sortField]="sortField" [sortDirection]="sortDirection"
+                                   (sort)="onSortChange($event)">
+              </app-sortable-header>
+              <app-sortable-header label="Rental End" field="rentalEnd"
+                                   [sortField]="sortField" [sortDirection]="sortDirection"
+                                   (sort)="onSortChange($event)">
+              </app-sortable-header>
+              <app-sortable-header label="Rented by" field="userLastName"
+                                   [sortField]="sortField" [sortDirection]="sortDirection"
+                                   (sort)="onSortChange($event)">
+              </app-sortable-header>
+              <th class="px-3 py-2">Aktionen</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let rental of paginatedRentals()" class="border-b flex justify-between items-center">
+              <td class="px-3 py-2">{{ rental.articleDesignation }}</td>
+              <td class="px-3 py-2">{{ rental.articleInstanceInventoryNumber }}</td>
+              <td class="px-3 py-2">
+                {{ rental.rentalStart | date:'dd.MM.yyyy' }} - {{ rental.rentalEnd | date:'dd.MM.yyyy' }}
+              </td>
+              <td class="px-3 py-2">
+                {{ rental.userFirstName }} {{ rental.userLastName }}
+              </td>
+              <td class="px-3 py-2">
+                <button (click)="openEditDialog(rental)" class="text-blue-500 hover:underline">
+                  Bearbeiten
+                </button>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+
+          <div class="flex justify-center items-center mt-4 text-sm mb-4">
+            <button class="px-3 py-1 bg-gray-200 rounded mr-1.5" [disabled]="currentPage === 1" (click)="prevPage()">Zurück</button>
+            <span>Seite {{ currentPage }} von {{ totalPages() }}</span>
+            <button class="px-3 py-1 bg-gray-200 rounded ml-1.5" [disabled]="currentPage === totalPages()" (click)="nextPage()">Weiter</button>
+          </div>
+
+        } @else {
+          <p class="text-gray-700 text-base italic">No instances are currently borrowed</p>
+        }
+        
       </div>
-
-      <div class="md:w-1/2 w-full rounded overflow-hidden shadow-lg">
-        <div class="px-6 py-4">
-          <h2  class="font-bold text-xl mb-2">Articles due within the next 3 days</h2>
-          @if (dueRentals.length) {
-            @for (rental of dueRentals; track $index) {
-
-              <div class="mb-4 mt-4">
-                <h3>{{ rental.articleDesignation }}</h3>
-                <p class="text-gray-700 text-sm">{{ rental.articleInstanceInventoryNumber }}</p>
-                <p class="text-gray-700 text-base">Due: {{rental.rentalEnd | date: 'dd.MM.yyyy'}}
-                </p>
-              </div>
-
-
-              <mat-accordion>
-                <mat-expansion-panel>
-                  <mat-expansion-panel-header>
-                    <mat-panel-title>
-                      Edit rental period
-                    </mat-panel-title>
-                  </mat-expansion-panel-header>
-                  <div>
-                    <form (ngSubmit)="onUpdateRentalPeriod(rental)" class="flex flex-col">
-                      <label>Rental Start:</label>
-                      <input type="date" name="newRentalStart" [value]="rental.rentalStart | date:'yyyy-MM-dd'" disabled>
-                      <label>Rental end:</label>
-                      <input type="date" [(ngModel)]="rental.newRentalEnd" name="newRentalEnd" required>
-                      <div class="w-full flex justify-end">
-                        <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded mt-8 " >
-                          Update
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-                </mat-expansion-panel>
-              </mat-accordion>
-            }
-          } @else {
-            <p class="text-gray-700 text-base italic">No returns are due within the next 3 days</p>
-          }
-        </div>
-      </div>
-
-      <div class="md:w-1/2 w-full rounded overflow-hidden shadow-lg">
-        <div class="px-6 py-4">
-          <h2  class="font-bold text-xl mb-2">Attention: Under repair, but will be needed soon!</h2>
-          @if (upcomingUnderRepair.length) {
-            @for (rental of upcomingUnderRepair; track $index) {
-              <h3>{{ rental.articleDesignation }}</h3>
-              <p class="text-gray-700 text-sm">{{ rental.articleInstanceInventoryNumber }}</p>
-              <p class="text-gray-700 text-base">
-                Article needed from: {{ rental.rentalStart | date: 'dd.MM.yyyy' }}
-              </p>
-              <p class="text-gray-700 text-base italic">Please make sure to contact {{rental.userFirstName }} {{rental.userLastName}} via {{rental.userEmail}} in case the Article will not be available</p>
-
-              <mat-accordion>
-                <mat-expansion-panel>
-                  <mat-expansion-panel-header>
-                    <mat-panel-title>
-                      Change Satus
-                    </mat-panel-title>
-                  </mat-expansion-panel-header>
-                  <div>
-                    <form (ngSubmit)="onStatusChange" class="flex flex-col">
-                      <label>Rental Start:</label>
-                      <input type="date" name="newRentalStart" [value]="rental.rentalStart | date:'yyyy-MM-dd'" disabled>
-                      <label>Rental end:</label>
-                      <input type="date" [(ngModel)]="rental.newRentalEnd" name="newRentalEnd" required>
-                      <div class="w-full flex justify-end">
-                        <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded mt-8 " >
-                          Update
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-                </mat-expansion-panel>
-              </mat-accordion>
-            }
-          } @else {
-            <p class="text-gray-700 text-base italic">Nothing urgent under repair :)</p>
-          }
-        </div>
-      </div>
-
+      
     </div>
+
+    
+
   `,
 })
 export class AdminDashboardComponent implements OnInit{
@@ -167,15 +117,27 @@ export class AdminDashboardComponent implements OnInit{
   currentRentals: AdminRentalInfoDto[] = [];
   dueRentals: AdminRentalInfoDto[] = [];
   upcomingUnderRepair: AdminRentalInfoDto[] = [];
+  private _snackBar = inject(MatSnackBar);
+
+  selectedSort: string = '';
+  searchTerm: string = '';
+  sortField: string = '';
+  sortDirection: 'asc' | 'desc' | null = null;
+
+  itemsPerPage = 10;
+  currentPage = 1;
 
 
 
-  constructor(private adminService: AdminService) {}
+  constructor(private adminService: AdminService, private dialog: MatDialog) {}
 
   ngOnInit() {
     this.loadCurrentRentals();
     this.loadUpcomingUnderRepair();
     this.loadDueRentals();
+
+    this.sortField = 'rentalEnd';
+    this.sortDirection = 'asc';
   }
 
   loadCurrentRentals() {
@@ -207,9 +169,132 @@ export class AdminDashboardComponent implements OnInit{
         });
   }
 
+  openEditDialog(rental: AdminRentalInfoDto) {
+    const dialogRef = this.dialog.open(UpdateRentalPeriodComponent, {
+      data: { rental }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && result.newRentalEnd) {
+        const formattedNewEnd = this.adminService.formatToLocalDate(result.newRentalEnd);
+        this.adminService.updateRentalPeriod(rental.rentalPositionId, formattedNewEnd)
+            .subscribe({
+              next: updated => {
+                rental.rentalEnd = updated.rentalEnd;
+                this._snackBar.open('Rental period updated ', ' 🎉', { duration: 3000 });
+              },
+              error: err => {
+                if (err.status === 409) {
+                  this._snackBar.open('Rental period cannot be adjusted as there are overlaps.', 'OK 🤖', { duration: 5000 });
+                } else {
+                  const errorMessage = err.error?.message || 'An error occurred';
+                  this._snackBar.open(`Error: ${errorMessage}`, '🤖', {
+                    duration: 5000,
+                  });
+                }
+              }}
+            );
+      }
+    });
+  }
+
+  onSortChange(field: string) {
+    if (this.sortField === field) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortField = field;
+      this.sortDirection = 'asc';
+    }
+  }
+
+  filteredRentals(): AdminRentalInfoDto[] {
+    return this.currentRentals.filter(rental => {
+      const term = this.searchTerm.toLowerCase();
+      return rental.articleDesignation.toLowerCase().includes(term)
+          || rental.articleInstanceInventoryNumber.toLowerCase().includes(term);
+    });
+  }
+
+  sortedRentals(): AdminRentalInfoDto[] {
+    const rentals = [...this.filteredRentals()];
+    if (this.sortField && this.sortDirection) {
+      rentals.sort((a, b) => {
+        let valA: any, valB: any;
+
+        if (this.sortField === 'name') {
+          valA = `${a.userFirstName} ${a.userLastName}`.toLowerCase();
+          valB = `${b.userFirstName} ${b.userLastName}`.toLowerCase();
+        } else if (this.sortField === 'rentalEnd') {
+          valA = new Date(a.rentalEnd);
+          valB = new Date(b.rentalEnd);
+        } else {
+          valA = (a as any)[this.sortField]?.toLowerCase?.() ?? (a as any)[this.sortField];
+          valB = (b as any)[this.sortField]?.toLowerCase?.() ?? (b as any)[this.sortField];
+        }
+
+        if (valA < valB) return this.sortDirection === 'asc' ? -1 : 1;
+        if (valA > valB) return this.sortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+    return rentals;
+  }
+
+
+  paginatedRentals(): AdminRentalInfoDto[] {
+    const start = (this.currentPage - 1) * this.itemsPerPage;
+    return this.combinedRentals().slice(start, start + this.itemsPerPage);
+  }
+
+  totalPages(): number {
+    return Math.ceil(this.sortedRentals().length / this.itemsPerPage);
+  }
+
+  nextPage() {
+    if (this.currentPage < this.totalPages()) {
+      this.currentPage++;
+    }
+  }
+
+  prevPage() {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+    }
+  }
+
+
   onStatusChange(){
     console.log("click")
   }
+
+  combinedRentals(): AdminRentalInfoDto[] {
+    let filtered = this.currentRentals;
+
+    if (this.searchTerm) {
+      const term = this.searchTerm.toLowerCase();
+      filtered = filtered.filter(rental =>
+          rental.articleDesignation.toLowerCase().includes(term) ||
+          rental.articleInstanceInventoryNumber.toLowerCase().includes(term) ||
+          rental.userFirstName.toLowerCase().includes(term) ||
+          rental.userLastName.toLowerCase().includes(term)
+      );
+    }
+
+    if (this.sortField && this.sortDirection) {
+      filtered.sort((a, b) => {
+        const valA = (a as any)[this.sortField];
+        const valB = (b as any)[this.sortField];
+        if (valA < valB) return this.sortDirection === 'asc' ? -1 : 1;
+        if (valA > valB) return this.sortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return filtered;
+  }
+
+
+
 
 
 }

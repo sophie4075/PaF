@@ -264,6 +264,7 @@ export class UpdateArticleComponent implements OnInit{
     }
   }
 
+
   sendPatchRequest(patchPayload: any) {
     this.articleService.patchArticle(this.articleId, patchPayload).subscribe(
         (response: any) => {
@@ -281,5 +282,6 @@ export class UpdateArticleComponent implements OnInit{
         }
     );
   }
+
 
 }
