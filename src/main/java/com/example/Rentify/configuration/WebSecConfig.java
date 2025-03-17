@@ -43,6 +43,7 @@ public class WebSecConfig {
                         .requestMatchers("api/rental/**").permitAll()
                         .requestMatchers("/api/articles/**").permitAll()
                         .requestMatchers("/api/uploads/**").permitAll()
+                        .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers(
                                 "/api/categories/**",
                                 "/api/statuses/**").permitAll()

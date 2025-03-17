@@ -1,12 +1,14 @@
 import { Component } from '@angular/core';
 import {RouterLink} from "@angular/router";
+import {FooterComponent} from "../footer/footer.component";
 
 @Component({
   selector: 'app-home',
   standalone: true,
-    imports: [
-        RouterLink
-    ],
+  imports: [
+    RouterLink,
+    FooterComponent
+  ],
   template: `
     <!--TODO: Add Icons  -->
     <div class="min-h-screen flex-col flex bg-cover bg-center hero">
@@ -62,17 +64,6 @@ import {RouterLink} from "@angular/router";
         </div>
       </div>
     </section>
-
-    <footer class="bg-black text-white py-8 home-footer">
-      <div class="container mx-auto text-center">
-        <p class="text-sm">&copy; 2025 App Name. All rights reserved.</p>
-        <nav class="mt-4">
-          <a href="" class="text-sm text-gray-400 hover:text-white">Imprint</a> |
-          <a href="" class="text-sm text-gray-400 hover:text-white">Privacy policy</a>
-        </nav>
-      </div>
-    </footer>
-
   `,
   styles: [
     `

@@ -2,11 +2,12 @@ import {Component, OnInit, ViewEncapsulation} from '@angular/core';
 import {Router, RouterLink, RouterOutlet} from '@angular/router';
 import {NavbarComponent} from './shared/components/navigation/navbar/navbar.component';
 import {StorageService} from "./shared/services/storage/storage.service";
+import {FooterComponent} from "./shared/components/footer/footer.component";
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, NavbarComponent, RouterLink],
+  imports: [RouterOutlet, NavbarComponent, RouterLink, FooterComponent],
   template: `
     <app-navbar
         [isCustomerLoggedIn]="isCustomerLoggedIn"
@@ -14,6 +15,7 @@ import {StorageService} from "./shared/services/storage/storage.service";
         [isStaffLoggedIn]="isStaffLoggedIn"
     ></app-navbar>
     <router-outlet></router-outlet>
+    <app-footer></app-footer>
   `,
   styleUrl: './app.component.css',
 })
