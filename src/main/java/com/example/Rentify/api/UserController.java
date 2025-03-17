@@ -2,6 +2,7 @@ package com.example.Rentify.api;
 
 import com.example.Rentify.entity.Address;
 import com.example.Rentify.entity.User;
+import com.example.Rentify.service.user.UserService;
 import com.example.Rentify.service.user.UserServiceImpl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,31 +16,31 @@ import com.example.Rentify.utils.ResponseHandler;
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
-    private final UserServiceImpl userServiceImpl;
+    private final UserService userService;
 
-    public UserController(UserServiceImpl userServiceImpl) {
-        this.userServiceImpl = userServiceImpl;
+    public UserController(UserServiceImpl userService) {
+        this.userService = userService;
     }
 
     @PostMapping
     public ResponseEntity<User> createUser(@RequestBody User user) {
-        return ResponseHandler.handle(() -> userServiceImpl.createUser(user));
+        return ResponseHandler.handle(() -> userService.createUser(user));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User user) {
-        return ResponseHandler.handle(() -> userServiceImpl.updateUser(id, user));
+        return ResponseHandler.handle(() -> userService.updateUser(id, user));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
-        return ResponseHandler.handle(() -> userServiceImpl.getUserById(id));
+        return ResponseHandler.handle(() -> userService.getUserById(id));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         return ResponseHandler.handle(() -> {
-            userServiceImpl.deleteUserById(id);
+            userService.deleteUserById(id);
             return null;
         });
     }
@@ -47,13 +48,13 @@ public class UserController {
 
     @GetMapping("/{userId}/billing-address")
     public ResponseEntity<Address> getBillingAddress(@PathVariable Long userId) {
-        return ResponseHandler.handle(() -> userServiceImpl.getBillingAddressByUserId(userId));
+        return ResponseHandler.handle(() -> userService.getBillingAddressByUserId(userId));
     }
 
 
     @GetMapping("/{userId}/shipping-address")
     public ResponseEntity<Address> getShippingAddress(@PathVariable Long userId) {
-        return ResponseHandler.handle(() -> userServiceImpl.getShippingAddressByUserId(userId));
+        return ResponseHandler.handle(() -> userService.getShippingAddressByUserId(userId));
     }
 
 

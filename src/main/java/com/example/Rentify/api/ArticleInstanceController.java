@@ -1,7 +1,7 @@
 package com.example.Rentify.api;
 
 import com.example.Rentify.dto.ArticleInstanceDto;
-import com.example.Rentify.service.instance.ArticleInstanceServiceImpl;
+import com.example.Rentify.service.instance.ArticleInstanceService;
 import com.example.Rentify.utils.ResponseHandler;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,9 +13,9 @@ import java.util.List;
 @RequestMapping("/api/articles/{articleId}/instances")
 public class ArticleInstanceController {
 
-    private final ArticleInstanceServiceImpl instanceService;
+    private final ArticleInstanceService instanceService;
 
-    public ArticleInstanceController(ArticleInstanceServiceImpl instanceService) {
+    public ArticleInstanceController(ArticleInstanceService instanceService) {
         this.instanceService = instanceService;
     }
 
