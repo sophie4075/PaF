@@ -23,8 +23,8 @@ import {StorageService} from "../../services/storage/storage.service";
         MatProgressSpinner
     ],
     template: `
-        <section>
-            <div class="mx-auto max-w-screen-xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
+        <section class="min-h-full">
+            <div class="mx-auto max-w-screen-xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8 pb-5">
                 <div class="mx-auto max-w-3xl">
                     <div class="text-center">
                         <h1 class="text-xl font-bold text-gray-900 sm:text-3xl">Your Cart</h1>

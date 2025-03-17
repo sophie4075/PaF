@@ -5,7 +5,7 @@ import { Component } from '@angular/core';
   standalone: true,
   imports: [],
   template: `
-  <footer class="bg-black text-white py-8 home-footer fixed left-0 bottom-0 w-full">
+  <footer class="bg-black text-white py-8 home-footer mt-5">
       <div class="container mx-auto text-center">
         <p class="text-sm">&copy; 2025 App Name. All rights reserved.</p>
         <nav class="mt-4">

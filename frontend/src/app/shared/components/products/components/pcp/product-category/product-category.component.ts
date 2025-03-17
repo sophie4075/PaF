@@ -16,8 +16,8 @@ import {CurrencyPipe} from "@angular/common";
         CurrencyPipe
     ],
     template: `
-        <div class="bg-white">
-            <div>
+        <div class="bg-white min-h-full">
+            <div class="pb-5">
                 <!-- Mobile Filterdialog -->
                 @if (mobileFilterOpen) {
                     <div class="relative z-40 lg:hidden" role="dialog" aria-modal="true">

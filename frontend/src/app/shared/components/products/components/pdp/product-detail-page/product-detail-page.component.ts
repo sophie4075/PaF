@@ -45,8 +45,8 @@ import {MatSnackBar} from "@angular/material/snack-bar";
     MarkdownPipe
   ],
   template: `
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-screen">
-      <div class="flex justify-center items-center h-full flex-col">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 min-h-full">
+      <div class="flex justify-center items-center h-full flex-col pb-5">
         <div class="grid grid-cols-1 w-full md:grid-cols-2 gap-4">
           <!-- img -->
           <img src="{{article?.bildUrl}}" alt="Produktbild"
