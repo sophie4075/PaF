@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ArticleInstanceRepo extends JpaRepository<ArticleInstance, Long> {
@@ -37,14 +38,6 @@ public interface ArticleInstanceRepo extends JpaRepository<ArticleInstance, Long
             "ORDER BY CASE WHEN MAX(rp.rentalStart) IS NOT NULL THEN 0 ELSE 1 END, MAX(rp.rentalStart) ASC")
     List<AdminRentalInfoDto> findUnderRepairSortedByUpcomingRental(@Param("today") LocalDate today);
 
-
-
-
-
-
-
-
-
-
+    Optional<ArticleInstance> findByInventoryNumber(String inventoryNumber);
 
 }

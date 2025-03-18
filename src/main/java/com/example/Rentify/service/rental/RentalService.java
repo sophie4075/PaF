@@ -34,5 +34,7 @@ public interface RentalService {
     List<AdminRentalInfoDto> getOverDueRentals();
 
     List<AdminRentalInfoDto> getAllRentalPos();
+
+    void updateInstanceStatusByInventoryNo(String inventoryNumber, String newStatus);
 }
 

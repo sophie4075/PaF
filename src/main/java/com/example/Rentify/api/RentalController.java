@@ -142,7 +142,7 @@ public class RentalController {
 
     @GetMapping("/admin/under-repair")
     public ResponseEntity<List<AdminRentalInfoDto>> getUnderRepairInstances() {
-        return ResponseHandler.handle(rentalService::getOverDueRentals);
+        return ResponseHandler.handle(rentalService::getUnderRepairInstancesSorted);
     }
 
     @GetMapping("/admin/rental/all-positions")
@@ -171,6 +171,19 @@ public class RentalController {
                 rentalService.updateInstanceStatus(rentalPositionId, newStatusStr)
         );
     }
+
+    @PatchMapping("/admin/update-instance-status-by-inventory/{inventoryNumber}")
+    public ResponseEntity<Void> updateInstanceStatusByInventoryNumber(
+            @PathVariable String inventoryNumber,
+            @RequestBody Map<String, String> request) {
+
+        String newStatusStr = request.get("newStatus");
+        return ResponseHandler.handle(() -> {
+            rentalService.updateInstanceStatusByInventoryNo(inventoryNumber, newStatusStr);
+            return null;
+        });
+    }
+
 
 
 

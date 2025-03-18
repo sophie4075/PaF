@@ -296,6 +296,22 @@ public class RentalServiceImpl implements RentalService {
        return rentalPositionRepo.findAllRentalPosAsDto();
     }
 
+    @Override
+    public void updateInstanceStatusByInventoryNo(String inventoryNumber, String newStatusStr) {
+        if (newStatusStr == null) {
+            throw new IllegalArgumentException("newStatus cannot be null");
+        }
+
+        Status newStatus = Status.valueOf(newStatusStr);
+
+        ArticleInstance instance = articleInstanceRepo.findByInventoryNumber(inventoryNumber)
+                .orElseThrow(() -> new IllegalArgumentException("Instance not found"));
+
+        instance.setStatus(newStatus);
+        articleInstanceRepo.save(instance);
+    }
+
+
 
 
 }

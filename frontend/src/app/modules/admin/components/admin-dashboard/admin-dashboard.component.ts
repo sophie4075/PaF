@@ -24,6 +24,7 @@ import {ReturnDialogComponent} from "./return-article/return-dialog/return-dialo
 import {MatDivider} from "@angular/material/divider";
 import {MatButton} from "@angular/material/button";
 import {MatCheckbox} from "@angular/material/checkbox";
+import {MatPaginator, PageEvent} from "@angular/material/paginator";
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -44,7 +45,8 @@ import {MatCheckbox} from "@angular/material/checkbox";
     MatDivider,
     MatButton,
     MatCheckbox,
-    NgClass
+    NgClass,
+    MatPaginator
   ],
   template: `
     
@@ -222,11 +224,16 @@ import {MatCheckbox} from "@angular/material/checkbox";
             </tbody>
           </table>
 
-          <div class="flex justify-center items-center mt-4 text-sm mb-4">
-            <button class="px-3 py-1 bg-gray-200 rounded mr-1.5" [disabled]="currentPage === 1" (click)="prevPage()">Zurück</button>
-            <span>Seite {{ currentPage }} von {{ totalPages() }}</span>
-            <button class="px-3 py-1 bg-gray-200 rounded ml-1.5" [disabled]="currentPage === totalPages()" (click)="nextPage()">Weiter</button>
+          <div class="flex justify-center items-center">
+            <mat-paginator
+                [length]="getProcessedRentals().length"
+                [pageSize]="pageSize"
+                [pageSizeOptions]="[5, 10, 25, 100]"
+                [pageIndex]="pageIndex"
+                (page)="onPageChange($event)">
+            </mat-paginator>
           </div>
+          
 
         } @else {
           <p class="text-gray-700 text-base italic m-4">No instances are currently borrowed</p>
@@ -254,8 +261,8 @@ export class AdminDashboardComponent implements OnInit{
   sortField: string = '';
   sortDirection: 'asc' | 'desc' | null = null;
 
-  itemsPerPage = 10;
-  currentPage = 1;
+  pageSize = 10;
+  pageIndex = 0;
 
 
 
@@ -289,6 +296,7 @@ export class AdminDashboardComponent implements OnInit{
   loadUnderRepairInstances() {
     this.adminService.getUnderRepairInstances().subscribe(data => {
       this.underRepairRentals = data;
+      console.log(data)
     });
   }
 
@@ -306,17 +314,6 @@ export class AdminDashboardComponent implements OnInit{
     });
   }
 
-
-
-  onUpdateRentalPeriod(rental: AdminRentalInfoDto) {
-    if (!rental.newRentalEnd) { return; }
-    const formattedNewEnd = this.adminService.formatToLocalDate(rental.newRentalEnd);
-    console.log(formattedNewEnd)
-    this.adminService.updateRentalPeriod(rental.rentalPositionId, formattedNewEnd)
-        .subscribe(updated => {
-          rental.rentalEnd = updated.rentalEnd;
-        });
-  }
 
   openEditDialog(rental: AdminRentalInfoDto) {
     const dialogRef = this.dialog.open(UpdateRentalPeriodComponent, {
@@ -356,67 +353,11 @@ export class AdminDashboardComponent implements OnInit{
     }
   }
 
-  filteredRentals(): AdminRentalInfoDto[] {
-    return this.currentRentals.filter(rental => {
-      const term = this.searchTerm.toLowerCase();
-      const matchesSearch =
-          rental.articleDesignation.toLowerCase().includes(term) ||
-          rental.articleInstanceInventoryNumber.toLowerCase().includes(term) ||
-          rental.userFirstName.toLowerCase().includes(term) ||
-          rental.userLastName.toLowerCase().includes(term);
-      const matchesStatus = this.selectedStatus ? rental.status === this.selectedStatus : true;
-      return matchesSearch && matchesStatus;
-    });
-  }
-
-  sortedRentals(): AdminRentalInfoDto[] {
-    const rentals = [...this.filteredRentals()];
-    if (this.sortField && this.sortDirection) {
-      rentals.sort((a, b) => {
-        let valA: any, valB: any;
-
-        if (this.sortField === 'name') {
-          valA = `${a.userFirstName} ${a.userLastName}`.toLowerCase();
-          valB = `${b.userFirstName} ${b.userLastName}`.toLowerCase();
-        } else if (this.sortField === 'rentalEnd') {
-          valA = new Date(a.rentalEnd);
-          valB = new Date(b.rentalEnd);
-        } else {
-          valA = (a as any)[this.sortField]?.toLowerCase?.() ?? (a as any)[this.sortField];
-          valB = (b as any)[this.sortField]?.toLowerCase?.() ?? (b as any)[this.sortField];
-        }
-
-        if (valA < valB) return this.sortDirection === 'asc' ? -1 : 1;
-        if (valA > valB) return this.sortDirection === 'asc' ? 1 : -1;
-        return 0;
-      });
-    }
-    return rentals;
-  }
-
-
   paginatedRentals(): AdminRentalInfoDto[] {
     const filtered = this.getProcessedRentals();
-    const start = (this.currentPage - 1) * this.itemsPerPage;
-    return filtered.slice(start, start + this.itemsPerPage);
+    const start = (this.pageIndex) * this.pageSize;
+    return filtered.slice(start, start + this.pageSize);
   }
-
-  totalPages(): number {
-    return Math.ceil(this.sortedRentals().length / this.itemsPerPage);
-  }
-
-  nextPage() {
-    if (this.currentPage < this.totalPages()) {
-      this.currentPage++;
-    }
-  }
-
-  prevPage() {
-    if (this.currentPage > 1) {
-      this.currentPage--;
-    }
-  }
-
 
   openReturnDialog(rental: AdminRentalInfoDto) {
     this.checkboxStates[rental.rentalPositionId] = true;
@@ -444,22 +385,47 @@ export class AdminDashboardComponent implements OnInit{
     });
   }
 
-
-  markInstanceAsRepaired(rental: AdminRentalInfoDto) {
-    this.adminService.updateInstanceStatus(rental.rentalPositionId, 'AVAILABLE')
-        .subscribe({
-          next: updated => {
-            rental.status = updated.status;
-            this.underRepairRentals = this.underRepairRentals.filter(r => r !== rental);
-            this._snackBar.open('Status updated successfully', '🎉', { duration: 3000 });
-          },
-          error: err => {
-            const errorMessage = err.error?.message || 'An error occurred';
-            this._snackBar.open(`Error: ${errorMessage}`, '🤖', { duration: 5000 });
-          }
-        });
+  onPageChange(event: PageEvent) {
+    this.pageSize = event.pageSize;
+    this.pageIndex = event.pageIndex;
   }
 
+
+  markInstanceAsRepaired(rental: AdminRentalInfoDto) {
+
+    console.log(rental.rentalPositionId)
+    if(rental.rentalPositionId !== 0){
+      console.log("I am executed")
+      this.adminService.updateInstanceStatus(rental.rentalPositionId, 'AVAILABLE')
+          .subscribe({
+            next: updated => {
+              rental.status = 'AVAILABLE';
+              this.dueRentals = this.dueRentals.filter(r => r !== rental);
+              this._snackBar.open('Status updated successfully', '🎉', { duration: 3000 });
+            },
+            error: err => {
+              const errorMessage = err.error?.message || 'An error occurred';
+              this._snackBar.open(`Error: ${errorMessage}`, '🤖', { duration: 5000 });
+            }
+          });
+
+    } else {
+      this.adminService.updateInstanceStatusByInventoryNo(rental.articleInstanceInventoryNumber, 'AVAILABLE')
+          .subscribe({
+            next: updated => {
+              rental.status = 'AVAILABLE';
+              this.underRepairRentals = this.underRepairRentals.filter(r => r !== rental);
+              this._snackBar.open('Status updated successfully', '🎉', { duration: 3000 });
+            },
+            error: err => {
+              const errorMessage = err.error?.message || 'An error occurred';
+              this._snackBar.open(`Error: ${errorMessage}`, '🤖', { duration: 5000 });
+            }
+          });
+    }
+
+
+  }
 
   getDisplayStatus(rental: AdminRentalInfoDto): string {
     const today = new Date();
@@ -488,7 +454,7 @@ export class AdminDashboardComponent implements OnInit{
       if (condition) return status;
     }
 
-    return rental.status; // fallback, falls keine Bedingung zutrifft
+    return rental.status;
   }
 
   getProcessedRentals(): AdminRentalInfoDto[] {

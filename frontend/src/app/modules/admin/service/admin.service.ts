@@ -81,4 +81,10 @@ export class AdminService {
   }
 
 
+  updateInstanceStatusByInventoryNo(articleInstanceInventoryNumber: string, newStatus: string) {
+    return this.http.patch<AdminRentalInfoDto>(
+        `${this.rentalApiUrl}/admin/update-instance-status-by-inventory/${articleInstanceInventoryNumber}`,
+        { newStatus }
+    );
+  }
 }
