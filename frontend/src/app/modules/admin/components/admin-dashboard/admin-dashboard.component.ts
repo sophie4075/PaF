@@ -1,7 +1,7 @@
 import {Component, inject, OnInit} from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import {AdminRentalInfoDto, AdminService} from "../../service/admin.service";
-import {DatePipe, NgForOf} from "@angular/common";
+import {DatePipe, NgClass, NgForOf} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {
   MatExpansionPanelHeader,
@@ -43,7 +43,8 @@ import {MatCheckbox} from "@angular/material/checkbox";
     SortableHeaderComponent,
     MatDivider,
     MatButton,
-    MatCheckbox
+    MatCheckbox,
+    NgClass
   ],
   template: `
     
@@ -145,7 +146,7 @@ import {MatCheckbox} from "@angular/material/checkbox";
       <div class="overflow-auto shadow-md rounded py pb-5">
 
         <div class="flex justify-between items-center m-4">
-          <h1 class="text-xl font-bold">Items in rental</h1>
+          <h1 class="text-xl font-bold">Rental Positions</h1>
           
           @if(allRentals.length){
             <input
@@ -178,14 +179,13 @@ import {MatCheckbox} from "@angular/material/checkbox";
                                    (sort)="onSortChange($event)">
               </app-sortable-header>
               <th>
-                <select [(ngModel)]="selectedStatus" class="border p-2 rounded bg-transparent">
-                  <option value="">Alle Status</option>
-                  <option value="RENTED">Rented</option>
+                <select [(ngModel)]="selectedFilter" class="border p-2 rounded bg-transparent">
+                  <option value="ALL">All</option>
+                  <option value="CURRENT">Current Active</option>
+                  <option value="UPCOMING">Upcoming</option>
+                  <option value="DUE">Due Today</option>
                   <option value="OVERDUE">Overdue</option>
-                  <option value="AVAILABLE">Returned</option>
-                  <option value="UNDER_REPAIR">Under Repair</option>
-                  <option value="RETIRED">Retired</option>
-                  <!-- ggf. weitere Status -->
+                  <option value="PAST">Past</option>
                 </select>
               </th>
               <th class="px-3 py-2">Aktionen</th>
@@ -202,12 +202,17 @@ import {MatCheckbox} from "@angular/material/checkbox";
                 {{ rental.userFirstName }} {{ rental.userLastName }}
               </td>
               <td class="px-3 py-2">
-                @if (isPastAndNotOverdue(rental)){
-                  <span class="text-green-700">Returned</span>
-                }
+               <span [ngClass]="{
+               'text-green-700': getDisplayStatus(rental) === 'Returned',
+               'text-blue-500': getDisplayStatus(rental) === 'Current Active' || getDisplayStatus(rental) === 'Upcoming',
+               'text-red-500': getDisplayStatus(rental) === 'Overdue',
+               'text-yellow-500': getDisplayStatus(rental) === 'Due Today'
+               }">
+                 {{ getDisplayStatus(rental) }}
+               </span>
               </td>
               <td class="px-3 py-2">
-                @if (!isPastAndNotOverdue(rental) && rental.status){
+                @if (getDisplayStatus(rental) !== 'Returned'){
                   <button (click)="openEditDialog(rental)" class="text-blue-500 hover:underline">
                     Edit
                   </button>
@@ -241,6 +246,8 @@ export class AdminDashboardComponent implements OnInit{
   underRepairRentals: AdminRentalInfoDto[] = [];
   private _snackBar = inject(MatSnackBar);
   checkboxStates: { [rentalId: number]: boolean } = {};
+  selectedFilter: 'ALL' | 'CURRENT' | 'UPCOMING' | 'DUE' | 'OVERDUE' | 'PAST' = 'ALL';
+
 
   selectedStatus: string = '';
   searchTerm: string = '';
@@ -389,8 +396,9 @@ export class AdminDashboardComponent implements OnInit{
 
 
   paginatedRentals(): AdminRentalInfoDto[] {
+    const filtered = this.getProcessedRentals();
     const start = (this.currentPage - 1) * this.itemsPerPage;
-    return this.combinedRentals().slice(start, start + this.itemsPerPage);
+    return filtered.slice(start, start + this.itemsPerPage);
   }
 
   totalPages(): number {
@@ -409,36 +417,6 @@ export class AdminDashboardComponent implements OnInit{
     }
   }
 
-
-  onStatusChange(){
-    console.log("click")
-  }
-
-  combinedRentals(): AdminRentalInfoDto[] {
-    let filtered = this.allRentals;
-
-    if (this.searchTerm) {
-      const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(rental =>
-          rental.articleDesignation.toLowerCase().includes(term) ||
-          rental.articleInstanceInventoryNumber.toLowerCase().includes(term) ||
-          rental.userFirstName.toLowerCase().includes(term) ||
-          rental.userLastName.toLowerCase().includes(term)
-      );
-    }
-
-    if (this.sortField && this.sortDirection) {
-      filtered.sort((a, b) => {
-        const valA = (a as any)[this.sortField];
-        const valB = (b as any)[this.sortField];
-        if (valA < valB) return this.sortDirection === 'asc' ? -1 : 1;
-        if (valA > valB) return this.sortDirection === 'asc' ? 1 : -1;
-        return 0;
-      });
-    }
-
-    return filtered;
-  }
 
   openReturnDialog(rental: AdminRentalInfoDto) {
     this.checkboxStates[rental.rentalPositionId] = true;
@@ -482,14 +460,102 @@ export class AdminDashboardComponent implements OnInit{
         });
   }
 
-  isPastAndNotOverdue(rental: AdminRentalInfoDto): boolean {
+
+  getDisplayStatus(rental: AdminRentalInfoDto): string {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    const rentalStart = new Date(rental.rentalStart);
     const rentalEnd = new Date(rental.rentalEnd);
+    rentalStart.setHours(0, 0, 0, 0);
     rentalEnd.setHours(0, 0, 0, 0);
 
-    return rentalEnd <= today && rental.status !== 'OVERDUE' || rental.status !== 'RENTED';
+    const isReturned = rentalEnd < today && rental.status !== 'OVERDUE';
+    const isDueToday = rentalEnd.getTime() === today.getTime();
+    const isUpcoming = rentalStart > today;
+    const isCurrent = rentalStart <= today && rentalEnd >= today && rental.status === 'RENTED';
+    const isOverdue = rental.status === 'OVERDUE';
+
+    const statusMap: { [key: string]: boolean } = {
+      'Returned': isReturned,
+      'Due Today': isDueToday,
+      'Upcoming': isUpcoming,
+      'Current Active': isCurrent,
+      'Overdue': isOverdue
+    };
+
+    for (const [status, condition] of Object.entries(statusMap)) {
+      if (condition) return status;
+    }
+
+    return rental.status; // fallback, falls keine Bedingung zutrifft
   }
+
+  getProcessedRentals(): AdminRentalInfoDto[] {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return this.allRentals
+        .filter(rental => {
+          // Filter nach selectedFilter (PAST, CURRENT, etc.)
+          const rentalStart = new Date(rental.rentalStart);
+          const rentalEnd = new Date(rental.rentalEnd);
+          rentalStart.setHours(0, 0, 0, 0);
+          rentalEnd.setHours(0, 0, 0, 0);
+
+          switch (this.selectedFilter) {
+            case 'CURRENT':
+              if (!(rentalStart <= today && rentalEnd >= today && rental.status === 'RENTED')) return false;
+              break;
+            case 'UPCOMING':
+              if (!(rentalStart > today)) return false;
+              break;
+            case 'DUE':
+              if (!(rentalEnd.getTime() === today.getTime())) return false;
+              break;
+            case 'OVERDUE':
+              if (!(rentalEnd < today && rental.status === 'OVERDUE')) return false;
+              break;
+            case 'PAST':
+              if (!(rentalEnd < today && rental.status !== 'OVERDUE')) return false;
+              break;
+            default:
+              'ALL'
+              break;
+          }
+
+          const term = this.searchTerm.toLowerCase();
+          const matchesSearch =
+              rental.articleDesignation.toLowerCase().includes(term) ||
+              rental.articleInstanceInventoryNumber.toLowerCase().includes(term) ||
+              rental.userFirstName.toLowerCase().includes(term) ||
+              rental.userLastName.toLowerCase().includes(term);
+
+          return matchesSearch || !term;
+        })
+        .sort((a, b) => {
+          // Sort
+          if (this.sortField && this.sortDirection) {
+            let valA: any, valB: any;
+
+            if (this.sortField === 'name') {
+              valA = `${a.userFirstName} ${a.userLastName}`.toLowerCase();
+              valB = `${b.userFirstName} ${b.userLastName}`.toLowerCase();
+            } else if (this.sortField === 'rentalEnd') {
+              valA = new Date(a.rentalEnd);
+              valB = new Date(b.rentalEnd);
+            } else {
+              valA = (a as any)[this.sortField]?.toLowerCase?.() ?? (a as any)[this.sortField];
+              valB = (b as any)[this.sortField]?.toLowerCase?.() ?? (b as any)[this.sortField];
+            }
+
+            if (valA < valB) return this.sortDirection === 'asc' ? -1 : 1;
+            if (valA > valB) return this.sortDirection === 'asc' ? 1 : -1;
+          }
+
+          return 0;
+        });
+  }
+
 
 }
