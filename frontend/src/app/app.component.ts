@@ -33,7 +33,7 @@ export class AppComponent implements OnInit{
   ngOnInit() {
     this.router.events.subscribe(event => {
       if(event.constructor.name === "NavigationEnd"){
-        this.isCustomerLoggedIn = StorageService.getUserRoler() === "BUSINESS_CLIENT" || StorageService.getUserRoler() === "BUSINESS_CLIENT";
+        this.isCustomerLoggedIn = StorageService.getUserRoler() === "PRIVATE_CLIENT" || StorageService.getUserRoler() === "BUSINESS_CLIENT";
         this.isAdminLoggedIn = StorageService.isAdminLoggedIn();
         this.isStaffLoggedIn = StorageService.isStaffLoggedIn();
       }

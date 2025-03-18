@@ -54,6 +54,7 @@ export class NavbarComponent implements AfterViewInit{
   constructor(private router: Router) { }
 
   ngAfterViewInit() {
+    console.log(this.isCustomerLoggedIn)
     const primaryNav = document.querySelector("#navigation") as HTMLElement;
     const navToggle = document.querySelector(".mobile-nav-toggle") as HTMLElement;
 

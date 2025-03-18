@@ -1,5 +1,6 @@
 package com.example.Rentify.utils;
 
+import com.example.Rentify.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -25,8 +26,14 @@ public class JWTUtil {
     }
 
     // Creates new Token with default claims
-    public String generateToken(UserDetails userDetails) {
-        return generateToken(new HashMap<>(), userDetails);
+    public String generateToken(User user) {
+        //UserDetails userDetails
+        //return generateToken(new HashMap<>(), userDetails);
+
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", user.getId());
+        claims.put("role", user.getRole().name());
+        return generateToken(claims, user);
     }
 
     //Validates if user token is still valid

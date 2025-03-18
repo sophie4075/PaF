@@ -12,6 +12,9 @@ import com.example.Rentify.repo.UserRepo;
 import com.example.Rentify.repo.BusinessDetailsRepo;
 import com.example.Rentify.repo.AddressRepo;
 
+import com.example.Rentify.service.MagicLinkService;
+import com.example.Rentify.service.auth.strategy.MagicLinkStrategy;
+import com.example.Rentify.service.auth.strategy.RegistrationMagicLinkStrategy;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -28,7 +31,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepo userRepo;
     private final AddressRepo addressRepo;
     private final BusinessDetailsRepo businessDetailsRepo;
-
+    private final MagicLinkStrategy magicLinkStrategy;
     //TODO Don't make this accessible for everyone -> Create magic link and send credentials to owner(s)
     @PostConstruct
     public void createAdminAcc() {
@@ -40,6 +43,7 @@ public class AuthServiceImpl implements AuthService {
             newAdmin.setEmail("admin@rentify.com");
             // TODO: Zufällige Passwortgenerierung implementieren
             newAdmin.setPassword(new BCryptPasswordEncoder().encode("admiN123!"));
+            newAdmin.setEnabled(true);
             newAdmin.setFirstName("Admin");
             newAdmin.setLastName("Rentify");
 
@@ -72,6 +76,10 @@ public class AuthServiceImpl implements AuthService {
         user.setLastName(registerRequest.getLastName());
         user.setEmail(registerRequest.getEmail());
         user.setPassword(new BCryptPasswordEncoder().encode(registerRequest.getPassword()));
+        /*String dummyPassword = new BCryptPasswordEncoder().encode(generateDummyPassword());
+        user.setPassword(dummyPassword);*/
+        user.setEnabled(false);
+
 
 
         //user.setRole(Role.CLIENT);
@@ -121,6 +129,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         User createdUser = userRepo.save(user);
+        magicLinkStrategy.sendLink(createdUser.getEmail());
 
         // Map Results into UserDto
         UserDto userDto = new UserDto();
@@ -141,6 +150,10 @@ public class AuthServiceImpl implements AuthService {
         }
 
         return userDto;
+    }
+
+    private CharSequence generateDummyPassword() {
+        return "NOPASS_" + System.currentTimeMillis();
     }
 
     @Override
@@ -165,4 +178,6 @@ public class AuthServiceImpl implements AuthService {
         dto.setCountry(address.getCountry());
         return dto;
     }
+
+
 }

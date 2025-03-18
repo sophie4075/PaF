@@ -20,4 +20,9 @@ export class AuthService {
     return this.http.post(BASE_URL + "/api/auth/login", loginReq);
   }
 
+  sendMagicLink(email: string) {
+    return this.http.post(BASE_URL + "/api/auth/magic", { email });
+  }
+
+
 }

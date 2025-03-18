@@ -36,6 +36,9 @@ public class User implements UserDetails {
     @Getter
     private String chatId;
 
+    @Setter
+    private boolean enabled = false;
+
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "billing_address_id")
     private Address billingAddress;
@@ -83,7 +86,7 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return UserDetails.super.isEnabled();
+        return this.enabled;
     }
 
     @OneToMany(mappedBy = "user")

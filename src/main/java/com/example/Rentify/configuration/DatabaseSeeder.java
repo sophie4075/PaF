@@ -73,6 +73,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                 user1.setChatId("493192316");
                 user1.setPassword(passwordEncoder.encode("password123"));
                 user1.setRole(Role.PRIVATE_CLIENT);
+                user1.setEnabled(true);
                 usersToSave.add(user1);
             }
 
@@ -83,6 +84,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                 user2.setEmail("erika@musterfrau.com");
                 user2.setPassword(passwordEncoder.encode("password123"));
                 user2.setRole(Role.ADMIN);
+                user2.setEnabled(true);
                 usersToSave.add(user2);
             }
 

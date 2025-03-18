@@ -10,10 +10,12 @@ import {
   ProductDetailPageComponent
 } from "./shared/components/products/components/pdp/product-detail-page/product-detail-page.component";
 import {ShoppingCartComponent} from "./shared/components/shopping-cart/shopping-cart.component";
+import {MagicLoginComponent} from "./auth/components/magic-login/magic-login.component";
 
 export const routes: Routes = [
   {path: "register", component: RegisterComponent},
   {path: "login", component: LoginComponent},
+  { path: 'magic-login', component: MagicLoginComponent },
   { path: "", component: HomeComponent },
   { path: "products", component: ProductCategoryComponent},
   { path: "pdp/article/:id", component: ProductDetailPageComponent},
