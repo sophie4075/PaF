@@ -20,6 +20,10 @@ import {OrderByPipe} from "../../../../shared/pipes/oder.pipe";
 import {
   SortableHeaderComponent
 } from "../../../../shared/components/dashboard/sortable-header/sortable-header.component";
+import {ReturnDialogComponent} from "./return-article/return-dialog/return-dialog.component";
+import {MatDivider} from "@angular/material/divider";
+import {MatButton} from "@angular/material/button";
+import {MatCheckbox} from "@angular/material/checkbox";
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -36,22 +40,123 @@ import {
     FilterPipe,
     NgForOf,
     OrderByPipe,
-    SortableHeaderComponent
+    SortableHeaderComponent,
+    MatDivider,
+    MatButton,
+    MatCheckbox
   ],
   template: `
     
-    <div class="max-w-7xl mx-auto px-4 py-8">
-      <div class="overflow-auto shadow-md rounded py">
+    <div class="max-w-7xl mx-auto px-4 py-8 min-h-full">
+      <div class="py-12">
+        
+        <div class="mx-auto grid lg:grid-cols-3 gap-2 mb-8">
+          <div class="overflow-hidden shadow-md sm:rounded-lg">
+            <div class="p-6 text-gray-900">
+              <h3 class="text-blue-400 text-2xl font-semibold">
+                Due today
+              </h3>
+              <p class="text-xl">
+                @if (dueRentals.length){
+                  <p class="text-lg font-extrabold">{{dueRentals.length}} {{dueRentals.length === 1 ? 'item is' : 'items are' }} due today</p>
+                } @else {
+                  <p class="text-gray-700 text-base italic">No instances are due today</p>
+                }
+              </p>
+              @for(rental of dueRentals; track $index){
+                <div class="my-4 flex flex-column lg:flex-row lg:justify-between items-center gap-1.5">
+                  <div>
+                    <p class="text-sm text-gray-900">{{ rental.articleDesignation }} {{ rental.articleInstanceInventoryNumber }}</p>
+                    <p class="text-xs text-gray-700">rented by {{ rental.userFirstName }} {{ rental.userLastName }}</p>
+                  </div>
+                  
+                  <mat-checkbox
+                      (change)="openReturnDialog(rental)"
+                      [checked]="checkboxStates[rental.rentalPositionId] || false"
+                      class="text-sm text-gray-900"
+                  >
+                    Returned
+                  </mat-checkbox>
+                  <mat-divider></mat-divider>
+                </div>
+              }
+            </div>
+          </div>
+          <div class="overflow-hidden shadow-md sm:rounded-lg">
+            <div class="p-6 text-gray-900">
+              <h3 class="text-red-500 text-2xl font-semibold">
+                Due today
+              </h3>
+              <p class="text-xl">
+                @if (overDueRentals.length){
+                  <p class="text-lg font-extrabold">{{overDueRentals.length}} {{overDueRentals.length === 1 ? 'item is' : 'items are' }} overdue</p>
+                } @else {
+                  <p class="text-gray-700 text-base italic">No instances are overdue!</p>
+                }
+              </p>
+              @for(rental of overDueRentals; track $index){
+                <div class="my-4 flex flex-column lg:flex-row lg:justify-between items-center gap-1.5">
+                  <div>
+                    <p class="text-sm text-gray-900">{{ rental.articleDesignation }} {{ rental.articleInstanceInventoryNumber }}</p>
+                    <p class="text-xs text-gray-700">rented by {{ rental.userFirstName }} {{ rental.userLastName }}</p>
+                  </div>
+
+                  <mat-checkbox
+                      (change)="openReturnDialog(rental)"
+                      class="text-sm text-gray-900"
+                  >
+                    Returned
+                  </mat-checkbox>
+                  <mat-divider></mat-divider>
+                </div>
+              }
+            </div>
+          </div>
+          <div class="overflow-hidden shadow-md sm:rounded-lg">
+            <div class="p-6 text-gray-900">
+              <h3 class="text-rose-400 text-2xl font-semibold">
+                Under Repair
+              </h3>
+              <p class="text-xl mb-y">
+                @if (underRepairRentals.length){
+                  <p class="text-lg font-extrabold">{{underRepairRentals.length}}  {{underRepairRentals.length === 1 ? 'item is' : 'items are' }} in need of repair</p>
+                } @else {
+                  <p class="text-gray-700 text-base italic">Nothing to repair! :)</p>
+                }
+              </p>
+
+              @for(rental of underRepairRentals; track $index){
+                <div class="my-4 flex flex-column lg:flex-row lg:justify-between gap-1.5 items-center">
+                  <p class="text-sm">{{ rental.articleDesignation }} {{ rental.articleInstanceInventoryNumber }}
+                  </p>
+                  <mat-checkbox
+                      (change)="markInstanceAsRepaired(rental)"
+                      class="text-sm text-gray-900"
+                  >
+                    Repaired
+                  </mat-checkbox>
+                  <mat-divider></mat-divider>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      
+      <div class="overflow-auto shadow-md rounded py pb-5">
 
         <div class="flex justify-between items-center m-4">
           <h1 class="text-xl font-bold">Items in rental</h1>
-          <input
-              [(ngModel)]="searchTerm"
-              placeholder="Search..."
-              class="border p-2 rounded w-1/3 bg-transparent" />
+          
+          @if(allRentals.length){
+            <input
+                [(ngModel)]="searchTerm"
+                placeholder="Search..."
+                class="border p-2 rounded w-1/3 bg-transparent" />
+          }
+          
         </div>
 
-        @if (currentRentals.length){
+        @if (allRentals.length){
 
           <table class="w-full text-sm text-left rtl:text-right text-gray-500">
             <thead class="text xs text-gray-700 uppercase">
@@ -72,6 +177,17 @@ import {
                                    [sortField]="sortField" [sortDirection]="sortDirection"
                                    (sort)="onSortChange($event)">
               </app-sortable-header>
+              <th>
+                <select [(ngModel)]="selectedStatus" class="border p-2 rounded bg-transparent">
+                  <option value="">Alle Status</option>
+                  <option value="RENTED">Rented</option>
+                  <option value="OVERDUE">Overdue</option>
+                  <option value="AVAILABLE">Returned</option>
+                  <option value="UNDER_REPAIR">Under Repair</option>
+                  <option value="RETIRED">Retired</option>
+                  <!-- ggf. weitere Status -->
+                </select>
+              </th>
               <th class="px-3 py-2">Aktionen</th>
             </tr>
             </thead>
@@ -86,9 +202,16 @@ import {
                 {{ rental.userFirstName }} {{ rental.userLastName }}
               </td>
               <td class="px-3 py-2">
-                <button (click)="openEditDialog(rental)" class="text-blue-500 hover:underline">
-                  Bearbeiten
-                </button>
+                @if (isPastAndNotOverdue(rental)){
+                  <span class="text-green-700">Returned</span>
+                }
+              </td>
+              <td class="px-3 py-2">
+                @if (!isPastAndNotOverdue(rental) && rental.status){
+                  <button (click)="openEditDialog(rental)" class="text-blue-500 hover:underline">
+                    Edit
+                  </button>
+                }
               </td>
             </tr>
             </tbody>
@@ -101,25 +224,25 @@ import {
           </div>
 
         } @else {
-          <p class="text-gray-700 text-base italic">No instances are currently borrowed</p>
+          <p class="text-gray-700 text-base italic m-4">No instances are currently borrowed</p>
         }
         
       </div>
       
     </div>
-
-    
-
-  `,
+    </div>`,
 })
 export class AdminDashboardComponent implements OnInit{
 
+  allRentals: AdminRentalInfoDto[] = [];
   currentRentals: AdminRentalInfoDto[] = [];
   dueRentals: AdminRentalInfoDto[] = [];
-  upcomingUnderRepair: AdminRentalInfoDto[] = [];
+  overDueRentals: AdminRentalInfoDto[] = [];
+  underRepairRentals: AdminRentalInfoDto[] = [];
   private _snackBar = inject(MatSnackBar);
+  checkboxStates: { [rentalId: number]: boolean } = {};
 
-  selectedSort: string = '';
+  selectedStatus: string = '';
   searchTerm: string = '';
   sortField: string = '';
   sortDirection: 'asc' | 'desc' | null = null;
@@ -132,12 +255,34 @@ export class AdminDashboardComponent implements OnInit{
   constructor(private adminService: AdminService, private dialog: MatDialog) {}
 
   ngOnInit() {
-    this.loadCurrentRentals();
-    this.loadUpcomingUnderRepair();
+
     this.loadDueRentals();
+    this.loadOverDueRentals();
+    this.loadUnderRepairInstances();
+
+    this.loadCurrentRentals();
+    this.loadAllRentalPos();
 
     this.sortField = 'rentalEnd';
     this.sortDirection = 'asc';
+  }
+
+  loadDueRentals() {
+    this.adminService.getDueRentals().subscribe((data) => {
+      this.dueRentals = data;
+    });
+  }
+
+  loadOverDueRentals() {
+    this.adminService.getOverDueRentals().subscribe((data) => {
+      this.overDueRentals = data;
+    });
+  }
+
+  loadUnderRepairInstances() {
+    this.adminService.getUnderRepairInstances().subscribe(data => {
+      this.underRepairRentals = data;
+    });
   }
 
   loadCurrentRentals() {
@@ -147,17 +292,14 @@ export class AdminDashboardComponent implements OnInit{
     });
   }
 
-  loadDueRentals() {
-    this.adminService.getDueRentals().subscribe((data) => {
-      this.dueRentals = data;
+  loadAllRentalPos() {
+    this.adminService.getAllRentalPositions().subscribe((data) => {
+      this.allRentals = data;
+      console.log(this.allRentals)
     });
   }
 
-  loadUpcomingUnderRepair() {
-    this.adminService.getUpcomingUnderRepairRentals().subscribe((data) => {
-      this.upcomingUnderRepair = data;
-    });
-  }
+
 
   onUpdateRentalPeriod(rental: AdminRentalInfoDto) {
     if (!rental.newRentalEnd) { return; }
@@ -210,8 +352,13 @@ export class AdminDashboardComponent implements OnInit{
   filteredRentals(): AdminRentalInfoDto[] {
     return this.currentRentals.filter(rental => {
       const term = this.searchTerm.toLowerCase();
-      return rental.articleDesignation.toLowerCase().includes(term)
-          || rental.articleInstanceInventoryNumber.toLowerCase().includes(term);
+      const matchesSearch =
+          rental.articleDesignation.toLowerCase().includes(term) ||
+          rental.articleInstanceInventoryNumber.toLowerCase().includes(term) ||
+          rental.userFirstName.toLowerCase().includes(term) ||
+          rental.userLastName.toLowerCase().includes(term);
+      const matchesStatus = this.selectedStatus ? rental.status === this.selectedStatus : true;
+      return matchesSearch && matchesStatus;
     });
   }
 
@@ -268,7 +415,7 @@ export class AdminDashboardComponent implements OnInit{
   }
 
   combinedRentals(): AdminRentalInfoDto[] {
-    let filtered = this.currentRentals;
+    let filtered = this.allRentals;
 
     if (this.searchTerm) {
       const term = this.searchTerm.toLowerCase();
@@ -293,8 +440,56 @@ export class AdminDashboardComponent implements OnInit{
     return filtered;
   }
 
+  openReturnDialog(rental: AdminRentalInfoDto) {
+    this.checkboxStates[rental.rentalPositionId] = true;
+
+    const dialogRef = this.dialog.open(ReturnDialogComponent, {
+      data: { rental }
+    });
+    dialogRef.afterClosed().subscribe((newStatus: string) => {
+      if (newStatus) {
+        this.adminService.updateInstanceStatus(rental.rentalPositionId, newStatus)
+            .subscribe({
+              next: updated => {
+                rental.status = updated.status;
+                this.dueRentals = this.dueRentals.filter(r => r !== rental);
+                this._snackBar.open('Status updated successfully', '🎉', { duration: 3000 });
+              },
+              error: err => {
+                const errorMessage = err.error?.message || 'An error occurred';
+                this._snackBar.open(`Error: ${errorMessage}`, '🤖', { duration: 5000 });
+              }
+            });
+      } else {
+        this.checkboxStates[rental.rentalPositionId] = false;
+      }
+    });
+  }
 
 
+  markInstanceAsRepaired(rental: AdminRentalInfoDto) {
+    this.adminService.updateInstanceStatus(rental.rentalPositionId, 'AVAILABLE')
+        .subscribe({
+          next: updated => {
+            rental.status = updated.status;
+            this.underRepairRentals = this.underRepairRentals.filter(r => r !== rental);
+            this._snackBar.open('Status updated successfully', '🎉', { duration: 3000 });
+          },
+          error: err => {
+            const errorMessage = err.error?.message || 'An error occurred';
+            this._snackBar.open(`Error: ${errorMessage}`, '🤖', { duration: 5000 });
+          }
+        });
+  }
 
+  isPastAndNotOverdue(rental: AdminRentalInfoDto): boolean {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const rentalEnd = new Date(rental.rentalEnd);
+    rentalEnd.setHours(0, 0, 0, 0);
+
+    return rentalEnd <= today && rental.status !== 'OVERDUE' || rental.status !== 'RENTED';
+  }
 
 }

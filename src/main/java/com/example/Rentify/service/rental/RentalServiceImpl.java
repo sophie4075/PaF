@@ -190,8 +190,7 @@ public class RentalServiceImpl implements RentalService {
     @Override
     public List<AdminRentalInfoDto> getDueRentals() {
         LocalDate now = LocalDate.now();
-        LocalDate threeDaysLater = now.plusDays(3);
-        return rentalPositionRepo.findDueRentalInfo(now, threeDaysLater);
+        return rentalPositionRepo.findDueRentalInfo(now);
     }
 
     @Override
@@ -244,9 +243,60 @@ public class RentalServiceImpl implements RentalService {
                 rental.getUser().getFirstName(),
                 rental.getUser().getLastName(),
                 rentalPosition.getArticleInstance().getArticle().getBezeichnung(),
-                rentalPosition.getArticleInstance().getInventoryNumber()
+                rentalPosition.getArticleInstance().getInventoryNumber(),
+                rentalPosition.getArticleInstance().getStatus()
         );
     }
+
+
+    @Override
+    public AdminRentalInfoDto updateInstanceStatus(Long rentalPositionId, String newStatusStr) {
+        if(newStatusStr == null) {
+            throw new IllegalArgumentException("newStatus cannot be null");
+        }
+        Status newStatus = Status.valueOf(newStatusStr);
+        RentalPosition rentalPosition = rentalPositionRepo.findById(rentalPositionId)
+                .orElseThrow(() -> new IllegalArgumentException("RentalPosition not found"));
+
+        ArticleInstance instance = rentalPosition.getArticleInstance();
+        instance.setStatus(newStatus);
+        articleInstanceRepo.save(instance);
+
+
+        return new AdminRentalInfoDto(
+                rentalPosition.getId(),
+                rentalPosition.getRentalStart(),
+                rentalPosition.getRentalEnd(),
+                rentalPosition.getPositionPrice(),
+                rentalPosition.getRental().getUser().getEmail(),
+                rentalPosition.getRental().getUser().getId(),
+                rentalPosition.getRental().getUser().getFirstName(),
+                rentalPosition.getRental().getUser().getLastName(),
+                rentalPosition.getArticleInstance().getArticle().getBezeichnung(),
+                rentalPosition.getArticleInstance().getInventoryNumber(),
+                instance.getStatus()
+        );
+    }
+
+    @Override
+    public List<AdminRentalInfoDto> getUnderRepairInstancesSorted() {
+        /*List<AdminRentalInfoDto> result = articleInstanceRepo.findUnderRepairSortedByUpcomingRental(LocalDate.now());
+        System.out.println("Result size: " + result.size());
+        result.forEach(dto -> System.out.println(dto.getArticleInstanceInventoryNumber() + " | " + dto.getUserEmail()));*/
+        return articleInstanceRepo.findUnderRepairSortedByUpcomingRental(LocalDate.now());
+    }
+
+    @Override
+    public List<AdminRentalInfoDto> getOverDueRentals() {
+        return articleInstanceRepo.getOverDue();
+    }
+
+    @Override
+    public List<AdminRentalInfoDto> getAllRentalPos() {
+       return rentalPositionRepo.findAllRentalPosAsDto();
+    }
+
+
 
 }
 

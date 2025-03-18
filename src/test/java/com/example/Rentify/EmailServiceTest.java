@@ -1,5 +1,6 @@
 package com.example.Rentify;
 
+import com.example.Rentify.service.email.EmailService;
 import com.example.Rentify.service.email.EmailServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,7 +21,7 @@ class EmailServiceTest {
     private JavaMailSender mailSender;
 
     @InjectMocks
-    private EmailServiceImpl emailServiceImpl;
+    private EmailService emailService;
 
     @Test
     void testSendEmail_ShouldSendCorrectEmail() {
@@ -30,7 +31,7 @@ class EmailServiceTest {
         String content = "Test Content";
 
         // Act
-        emailServiceImpl.sendEmail(to, subject, content);
+        emailService.sendEmail(to, subject, content);
 
         // Assert
         ArgumentCaptor<SimpleMailMessage> messageCaptor = ArgumentCaptor.forClass(SimpleMailMessage.class);

@@ -1,5 +1,7 @@
 package com.example.Rentify.dto;
 
+import com.example.Rentify.entity.Status;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -14,10 +16,11 @@ public class AdminRentalInfoDto {
     private String userLastName;
     private String articleDesignation;
     private String articleInstanceInventoryNumber;
+    private Status status;
 
 
     public AdminRentalInfoDto(Long rentalPositionId, LocalDate rentalStart, LocalDate rentalEnd, BigDecimal positionPrice,
-                              String userEmail, Long userId, String userFirstName, String userLastName, String articleDesignation, String articleInstanceInventoryNumber) {
+                              String userEmail, Long userId, String userFirstName, String userLastName, String articleDesignation, String articleInstanceInventoryNumber, Status status) {
         this.rentalPositionId = rentalPositionId;
         this.rentalStart = rentalStart;
         this.rentalEnd = rentalEnd;
@@ -28,6 +31,7 @@ public class AdminRentalInfoDto {
         this.userLastName = userLastName;
         this.articleDesignation = articleDesignation;
         this.articleInstanceInventoryNumber = articleInstanceInventoryNumber;
+        this.status = status;
     }
 
 
@@ -109,5 +113,13 @@ public class AdminRentalInfoDto {
 
     public void setUserLastName(String userLastName) {
         this.userLastName = userLastName;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
     }
 }

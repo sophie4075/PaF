@@ -5,6 +5,7 @@ import com.example.Rentify.entity.User;
 import com.example.Rentify.events.RentalCreatedEvent;
 import com.example.Rentify.events.UserUpdatedEvent;
 import com.example.Rentify.messengerBot.MessengerBot;
+import com.example.Rentify.service.email.EmailService;
 import com.example.Rentify.service.email.EmailServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
@@ -14,7 +15,7 @@ import org.springframework.stereotype.Component;
 public class NotificationListener {
 
     @Autowired
-    private EmailServiceImpl emailServiceImpl;
+    private EmailService emailService;
 
     @Autowired
     private MessengerBot messengerBot;
@@ -28,7 +29,7 @@ public class NotificationListener {
         String to = user.getEmail();
         String subject = "Dein Benutzerprofil wurde aktualisiert";
         String text = "Hallo " + user.getFirstName() + ",\n\nDein Profil wurde aktualisiert.\n\nViele Grüße\nDein Rentify-Team";
-        emailServiceImpl.sendEmail(to, subject, text);
+        emailService.sendEmail(to, subject, text);
         System.out.println("User updated. Sent email to " + to);
     }
 
@@ -45,7 +46,7 @@ public class NotificationListener {
                 + rental.getTotalPrice() + "€." + "\n\nViele Grüße\nDein Rentify-Team";
 
         // Send EMail
-        emailServiceImpl.sendEmail(to, subject, text);
+        emailService.sendEmail(to, subject, text);
         System.out.println("Rental created. Sent email to " + to);
 
         // If the user has a chat id also send a telegram message

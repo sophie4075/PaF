@@ -14,6 +14,7 @@ export interface AdminRentalInfoDto {
   userLastName:string;
   articleDesignation: string;
   articleInstanceInventoryNumber: string;
+  status: string;
 
   newRentalStart?: string;
   newRentalEnd?: string;
@@ -24,26 +25,30 @@ export interface AdminRentalInfoDto {
   providedIn: 'root'
 })
 export class AdminService {
-  private apiUrl = 'http://localhost:8080/api/rental';
+  private rentalApiUrl = 'http://localhost:8080/api/rental';
   constructor(private http: HttpClient) { }
 
   getCurrentRentals(): Observable<AdminRentalInfoDto[]> {
-    return this.http.get<AdminRentalInfoDto[]>(`${this.apiUrl}/admin/current`);
+    return this.http.get<AdminRentalInfoDto[]>(`${this.rentalApiUrl}/admin/current`);
   }
 
   getDueRentals(): Observable<AdminRentalInfoDto[]> {
-    return this.http.get<AdminRentalInfoDto[]>(`${this.apiUrl}/admin/due`);
+    return this.http.get<AdminRentalInfoDto[]>(`${this.rentalApiUrl}/admin/due`);
   }
 
-  getUpcomingUnderRepairRentals(): Observable<AdminRentalInfoDto[]> {
-    return this.http.get<AdminRentalInfoDto[]>(`${this.apiUrl}/admin/upcoming-under-repair`);
+  getOverDueRentals(): Observable<AdminRentalInfoDto[]> {
+    return this.http.get<AdminRentalInfoDto[]>(`${this.rentalApiUrl}/admin/over-due`);
   }
 
   updateRentalPeriod(rentalPositionId: number, rentalEnd: string): Observable<AdminRentalInfoDto> {
     return this.http.patch<AdminRentalInfoDto>(
-        `${this.apiUrl}/admin/update-rental/${rentalPositionId}`,
+        `${this.rentalApiUrl}/admin/update-rental/${rentalPositionId}`,
         { rentalEnd }
     );
+  }
+
+  getAllRentalPositions(): Observable<AdminRentalInfoDto[]> {
+    return this.http.get<AdminRentalInfoDto[]>(`${this.rentalApiUrl}/admin/rental/all-positions`);
   }
 
 
@@ -63,5 +68,17 @@ export class AdminService {
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   }
+
+  updateInstanceStatus(rentalPositionId: number, newStatus: string): Observable<AdminRentalInfoDto> {
+    return this.http.patch<AdminRentalInfoDto>(
+        `${this.rentalApiUrl}/admin/update-instance-status/${rentalPositionId}`,
+        { newStatus }
+    );
+  }
+
+  getUnderRepairInstances(): Observable<AdminRentalInfoDto[]> {
+    return this.http.get<AdminRentalInfoDto[]>(`${this.rentalApiUrl}/admin/under-repair`);
+  }
+
 
 }

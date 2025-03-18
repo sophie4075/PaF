@@ -24,6 +24,7 @@ public class EmailServiceImpl implements EmailService {
         message.setTo(to);
         message.setSubject(subject);
         message.setText(text);
-        mailSender.send(message);
+        //mailSender.send(message);
+        System.out.println("Email sending is disabled for development.");
     }
 }

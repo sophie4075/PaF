@@ -1,15 +1,13 @@
 package com.example.Rentify.api;
 
 import com.example.Rentify.dto.*;
-import com.example.Rentify.entity.Article;
-import com.example.Rentify.entity.Rental;
-import com.example.Rentify.entity.RentalPosition;
-import com.example.Rentify.entity.User;
+import com.example.Rentify.entity.*;
 import com.example.Rentify.mapper.ArticleMapper;
 import com.example.Rentify.mapper.RentalMapper;
 import com.example.Rentify.repo.RentalPositionRepo;
 import com.example.Rentify.repo.RentalRepo;
 import com.example.Rentify.repo.UserRepo;
+import com.example.Rentify.service.rental.RentalService;
 import com.example.Rentify.service.rental.RentalServiceImpl;
 import com.example.Rentify.service.article.ArticleServiceImpl;
 import org.springframework.http.HttpStatus;
@@ -25,24 +23,25 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/rental")
 public class RentalController {
-    private final RentalServiceImpl rentalServiceImpl;
+    private final RentalService rentalService;
     private final UserRepo userRepo;
     private final ArticleServiceImpl articleService;
     private final RentalRepo rentalRepo;
     private final RentalPositionRepo rentalPositionRepo;
 
-    public RentalController(RentalServiceImpl rentalServiceImpl,
+    public RentalController(RentalService rentalService,
                             UserRepo userRepo,
                             ArticleServiceImpl articleService,
                             RentalRepo rentalRepo,
                             RentalPositionRepo rentalPositionRepo
                             ) {
-        this.rentalServiceImpl = rentalServiceImpl;
+        this.rentalService = rentalService;
         this.userRepo = userRepo;
         this.articleService = articleService;
         this.rentalRepo = rentalRepo;
@@ -68,11 +67,11 @@ public class RentalController {
                         .orElseThrow(() -> new IllegalArgumentException("Article not found with id: " + req.getArticleId()));
                 Article article = ArticleMapper.toEntity(articleDto);
 
-                rentalServiceImpl.createRental(savedRental, article, req.getRentalStart(), req.getRentalEnd(), req.getQuantity());
+                rentalService.createRental(savedRental, article, req.getRentalStart(), req.getRentalEnd(), req.getQuantity());
             }
 
             // Calculate total price and update rental
-            BigDecimal totalPrice = rentalServiceImpl.calculateTotalPrice(savedRental.getId());
+            BigDecimal totalPrice = rentalService.calculateTotalPrice(savedRental.getId());
             savedRental.setTotalPrice(totalPrice);
             rentalRepo.save(savedRental);
 
@@ -89,23 +88,23 @@ public class RentalController {
 
     @PutMapping("/{id}")
     public ResponseEntity<RentalDto> updateRental(@PathVariable Long id, @RequestBody Rental rental) {
-        return ResponseHandler.handle(() -> rentalServiceImpl.updateRental(id, rental));
+        return ResponseHandler.handle(() -> rentalService.updateRental(id, rental));
     }
 
 
     @GetMapping("/{id}")
     public ResponseEntity<RentalDto> getRentalById(@PathVariable Long id) {
-        return ResponseHandler.handle(() -> rentalServiceImpl.getRentalById(id));
+        return ResponseHandler.handle(() -> rentalService.getRentalById(id));
     }
 
     @GetMapping
     public ResponseEntity<List<RentalDto>> getAllRentals() {
-        return ResponseHandler.handle(rentalServiceImpl::getAllRentals);
+        return ResponseHandler.handle(rentalService::getAllRentals);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteRental(@PathVariable Long id) {
-        return ResponseHandler.handleVoid(() -> rentalServiceImpl.deleteRental(id));
+        return ResponseHandler.handleVoid(() -> rentalService.deleteRental(id));
     }
 
     //Helper to get current User
@@ -123,18 +122,34 @@ public class RentalController {
     //TODO get auth user -> make sure role is Admin
     @GetMapping("/admin/current")
     public ResponseEntity<List<AdminRentalInfoDto>> getCurrentRentals() {
-        return ResponseHandler.handle(rentalServiceImpl::getCurrentRentals);
+        return ResponseHandler.handle(rentalService::getCurrentRentals);
     }
 
     @GetMapping("/admin/due")
     public ResponseEntity<List<AdminRentalInfoDto>> getDueRentals() {
-        return ResponseHandler.handle(rentalServiceImpl::getDueRentals);
+        return ResponseHandler.handle(rentalService::getDueRentals);
+    }
+
+    @GetMapping("/admin/over-due")
+    public ResponseEntity<List<AdminRentalInfoDto>> getOverDueRentals() {
+        return ResponseHandler.handle(rentalService::getOverDueRentals);
     }
 
     @GetMapping("/admin/upcoming-under-repair")
     public ResponseEntity<List<AdminRentalInfoDto>> getUpcomingUnderRepairRentals() {
-        return ResponseHandler.handle(rentalServiceImpl::getUpcomingUnderRepairRentals);
+        return ResponseHandler.handle(rentalService::getUpcomingUnderRepairRentals);
     }
+
+    @GetMapping("/admin/under-repair")
+    public ResponseEntity<List<AdminRentalInfoDto>> getUnderRepairInstances() {
+        return ResponseHandler.handle(rentalService::getOverDueRentals);
+    }
+
+    @GetMapping("/admin/rental/all-positions")
+    public ResponseEntity<List<AdminRentalInfoDto>> getAllRentalPositions() {
+        return ResponseHandler.handle(rentalService::getAllRentalPos);
+    }
+
 
     @PatchMapping("/admin/update-rental/{rentalPositionId}")
     public ResponseEntity<AdminRentalInfoDto> updateRentalPeriod(
@@ -142,10 +157,21 @@ public class RentalController {
             @RequestBody RentalPositionDto updateDto) {
 
         return ResponseHandler.handle(() ->
-                rentalServiceImpl.updateRentalPeriod(rentalPositionId, updateDto)
+                rentalService.updateRentalPeriod(rentalPositionId, updateDto)
         );
 
     }
+
+    @PatchMapping("/admin/update-instance-status/{rentalPositionId}")
+    public ResponseEntity<AdminRentalInfoDto> updateInstanceStatus(
+            @PathVariable Long rentalPositionId,
+            @RequestBody Map<String, String> request) {
+        String newStatusStr = request.get("newStatus");
+        return ResponseHandler.handle(() ->
+                rentalService.updateInstanceStatus(rentalPositionId, newStatusStr)
+        );
+    }
+
 
 
 

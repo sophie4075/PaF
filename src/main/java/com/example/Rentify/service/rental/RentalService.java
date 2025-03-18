@@ -28,5 +28,11 @@ public interface RentalService {
     List<AdminRentalInfoDto> getDueRentals();
     List<AdminRentalInfoDto> getUpcomingUnderRepairRentals();
     AdminRentalInfoDto updateRentalPeriod(Long rentalPositionId, RentalPositionDto updateDto);
+    AdminRentalInfoDto updateInstanceStatus(Long rentalPositionId, String newStatusStr);
+    List<AdminRentalInfoDto> getUnderRepairInstancesSorted();
+
+    List<AdminRentalInfoDto> getOverDueRentals();
+
+    List<AdminRentalInfoDto> getAllRentalPos();
 }
 
