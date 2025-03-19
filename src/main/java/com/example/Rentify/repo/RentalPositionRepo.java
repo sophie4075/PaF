@@ -1,6 +1,7 @@
 package com.example.Rentify.repo;
 
 import com.example.Rentify.dto.AdminRentalInfoDto;
+import com.example.Rentify.dto.CustomerRentalDto;
 import com.example.Rentify.entity.ArticleInstance;
 import com.example.Rentify.entity.RentalPosition;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,6 +15,7 @@ import java.util.List;
 @Repository
 public interface RentalPositionRepo extends JpaRepository<RentalPosition, Long> {
     List<RentalPosition> findByRentalId(Long rentalId);
+
     List<RentalPosition> findByRentalStartLessThanEqualAndRentalEndGreaterThanEqual(LocalDate date1, LocalDate date2);
 
 
@@ -76,6 +78,24 @@ public interface RentalPositionRepo extends JpaRepository<RentalPosition, Long> 
                                           @Param("newRentalEnd") LocalDate newRentalEnd);
 
 
-
+    @Query("""
+                SELECT new com.example.Rentify.dto.CustomerRentalDto(
+                        rp.rental.id,
+                        rp.id,
+                        ai.article.bezeichnung,
+                        ai.inventoryNumber,
+                        rp.rentalStart,
+                        rp.rentalEnd,
+                        CAST(ai.status AS string),
+                        rp.positionPrice,
+                        r.totalPrice
+                    )
+                    FROM RentalPosition rp
+                    JOIN rp.rental r
+                    JOIN rp.articleInstance ai
+                    WHERE r.user.id = :userId
+                    ORDER BY rp.rentalStart DESC
+            """)
+    List<CustomerRentalDto> findRentalInfoByUserId(@Param("userId") Long userId);
 }
 

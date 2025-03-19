@@ -33,9 +33,9 @@ class EditRentalDialogComponent {
     <mat-dialog-content>
       <form #form="ngForm" class="flex flex-col">
         <label>Rental Start:</label>
-        <input type="date" name="newRentalStart" [value]="rental.rentalStart | date:'yyyy-MM-dd'" [disabled]="!allowEditStart">
+        <input type="date" name="newRentalStart" [value]="rental.rentalStart | date:'yyyy-MM-dd'" [disabled]="!allowEditStart" [required]="allowEditStart" [min]="today">
         <label>Rental end:</label>
-        <input type="date" [(ngModel)]="rental.newRentalEnd" name="newRentalEnd" required>
+        <input type="date" [(ngModel)]="rental.newRentalEnd" [value]="rental.rentalEnd | date:'yyyy-MM-dd'" name="newRentalEnd" [min]="tomorrow" required>
       </form>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
@@ -48,12 +48,16 @@ class EditRentalDialogComponent {
 export class UpdateRentalPeriodComponent implements OnInit{
   allowEditStart: boolean = true
   rental: any;
+  today = new Date();
+  tomorrow = new Date()
 
   constructor(
       public dialogRef: MatDialogRef<EditRentalDialogComponent>,
       @Inject(MAT_DIALOG_DATA) public data: any
   ) {
     this.rental = data.rental;
+    this.tomorrow.setDate(this.today.getDate() + 1);
+
   }
 
   ngOnInit(): void {

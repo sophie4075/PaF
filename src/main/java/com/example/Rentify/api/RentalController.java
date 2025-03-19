@@ -8,7 +8,6 @@ import com.example.Rentify.repo.RentalPositionRepo;
 import com.example.Rentify.repo.RentalRepo;
 import com.example.Rentify.repo.UserRepo;
 import com.example.Rentify.service.rental.RentalService;
-import com.example.Rentify.service.rental.RentalServiceImpl;
 import com.example.Rentify.service.article.ArticleServiceImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,11 +19,8 @@ import org.springframework.web.bind.annotation.*;
 import com.example.Rentify.utils.ResponseHandler;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/rental")
@@ -183,6 +179,36 @@ public class RentalController {
             return null;
         });
     }
+
+    @GetMapping("/my-positions")
+    public ResponseEntity<List<CustomerRentalDto>> getMyRentalPositions() {
+        User currentUser = getCurrentUser();
+        return ResponseHandler.handle(() ->
+                rentalService.getRentalPositionsForUser(currentUser.getId())
+        );
+    }
+
+    @PatchMapping("/customer/update-rental/{rentalPositionId}")
+    public ResponseEntity<CustomerRentalDto> updateRentalPeriodForCustomer(
+            @PathVariable Long rentalPositionId,
+            @RequestBody RentalPositionDto updateDto) {
+
+        User currentUser = getCurrentUser();
+        return ResponseHandler.handle(() ->
+                rentalService.updateRentalPeriodForCustomer(rentalPositionId, updateDto, currentUser.getId())
+        );
+    }
+
+    @DeleteMapping("/customer/delete-rental-position/{rentalPositionId}")
+    public ResponseEntity<Void> deleteRentalPositionForCustomer(@PathVariable Long rentalPositionId) {
+        User currentUser = getCurrentUser();
+        return ResponseHandler.handleVoid(() ->
+                rentalService.deleteRentalPositionForCustomer(rentalPositionId, currentUser.getId())
+        );
+    }
+
+
+
 
 
 

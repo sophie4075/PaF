@@ -1,6 +1,7 @@
 package com.example.Rentify.service.rental;
 
 import com.example.Rentify.dto.AdminRentalInfoDto;
+import com.example.Rentify.dto.CustomerRentalDto;
 import com.example.Rentify.dto.RentalDto;
 import com.example.Rentify.dto.RentalPositionDto;
 import com.example.Rentify.entity.*;
@@ -310,6 +311,99 @@ public class RentalServiceImpl implements RentalService {
         instance.setStatus(newStatus);
         articleInstanceRepo.save(instance);
     }
+
+    @Override
+    public List<CustomerRentalDto> getRentalPositionsForUser(Long userId) {
+        return rentalPositionRepo.findRentalInfoByUserId(userId);
+    }
+
+    @Override
+    public CustomerRentalDto updateRentalPeriodForCustomer(Long rentalPositionId, RentalPositionDto updateDto, Long userId) {
+        RentalPosition rentalPosition = rentalPositionRepo.findById(rentalPositionId)
+                .orElseThrow(() -> new IllegalArgumentException("RentalPosition not found"));
+
+        if (!rentalPosition.getRental().getUser().getId().equals(userId)) {
+            throw new SecurityException("Access denied: Not your rental position");
+        }
+
+        LocalDate today = LocalDate.now();
+        if (!rentalPosition.getRentalStart().isAfter(today)) {
+            throw new IllegalStateException("Cannot update rental that has already started");
+        }
+
+        LocalDate newStart = updateDto.getRentalStart();
+        LocalDate newEnd = updateDto.getRentalEnd();
+
+        boolean overlapExists = rentalPositionRepo.existsOverlapExcludingCurrent(
+                rentalPosition.getArticleInstance(),
+                rentalPosition.getId(),
+                newStart,
+                newEnd
+        );
+        if (overlapExists) {
+            throw new IllegalStateException("Overlap with another rental");
+        }
+
+        rentalPosition.setRentalStart(newStart);
+        rentalPosition.setRentalEnd(newEnd);
+        long days = ChronoUnit.DAYS.between(newStart, newEnd);
+        days = Math.max(days, 1);
+        BigDecimal dailyPrice = BigDecimal.valueOf(rentalPosition.getArticleInstance().getArticle().getGrundpreis());
+        rentalPosition.setPositionPrice(dailyPrice.multiply(BigDecimal.valueOf(days)));
+
+        rentalPositionRepo.save(rentalPosition);
+
+        Rental rental = rentalPosition.getRental();
+        BigDecimal totalPrice = calculateTotalPrice(rental.getId());
+        rental.setTotalPrice(totalPrice);
+        rentalRepo.save(rental);
+
+        return new CustomerRentalDto(
+                rental.getId(),
+                rentalPosition.getId(),
+                rentalPosition.getArticleInstance().getArticle().getBezeichnung(),
+                rentalPosition.getArticleInstance().getInventoryNumber(),
+                newStart,
+                newEnd,
+                rentalPosition.getArticleInstance().getStatus().toString(),
+                rentalPosition.getPositionPrice(),
+                rental.getTotalPrice()
+        );
+    }
+
+
+    @Override
+    public void deleteRentalPositionForCustomer(Long rentalPositionId, Long userId) {
+        RentalPosition rentalPosition = rentalPositionRepo.findById(rentalPositionId)
+                .orElseThrow(() -> new IllegalArgumentException("RentalPosition not found"));
+
+        if (!rentalPosition.getRental().getUser().getId().equals(userId)) {
+            throw new SecurityException("Access denied");
+        }
+
+        LocalDate today = LocalDate.now();
+        if (!rentalPosition.getRentalStart().isAfter(today)) {
+            throw new IllegalStateException("Cannot delete position that already started");
+        }
+
+        rentalPositionRepo.delete(rentalPosition);
+        Rental rental = rentalPosition.getRental();
+
+        List<RentalPosition> remainingPositions = rentalPositionRepo.findByRentalId(rental.getId());
+
+
+        if (remainingPositions.isEmpty()) {
+            rental.setRentalStatus(RentalStatus.CANCELLED);
+            rental.setTotalPrice(BigDecimal.ZERO);
+        } else {
+            BigDecimal totalPrice = calculateTotalPrice(rental.getId());
+            rental.setTotalPrice(totalPrice);
+        }
+
+
+        rentalRepo.save(rental);
+    }
+
 
 
 

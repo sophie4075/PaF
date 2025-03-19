@@ -1,6 +1,7 @@
 package com.example.Rentify.service.rental;
 
 import com.example.Rentify.dto.AdminRentalInfoDto;
+import com.example.Rentify.dto.CustomerRentalDto;
 import com.example.Rentify.dto.RentalDto;
 import com.example.Rentify.dto.RentalPositionDto;
 import com.example.Rentify.entity.Article;
@@ -36,5 +37,11 @@ public interface RentalService {
     List<AdminRentalInfoDto> getAllRentalPos();
 
     void updateInstanceStatusByInventoryNo(String inventoryNumber, String newStatus);
+
+    List<CustomerRentalDto> getRentalPositionsForUser(Long userId);
+
+    CustomerRentalDto updateRentalPeriodForCustomer(Long rentalPositionId, RentalPositionDto updateDto, Long id);
+
+    void deleteRentalPositionForCustomer(Long rentalPositionId, Long id);
 }
 

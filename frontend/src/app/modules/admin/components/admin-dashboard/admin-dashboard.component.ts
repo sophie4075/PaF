@@ -45,10 +45,10 @@ import {MatPaginator, PageEvent} from "@angular/material/paginator";
     MatPaginator
   ],
   template: `
-    
+
     <div class="max-w-7xl mx-auto px-4 py-8 min-h-full">
       <div class="py-12">
-        
+
         <div class="mx-auto grid lg:grid-cols-3 gap-2 mb-8">
           <div class="overflow-hidden shadow-md sm:rounded-lg">
             <div class="p-6 text-gray-900">
@@ -56,19 +56,20 @@ import {MatPaginator, PageEvent} from "@angular/material/paginator";
                 Due today
               </h3>
               <p class="text-xl">
-                @if (dueRentals.length){
-                  <p class="text-lg font-extrabold">{{dueRentals.length}} {{dueRentals.length === 1 ? 'item is' : 'items are' }} due today</p>
+                @if (dueRentals.length) {
+                  <p class="text-lg font-extrabold">{{ dueRentals.length }} {{ dueRentals.length === 1 ? 'item is' : 'items are' }}
+                    due today</p>
                 } @else {
                   <p class="text-gray-700 text-base italic">No instances are due today</p>
                 }
               </p>
-              @for(rental of dueRentals; track $index){
+              @for (rental of dueRentals; track $index) {
                 <div class="my-4 flex flex-column lg:flex-row lg:justify-between items-center gap-1.5">
                   <div>
                     <p class="text-sm text-gray-900">{{ rental.articleDesignation }} {{ rental.articleInstanceInventoryNumber }}</p>
                     <p class="text-xs text-gray-700">rented by {{ rental.userFirstName }} {{ rental.userLastName }}</p>
                   </div>
-                  
+
                   <mat-checkbox
                       (change)="openReturnDialog(rental)"
                       [checked]="checkboxStates[rental.rentalPositionId] || false"
@@ -84,16 +85,17 @@ import {MatPaginator, PageEvent} from "@angular/material/paginator";
           <div class="overflow-hidden shadow-md sm:rounded-lg">
             <div class="p-6 text-gray-900">
               <h3 class="text-red-500 text-2xl font-semibold">
-                Due today
+                Over Due
               </h3>
               <p class="text-xl">
-                @if (overDueRentals.length){
-                  <p class="text-lg font-extrabold">{{overDueRentals.length}} {{overDueRentals.length === 1 ? 'item is' : 'items are' }} overdue</p>
+                @if (overDueRentals.length) {
+                  <p class="text-lg font-extrabold">{{ overDueRentals.length }} {{ overDueRentals.length === 1 ? 'item is' : 'items are' }}
+                    overdue</p>
                 } @else {
                   <p class="text-gray-700 text-base italic">No instances are overdue!</p>
                 }
               </p>
-              @for(rental of overDueRentals; track $index){
+              @for (rental of overDueRentals; track $index) {
                 <div class="my-4 flex flex-column lg:flex-row lg:justify-between items-center gap-1.5">
                   <div>
                     <p class="text-sm text-gray-900">{{ rental.articleDesignation }} {{ rental.articleInstanceInventoryNumber }}</p>
@@ -117,14 +119,15 @@ import {MatPaginator, PageEvent} from "@angular/material/paginator";
                 Under Repair
               </h3>
               <p class="text-xl mb-y">
-                @if (underRepairRentals.length){
-                  <p class="text-lg font-extrabold">{{underRepairRentals.length}}  {{underRepairRentals.length === 1 ? 'item is' : 'items are' }} in need of repair</p>
+                @if (underRepairRentals.length) {
+                  <p class="text-lg font-extrabold">{{ underRepairRentals.length }}  {{ underRepairRentals.length === 1 ? 'item is' : 'items are' }}
+                    in need of repair</p>
                 } @else {
                   <p class="text-gray-700 text-base italic">Nothing to repair! :)</p>
                 }
               </p>
 
-              @for(rental of underRepairRentals; track $index){
+              @for (rental of underRepairRentals; track $index) {
                 <div class="my-4 flex flex-column lg:flex-row lg:justify-between gap-1.5 items-center">
                   <p class="text-sm">{{ rental.articleDesignation }} {{ rental.articleInstanceInventoryNumber }}
                   </p>
@@ -140,66 +143,66 @@ import {MatPaginator, PageEvent} from "@angular/material/paginator";
             </div>
           </div>
         </div>
-      
-      <div class="overflow-auto shadow-md rounded py pb-5">
 
-        <div class="flex justify-between items-center m-4">
-          <h1 class="text-xl font-bold">Rental Positions</h1>
-          
-          @if(allRentals.length){
-            <input
-                [(ngModel)]="searchTerm"
-                placeholder="Search..."
-                class="border p-2 rounded w-1/3 bg-transparent" />
-          }
-          
-        </div>
+        <div class="overflow-auto shadow-md rounded py pb-5">
 
-        @if (allRentals.length){
+          <div class="flex justify-between items-center m-4">
+            <h1 class="text-xl font-bold">Rental Positions</h1>
 
-          <table class="w-full text-sm text-left rtl:text-right text-gray-500">
-            <thead class="text xs text-gray-700 uppercase">
-            <tr class="text-nowrap flex justify-between items-center">
-              <app-sortable-header label="Artikel" field="articleDesignation"
-                                   [sortField]="sortField" [sortDirection]="sortDirection"
-                                   (sort)="onSortChange($event)">
-              </app-sortable-header>
-              <app-sortable-header label="Inventory Number" field="articleInstanceInventoryNumber"
-                                   [sortField]="sortField" [sortDirection]="sortDirection"
-                                   (sort)="onSortChange($event)">
-              </app-sortable-header>
-              <app-sortable-header label="Rental End" field="rentalEnd"
-                                   [sortField]="sortField" [sortDirection]="sortDirection"
-                                   (sort)="onSortChange($event)">
-              </app-sortable-header>
-              <app-sortable-header label="Rented by" field="userLastName"
-                                   [sortField]="sortField" [sortDirection]="sortDirection"
-                                   (sort)="onSortChange($event)">
-              </app-sortable-header>
-              <th>
-                <select [(ngModel)]="selectedFilter" class="border p-2 rounded bg-transparent">
-                  <option value="ALL">All</option>
-                  <option value="CURRENT">Current Active</option>
-                  <option value="UPCOMING">Upcoming</option>
-                  <option value="DUE">Due Today</option>
-                  <option value="OVERDUE">Overdue</option>
-                  <option value="PAST">Past</option>
-                </select>
-              </th>
-              <th class="px-3 py-2">Aktionen</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr *ngFor="let rental of paginatedRentals()" class="border-b flex justify-between items-center">
-              <td class="px-3 py-2">{{ rental.articleDesignation }}</td>
-              <td class="px-3 py-2">{{ rental.articleInstanceInventoryNumber }}</td>
-              <td class="px-3 py-2">
-                {{ rental.rentalStart | date:'dd.MM.yyyy' }} - {{ rental.rentalEnd | date:'dd.MM.yyyy' }}
-              </td>
-              <td class="px-3 py-2">
-                {{ rental.userFirstName }} {{ rental.userLastName }}
-              </td>
-              <td class="px-3 py-2">
+            @if (allRentals.length) {
+              <input
+                  [(ngModel)]="searchTerm"
+                  placeholder="Search..."
+                  class="border p-2 rounded w-1/3 bg-transparent"/>
+            }
+
+          </div>
+
+          @if (allRentals.length) {
+
+            <table class="w-full text-sm text-left rtl:text-right text-gray-500">
+              <thead class="text xs text-gray-700 uppercase">
+              <tr class="text-nowrap flex justify-between items-center">
+                <app-sortable-header label="Artikel" field="articleDesignation"
+                                     [sortField]="sortField" [sortDirection]="sortDirection"
+                                     (sort)="onSortChange($event)">
+                </app-sortable-header>
+                <app-sortable-header label="Inventory Number" field="articleInstanceInventoryNumber"
+                                     [sortField]="sortField" [sortDirection]="sortDirection"
+                                     (sort)="onSortChange($event)">
+                </app-sortable-header>
+                <app-sortable-header label="Rental End" field="rentalEnd"
+                                     [sortField]="sortField" [sortDirection]="sortDirection"
+                                     (sort)="onSortChange($event)">
+                </app-sortable-header>
+                <app-sortable-header label="Rented by" field="userLastName"
+                                     [sortField]="sortField" [sortDirection]="sortDirection"
+                                     (sort)="onSortChange($event)">
+                </app-sortable-header>
+                <th>
+                  <select [(ngModel)]="selectedFilter" class="border p-2 rounded bg-transparent">
+                    <option value="ALL">All</option>
+                    <option value="CURRENT">Current Active</option>
+                    <option value="UPCOMING">Upcoming</option>
+                    <option value="DUE">Due Today</option>
+                    <option value="OVERDUE">Overdue</option>
+                    <option value="PAST">Past</option>
+                  </select>
+                </th>
+                <th class="px-3 py-2">Aktionen</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let rental of paginatedRentals()" class="border-b flex justify-between items-center">
+                <td class="px-3 py-2">{{ rental.articleDesignation }}</td>
+                <td class="px-3 py-2">{{ rental.articleInstanceInventoryNumber }}</td>
+                <td class="px-3 py-2">
+                  {{ rental.rentalStart | date:'dd.MM.yyyy' }} - {{ rental.rentalEnd | date:'dd.MM.yyyy' }}
+                </td>
+                <td class="px-3 py-2">
+                  {{ rental.userFirstName }} {{ rental.userLastName }}
+                </td>
+                <td class="px-3 py-2">
                <span [ngClass]="{
                'text-green-700': getDisplayStatus(rental) === 'Returned',
                'text-blue-500': getDisplayStatus(rental) === 'Current Active' || getDisplayStatus(rental) === 'Upcoming',
@@ -208,36 +211,36 @@ import {MatPaginator, PageEvent} from "@angular/material/paginator";
                }">
                  {{ getDisplayStatus(rental) }}
                </span>
-              </td>
-              <td class="px-3 py-2">
-                @if (getDisplayStatus(rental) !== 'Returned'){
-                  <button (click)="openEditDialog(rental)" class="text-blue-500 hover:underline">
-                    Edit
-                  </button>
-                }
-              </td>
-            </tr>
-            </tbody>
-          </table>
+                </td>
+                <td class="px-3 py-2">
+                  @if (getDisplayStatus(rental) !== 'Returned') {
+                    <button (click)="openEditDialog(rental)" class="text-blue-500 hover:underline">
+                      Edit
+                    </button>
+                  }
+                </td>
+              </tr>
+              </tbody>
+            </table>
 
-          <div class="flex justify-center items-center">
-            <mat-paginator
-                [length]="getProcessedRentals().length"
-                [pageSize]="pageSize"
-                [pageSizeOptions]="[5, 10, 25, 100]"
-                [pageIndex]="pageIndex"
-                (page)="onPageChange($event)">
-            </mat-paginator>
-          </div>
-          
+            <div class="flex justify-center items-center">
+              <mat-paginator
+                  [length]="getProcessedRentals().length"
+                  [pageSize]="pageSize"
+                  [pageSizeOptions]="[5, 10, 25, 100]"
+                  [pageIndex]="pageIndex"
+                  (page)="onPageChange($event)">
+              </mat-paginator>
+            </div>
 
-        } @else {
-          <p class="text-gray-700 text-base italic m-4">No instances are currently borrowed</p>
-        }
-        
+
+          } @else {
+            <p class="text-gray-700 text-base italic m-4">No instances are currently borrowed</p>
+          }
+
+        </div>
+
       </div>
-      
-    </div>
     </div>`,
 })
 export class AdminDashboardComponent implements OnInit{
@@ -386,7 +389,6 @@ export class AdminDashboardComponent implements OnInit{
     this.pageIndex = event.pageIndex;
   }
 
-
   markInstanceAsRepaired(rental: AdminRentalInfoDto) {
 
     console.log(rental.rentalPositionId)
@@ -518,6 +520,4 @@ export class AdminDashboardComponent implements OnInit{
           return 0;
         });
   }
-
-
 }

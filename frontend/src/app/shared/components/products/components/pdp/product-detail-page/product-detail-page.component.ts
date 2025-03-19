@@ -87,8 +87,8 @@ import {MatSnackBar} from "@angular/material/snack-bar";
                 <mat-form-field class="w-full md:w-2/3">
                   <mat-label>Verfügbarkeit prüfen</mat-label>
                   <mat-date-range-input [formGroup]="range" [rangePicker]="picker">
-                    <input matStartDate formControlName="start" placeholder="Start date">
-                    <input matEndDate formControlName="end" placeholder="End date">
+                    <input matStartDate formControlName="start" placeholder="Start date" [min]="today">
+                    <input matEndDate formControlName="end" placeholder="End date" [min]="tomorrow">
                   </mat-date-range-input>
                   @if (available && this.range.get('start')?.value && this.range.get('end')?.value) {
                     <mat-hint class="text-green-700">
@@ -209,6 +209,9 @@ export class ProductDetailPageComponent implements OnInit {
 
   private _snackBar = inject(MatSnackBar);
 
+  today = new Date();
+  tomorrow = new Date()
+
   readonly range = new FormGroup({
     start: new FormControl<Date | null>(null),
     end: new FormControl<Date | null>(null),
@@ -222,7 +225,7 @@ export class ProductDetailPageComponent implements OnInit {
               private rentalService: RentalService,
               private router: Router
               ) {
-
+    this.tomorrow.setDate(this.today.getDate() + 1);
   }
 
   ngOnInit() {
