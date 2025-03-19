@@ -28,12 +28,5 @@ export class RentalService {
     }
 
 
-    createAuthHeader(): HttpHeaders {
-        let authHeaders: HttpHeaders = new HttpHeaders();
-        return authHeaders.set(
-            'Authorization',
-            'Bearer ' + StorageService.getToken()
-        )
-    }
 
 }

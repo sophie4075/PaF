@@ -29,26 +29,34 @@ export class AdminService {
   constructor(private http: HttpClient) { }
 
   getCurrentRentals(): Observable<AdminRentalInfoDto[]> {
-    return this.http.get<AdminRentalInfoDto[]>(`${this.rentalApiUrl}/admin/current`);
+    return this.http.get<AdminRentalInfoDto[]>(`${this.rentalApiUrl}/admin/current`, {
+      headers: this.createAuthHeader()
+    });
   }
 
   getDueRentals(): Observable<AdminRentalInfoDto[]> {
-    return this.http.get<AdminRentalInfoDto[]>(`${this.rentalApiUrl}/admin/due`);
+    return this.http.get<AdminRentalInfoDto[]>(`${this.rentalApiUrl}/admin/due`, {
+      headers: this.createAuthHeader()
+    });
   }
 
   getOverDueRentals(): Observable<AdminRentalInfoDto[]> {
-    return this.http.get<AdminRentalInfoDto[]>(`${this.rentalApiUrl}/admin/over-due`);
+    return this.http.get<AdminRentalInfoDto[]>(`${this.rentalApiUrl}/admin/over-due`, {
+      headers: this.createAuthHeader()
+    });
   }
 
   updateRentalPeriod(rentalPositionId: number, rentalEnd: string): Observable<AdminRentalInfoDto> {
     return this.http.patch<AdminRentalInfoDto>(
         `${this.rentalApiUrl}/admin/update-rental/${rentalPositionId}`,
-        { rentalEnd }
+        { rentalEnd },
+        {headers: this.createAuthHeader()}
     );
   }
 
   getAllRentalPositions(): Observable<AdminRentalInfoDto[]> {
-    return this.http.get<AdminRentalInfoDto[]>(`${this.rentalApiUrl}/admin/rental/all-positions`);
+    return this.http.get<AdminRentalInfoDto[]>(`${this.rentalApiUrl}/admin/rental/all-positions`,
+        {headers: this.createAuthHeader()});
   }
 
 
@@ -72,19 +80,23 @@ export class AdminService {
   updateInstanceStatus(rentalPositionId: number, newStatus: string): Observable<AdminRentalInfoDto> {
     return this.http.patch<AdminRentalInfoDto>(
         `${this.rentalApiUrl}/admin/update-instance-status/${rentalPositionId}`,
-        { newStatus }
+        { newStatus },
+        { headers: this.createAuthHeader() }
     );
   }
 
   getUnderRepairInstances(): Observable<AdminRentalInfoDto[]> {
-    return this.http.get<AdminRentalInfoDto[]>(`${this.rentalApiUrl}/admin/under-repair`);
+    return this.http.get<AdminRentalInfoDto[]>(`${this.rentalApiUrl}/admin/under-repair`, {
+      headers: this.createAuthHeader()
+    });
   }
 
 
   updateInstanceStatusByInventoryNo(articleInstanceInventoryNumber: string, newStatus: string) {
     return this.http.patch<AdminRentalInfoDto>(
         `${this.rentalApiUrl}/admin/update-instance-status-by-inventory/${articleInstanceInventoryNumber}`,
-        { newStatus }
+        { newStatus },
+        { headers: this.createAuthHeader() }
     );
   }
 }

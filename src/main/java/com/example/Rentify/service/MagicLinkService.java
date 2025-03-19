@@ -1,8 +1,7 @@
 package com.example.Rentify.service;
 
 import com.example.Rentify.entity.MagicToken;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+
 
 import java.util.Optional;
 

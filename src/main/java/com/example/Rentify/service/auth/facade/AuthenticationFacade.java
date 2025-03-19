@@ -7,15 +7,12 @@ import com.example.Rentify.service.auth.strategy.AuthenticationStrategy;
 import com.example.Rentify.service.jwt.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
-
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -60,7 +57,6 @@ public class AuthenticationFacade {
             contextHolderStrategy.setContext(context);
             contextRepository.saveContext(context, request, response);
 
-            // Jetzt JWT holen
             return magicLinkService.validateToken(token);
         }
         return Optional.empty();

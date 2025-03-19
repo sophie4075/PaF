@@ -11,12 +11,10 @@ import {
   MatExpansionPanelTitle
 } from "@angular/material/expansion";
 import {MatProgressSpinner} from "@angular/material/progress-spinner";
-import {FilterPipe} from "../../../../shared/pipes/filter.pipe";
 import {
   UpdateRentalPeriodComponent
 } from "../../../../shared/components/dashboard/update-rental-period/update-rental-period.component";
 import {MatSnackBar} from "@angular/material/snack-bar";
-import {OrderByPipe} from "../../../../shared/pipes/oder.pipe";
 import {
   SortableHeaderComponent
 } from "../../../../shared/components/dashboard/sortable-header/sortable-header.component";
@@ -38,9 +36,7 @@ import {MatPaginator, PageEvent} from "@angular/material/paginator";
     MatExpansionPanelTitle,
     MatExpansionPanelDescription,
     MatProgressSpinner,
-    FilterPipe,
     NgForOf,
-    OrderByPipe,
     SortableHeaderComponent,
     MatDivider,
     MatButton,

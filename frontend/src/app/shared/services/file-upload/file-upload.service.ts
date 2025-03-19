@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import {HttpClient} from "@angular/common/http";
+import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {Observable} from "rxjs";
+import {StorageService} from "../storage/storage.service";
 
 @Injectable({
   providedIn: 'root'
@@ -14,7 +15,17 @@ export class FileUploadService {
   uploadImage(file: File): Observable<{ fileDownloadUri: string }> {
     const formData = new FormData();
     formData.append('file', file);
-    return this.http.post<{ fileDownloadUri: string }>(this.uploadUrl, formData, { responseType: 'json' });
+    return this.http.post<{ fileDownloadUri: string }>(this.uploadUrl, formData, {
+      responseType: 'json',
+      headers: this.createAuthHeader()
+    });
+  }
+
+  private createAuthHeader(): HttpHeaders {
+    return new HttpHeaders().set(
+        'Authorization',
+        'Bearer ' + StorageService.getToken()
+    );
   }
 
 }

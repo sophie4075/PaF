@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import {map, Observable} from "rxjs";
-import {HttpClient, HttpParams} from "@angular/common/http";
+import {HttpClient, HttpHeaders, HttpParams} from "@angular/common/http";
 import {Category} from "../category/category.service";
+import {StorageService} from "../storage/storage.service";
 
 export interface Article {
   id?: number;
@@ -34,29 +35,36 @@ export class ArticleService {
     return this.http.get<Article>(`${this.apiUrl}/${id}`);
   }
 
-  //TODO JWT AUTH
   createArticle(article: Article): Observable<Article> {
-    return this.http.post<Article>(this.apiUrl, article);
+    return this.http.post<Article>(this.apiUrl, article, {
+      headers: this.createAuthHeader()
+    });
   }
 
-  //TODO JWT AUTH
+
   updateArticle(article: Article): Observable<Article> {
     if (!article.id) {
       throw new Error('Article ID is missing for update');
     }
-    return this.http.put<Article>(`${this.apiUrl}/${article.id}`, article);
+    return this.http.put<Article>(`${this.apiUrl}/${article.id}`, article, {
+      headers: this.createAuthHeader()
+    });
   }
 
-  //TODO JWT AUTH
   deleteArticle(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+    return this.http.delete<void>(`${this.apiUrl}/${id}`, {
+      headers: this.createAuthHeader()
+    });
   }
 
   generateDescriptionForName(bezeichnung: string): Observable<string> {
     return this.http.post(
         `${this.apiUrl}/generate-description-by-name`,
         { bezeichnung },
-        { responseType: 'text' }
+        {
+          headers: this.createAuthHeader(),
+          responseType: 'text'
+        }
     );
   }
 
@@ -88,7 +96,9 @@ export class ArticleService {
   }
 
   patchArticle(id: number, patch: any): Observable<Article> {
-    return this.http.patch<Article>(`${this.apiUrl}/${id}`, patch);
+    return this.http.patch<Article>(`${this.apiUrl}/${id}`, patch, {
+      headers: this.createAuthHeader()
+    });
   }
 
   checkAvailability(articleId: number, start: Date, end: Date): Observable<{ available: boolean, totalPrice?: number, availableInstances?: number[] }> {
@@ -110,5 +120,12 @@ export class ArticleService {
   }
 
 
+  createAuthHeader(): HttpHeaders {
+    let authHeaders: HttpHeaders = new HttpHeaders();
+    return authHeaders.set(
+        'Authorization',
+        'Bearer ' + StorageService.getToken()
+    )
+  }
 
 }
