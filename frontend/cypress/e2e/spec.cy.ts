@@ -12,7 +12,7 @@ describe('Register as Private Client', () => {
 
   it('register successfully', () => {
 
-    cy.intercept('POST', '**/api/auth/register', {  // ✅ Korrekt, ohne Ausrufezeichen
+    cy.intercept('POST', '**/api/auth/register', {
       statusCode: 201,
       body: {
         id: 1,
