@@ -1,11 +1,11 @@
-/*describe('Home page', () => {
+describe('Home page', () => {
   it('Visits the landing page', () => {
     cy.visit('/')
     cy.contains('High-quality equipment. Simply rented.')
   })
 })
 
-describe('Register as Private Client', () => {
+/*describe('Register as Private Client', () => {
   beforeEach(() => {
     cy.visit('/register');
   });
