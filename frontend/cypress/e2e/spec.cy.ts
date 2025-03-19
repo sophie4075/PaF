@@ -5,19 +5,20 @@ describe('Home page', () => {
   })
 })
 
-/*describe('Register as Private Client', () => {
+describe('Register as Private Client', () => {
   beforeEach(() => {
     cy.visit('/register');
   });
 
   it('register successfully', () => {
 
-    cy.intercept('POST', '**!/api/auth/register', {
-      statusCode: 200,
+    cy.intercept('POST', '**/api/auth/register', {  // ✅ Korrekt, ohne Ausrufezeichen
+      statusCode: 201,
       body: {
-        userId: 1,
-        token: 'dummy-token',
-        role: 'PRIVATE_CLIENT'
+        id: 1,
+        firstName: 'Max',
+        lastName: 'Mustermann',
+        email: 'max.mustermann@example.com'
       }
     }).as('registerRequest');
 
@@ -35,15 +36,13 @@ describe('Home page', () => {
 
     cy.get('button[type="submit"]').click();
 
-    cy.wait('@registerRequest').its('response.statusCode').should('eq', 200);
+    cy.wait('@registerRequest').its('response.statusCode').should('eq', 201);
+    cy.contains('You’ll receive a link to verify your account shortly.').should('exist');
 
-    cy.url().should('include', '/login');
-
-    cy.contains('Registered successfully!').should('exist');
   });
 
-  it('Failed login, email already exists', () => {
-    cy.intercept('POST', '**!/api/auth/register', {
+  it('Failed register, email already exists', () => {
+    cy.intercept('POST', '**/api/auth/register', {
       statusCode: 400,
       body: {
         message: 'Email already exists'
@@ -71,7 +70,7 @@ describe('Home page', () => {
     cy.url().should('include', '/register');
   });
 
-  it('Passwort-Mismatch', () => {
+  it('Password-Mismatch', () => {
     cy.get('input[formControlName="firstName"]').type('Max');
     cy.get('input[formControlName="lastName"]').type('Mustermann');
     cy.get('input[formControlName="email"]').type('max.mustermann@example.com');
@@ -97,127 +96,75 @@ describe('Login', () => {
     cy.visit('/login');
   });
 
-  it('Show valdidation errors if no inputs are made', () => {
+  it('Show valdidation errors', () => {
     cy.get('button[type="submit"]').should('be.disabled');
 
     cy.get('input[type="email"]').click();
-    cy.get('input[type="password"]').click();
-    cy.get('input[type="email"]').click();
+    cy.contains('Login').click();
 
     cy.get('button[type="submit"]').should('be.disabled');
-
-
     cy.contains('E-Mail is required');
-    cy.contains('Password is required');
   });
 
-  it('Login as Admin', () => {
+  it('Sends magic link and simulates token login redirect', () => {
 
-    cy.intercept('POST', '**!/api/auth/login', {
+    cy.intercept('POST', '**/api/auth/magic', {
       statusCode: 200,
-      body: { token: 'dummy-token', userId: 1, role: 'ADMIN' },
-    }).as('loginSuccess');
+      body: { message: 'Magic link sent to your email' }
+    }).as('sendMagicLink');
 
-    cy.get('input[formControlName="email"]').type('test@example.com');
-    cy.get('input[formControlName="password"]').type('Password123!');
-    cy.get('button[type="submit"]').click();
-
-    cy.wait('@loginSuccess');
-
-    cy.url().should('include', '/admin');
-
-    cy.window()
-        .its('localStorage')
-        .invoke('getItem', 'token')
-        .should('exist');
-  });
-
-  it('Login as Customer', () => {
-
-    cy.intercept('POST', '**!/api/auth/login', {
-      statusCode: 200,
-      body: { token: 'dummy-token-1', userId: 2, role: 'PRIVATE_CLIENT' },
-    }).as('loginSuccess');
-
+    cy.visit('/login');
     cy.get('input[formControlName="email"]').type('test1@example.com');
-    cy.get('input[formControlName="password"]').type('Password123!');
     cy.get('button[type="submit"]').click();
 
-    cy.wait('@loginSuccess');
+    cy.wait('@sendMagicLink');
+    cy.contains('You’ll receive a login link in your inbox shortly.').should('exist');
 
+
+    const dummyJwt = 'dummy-jwt-token';
+    cy.visit(`/magic-login?token=${dummyJwt}`);
+
+    cy.window().then(win => {
+      const url = new URL(win.location.href);
+      const tokenFromUrl = url.searchParams.get('token');
+      if (tokenFromUrl) {
+        win.localStorage.setItem('token', tokenFromUrl);
+      }
+    });
+
+    cy.window().its('localStorage.token').should('eq', dummyJwt);
+
+
+    cy.visit('/customer');
     cy.url().should('include', '/customer');
-
-    cy.window()
-        .its('localStorage')
-        .invoke('getItem', 'token')
-        .should('exist');
   });
 
-  it('Login as Staff', () => {
-
-    cy.intercept('POST', '**!/api/auth/login', {
-      statusCode: 200,
-      body: { token: 'dummy-token', userId: 3, role: 'STAFF' },
-    }).as('loginSuccess');
-
-    cy.get('input[formControlName="email"]').type('test3@example.com');
-    cy.get('input[formControlName="password"]').type('Password123!');
-    cy.get('button[type="submit"]').click();
-
-    cy.wait('@loginSuccess');
-
-    cy.url().should('include', '/admin');
-
-    cy.window()
-        .its('localStorage')
-        .invoke('getItem', 'token')
-        .should('exist');
-  });
-
-  it('Login with bad credentials', () => {
-    cy.intercept('POST', '**!/api/auth/login', {
-      statusCode: 403,
-      body: { message: 'Bad credentials' },
-    }).as('loginFail');
-
-    cy.get('input[formControlName="email"]').type('wrong@example.com');
-    cy.get('input[formControlName="password"]').type('wrongPassword');
-    cy.get('button[type="submit"]').click();
-
-    cy.wait('@loginFail');
-    cy.contains('Bad credentials').should('exist');
-    cy.window()
-        .its('localStorage')
-        .invoke('getItem', 'token')
-        .should('be.null');
-  });
-
-});*/
+});
 
 describe('Rent a product', () => {
   before(() => {
     cy.visit('/login');
-    cy.intercept('POST', '**/api/auth/login', {
+
+    cy.intercept('POST', '**/api/auth/magic', {
       statusCode: 200,
-      body: { token: 'dummy-jwt-token-1', userId: 2, role: 'PRIVATE_CLIENT' },
-    }).as('loginSuccess');
+      body: { message: 'Magic link sent to test1@example.com' }
+    }).as('sendMagicLink');
 
     cy.get('input[formControlName="email"]').type('test1@example.com');
-    cy.get('input[formControlName="password"]').type('Password123!');
     cy.get('button[type="submit"]').click();
-    cy.wait('@loginSuccess');
-    cy.url().should('include', '/customer');
+    cy.wait('@sendMagicLink');
+    cy.contains('You’ll receive a login link in your inbox shortly.').should('exist');
 
-    // Manuell Token setzen, falls nicht automatisch erfolgt
+    cy.visit('/magic-login?token=dummy-jwt-token-1');
+
     cy.window().then(win => {
       win.localStorage.setItem('token', 'dummy-jwt-token-1');
     });
-    // Speichere den Local Storage
+
     cy.saveLocalStorage();
   });
 
   beforeEach(() => {
-    // Stelle sicher, dass der gespeicherte Local Storage wiederhergestellt wird
     cy.restoreLocalStorage();
     cy.visit('/pdp/article/1');
   });
@@ -260,8 +207,34 @@ describe('Rent a product', () => {
     cy.wait('@createRental').its('response.statusCode').should('eq', 200);
     cy.contains('Articles rented!').should('exist');
     cy.url().should('include', '/customer');
+
   });
+
+  it('View Dashboard', () => {
+    cy.intercept('GET', '**/api/rental/my-positions', {
+      statusCode: 200,
+      body: [{
+        rentalPositionId: 1,
+        articleDesignation: 'Power Drill',
+        inventoryNumber: 'INV-123',
+        rentalStart: '2025-03-20',
+        rentalEnd: '2025-03-25',
+        status: 'RENTED'
+      }]
+    }).as('dashboardLoad');
+
+    cy.visit('/customer');
+    cy.wait('@dashboardLoad');
+
+    cy.contains('Power Drill').should('exist');
+    cy.contains('INV-123').should('exist');
+    cy.contains('Current Active').should('exist');
+
+  })
 });
+
+
+
 
 
 

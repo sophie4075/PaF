@@ -247,7 +247,7 @@ import {MatProgressSpinner} from "@angular/material/progress-spinner";
             <h1 class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-4xl">
               Check your Inbox
             </h1>
-            <p>You’ll receive a login link in your inbox shortly.</p>
+            <p>You’ll receive a link to verify your account shortly.</p>
           </div>
         }
         

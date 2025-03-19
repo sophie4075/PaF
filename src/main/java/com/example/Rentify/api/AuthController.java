@@ -62,9 +62,6 @@ public class AuthController {
 
     /**
      * Verarbeitet den Klick auf den Magic-Link.
-     */
-    /**
-     * Verarbeitet den Klick auf den Magic-Link.
      * Leitet nach erfolgreicher Auth auf Frontend weiter.
      */
     @GetMapping("/magic/{token}")
