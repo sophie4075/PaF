@@ -34,7 +34,7 @@ public class ImageUploadController {
     public ResponseEntity<Map<String, String>> uploadImage(@RequestParam("file") MultipartFile file) {
         try {
             String fileName = storageService.saveImage(file);
-            String fileDownloadUri = "http://localhost:8080/api/uploads/images/" + fileName;
+            String fileDownloadUri = "http://localhost:8080/api/uploads/" + fileName;
             //return ResponseEntity.ok("Image uploaded successfully: " + fileDownloadUri);
             Map<String, String> response = new HashMap<>();
             response.put("fileDownloadUri", fileDownloadUri);

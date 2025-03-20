@@ -8,7 +8,7 @@ import {StorageService} from "../storage/storage.service";
 })
 export class FileUploadService {
 
-  private uploadUrl = 'http://localhost:8080/api/uploads/images';
+  private uploadUrl = 'http://localhost:8080/api/uploads/';
 
   constructor(private http: HttpClient) { }
 

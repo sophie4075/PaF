@@ -160,7 +160,7 @@ public class DatabaseSeeder implements CommandLineRunner {
      */
     private void seedRentals() {
         List<User> users = (List<User>) userRepository.findAll();
-        User user = users.getFirst();
+        User user = users.get(1);
 
         List<ArticleInstance> articleInstances = (List<ArticleInstance>) articleInstanceRepository.findAll();
 

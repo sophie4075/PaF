@@ -40,7 +40,7 @@ public class AuthServiceImpl implements AuthService {
             User newAdmin = new User();
             newAdmin.setRole(Role.ADMIN);
             // Update Mail an den Besitzer
-            newAdmin.setEmail("admin@rentify.de");
+            newAdmin.setEmail("sophiehaack0@gmail.com");
             // TODO: Zufällige Passwortgenerierung implementieren
             newAdmin.setPassword(new BCryptPasswordEncoder().encode("admiN123!"));
             newAdmin.setEnabled(true);
