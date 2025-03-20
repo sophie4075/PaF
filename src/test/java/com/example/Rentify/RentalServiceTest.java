@@ -129,7 +129,7 @@ public class RentalServiceTest {
             assertEquals(Status.RENTED, instance.getStatus(), "ArticleInstance should be RENTED initially.");
         }
 
-        rentalServiceImpl.checkAndUpdateOverdueRentals();
+        rentalServiceImpl.checkAndUpdateOverdueRentalPos();
 
         //Rental updatedRental = rentalService.getRentalsByUserId(testUser.getId()).get(0);
         //assertEquals(RentalStatus.OVERDUE, updatedRental.getRentalStatus(), "Rental status should be OVERDUE.");

@@ -134,7 +134,7 @@ export class LoginComponent implements OnInit{
           this._snackBar.open(`Error: ${errorMessage}`, '🤖', {
             duration: 5000,
           });
-          this.loading = true;
+          this.loading = false;
         }
       });
     }

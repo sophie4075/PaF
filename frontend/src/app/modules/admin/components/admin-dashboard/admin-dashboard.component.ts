@@ -213,7 +213,7 @@ import {MatPaginator, PageEvent} from "@angular/material/paginator";
                </span>
                 </td>
                 <td class="px-3 py-2">
-                  @if (getDisplayStatus(rental) !== 'Returned') {
+                  @if (getDisplayStatus(rental) === 'Current Active') {
                     <button (click)="openEditDialog(rental)" class="text-blue-500 hover:underline">
                       Edit
                     </button>

@@ -82,27 +82,6 @@ public class RentalController {
     }
 
 
-    @PutMapping("/{id}")
-    public ResponseEntity<RentalDto> updateRental(@PathVariable Long id, @RequestBody Rental rental) {
-        return ResponseHandler.handle(() -> rentalService.updateRental(id, rental));
-    }
-
-
-    @GetMapping("/{id}")
-    public ResponseEntity<RentalDto> getRentalById(@PathVariable Long id) {
-        return ResponseHandler.handle(() -> rentalService.getRentalById(id));
-    }
-
-    @GetMapping
-    public ResponseEntity<List<RentalDto>> getAllRentals() {
-        return ResponseHandler.handle(rentalService::getAllRentals);
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteRental(@PathVariable Long id) {
-        return ResponseHandler.handleVoid(() -> rentalService.deleteRental(id));
-    }
-
     //Helper to get current User
     private User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -115,25 +94,47 @@ public class RentalController {
         throw new UsernameNotFoundException("User not found");
     }
 
-    //TODO get auth user -> make sure role is Admin
+    //TODO get auth user -> make sure role is Admin or Staff
+    @GetMapping("/admin/all-rentals")
+    public ResponseEntity<List<RentalDto>> getAllRentals() {
+        return ResponseHandler.handle(rentalService::getAllRentals);
+    }
+
+    @PutMapping("/admin/update/{id}")
+    public ResponseEntity<RentalDto> updateRental(@PathVariable Long id, @RequestBody Rental rental) {
+        return ResponseHandler.handle(() -> rentalService.updateRental(id, rental));
+    }
+
+    @GetMapping("/admin/get-rental/{id}")
+    public ResponseEntity<RentalDto> getRentalById(@PathVariable Long id) {
+        return ResponseHandler.handle(() -> rentalService.getRentalById(id));
+    }
+
+
+    @DeleteMapping("/admin/delete-rental/{id}")
+    public ResponseEntity<Void> deleteRental(@PathVariable Long id) {
+        return ResponseHandler.handleVoid(() -> rentalService.deleteRental(id));
+    }
+
+
     @GetMapping("/admin/current")
-    public ResponseEntity<List<AdminRentalInfoDto>> getCurrentRentals() {
-        return ResponseHandler.handle(rentalService::getCurrentRentals);
+    public ResponseEntity<List<AdminRentalInfoDto>> getCurrentRentalPos() {
+        return ResponseHandler.handle(rentalService::getCurrentRentalPos);
     }
 
     @GetMapping("/admin/due")
-    public ResponseEntity<List<AdminRentalInfoDto>> getDueRentals() {
-        return ResponseHandler.handle(rentalService::getDueRentals);
+    public ResponseEntity<List<AdminRentalInfoDto>> getDueRentalPos() {
+        return ResponseHandler.handle(rentalService::getDueRentalPos);
     }
 
     @GetMapping("/admin/over-due")
-    public ResponseEntity<List<AdminRentalInfoDto>> getOverDueRentals() {
-        return ResponseHandler.handle(rentalService::getOverDueRentals);
+    public ResponseEntity<List<AdminRentalInfoDto>> getOverDueRentalPos() {
+        return ResponseHandler.handle(rentalService::getOverDueRentalPos);
     }
 
     @GetMapping("/admin/upcoming-under-repair")
-    public ResponseEntity<List<AdminRentalInfoDto>> getUpcomingUnderRepairRentals() {
-        return ResponseHandler.handle(rentalService::getUpcomingUnderRepairRentals);
+    public ResponseEntity<List<AdminRentalInfoDto>> getUpcomingUnderRepairRentalPos() {
+        return ResponseHandler.handle(rentalService::getUpcomingUnderRepairRentalPos);
     }
 
     @GetMapping("/admin/under-repair")
@@ -147,13 +148,13 @@ public class RentalController {
     }
 
 
-    @PatchMapping("/admin/update-rental/{rentalPositionId}")
+    @PatchMapping("/admin/update-rentalpos-period/{rentalPositionId}")
     public ResponseEntity<AdminRentalInfoDto> updateRentalPeriod(
             @PathVariable Long rentalPositionId,
             @RequestBody RentalPositionDto updateDto) {
 
         return ResponseHandler.handle(() ->
-                rentalService.updateRentalPeriod(rentalPositionId, updateDto)
+                rentalService.updateRentalPosPeriod(rentalPositionId, updateDto)
         );
 
     }
@@ -180,7 +181,7 @@ public class RentalController {
         });
     }
 
-    @GetMapping("/my-positions")
+    @GetMapping("/customer/my-positions")
     public ResponseEntity<List<CustomerRentalDto>> getMyRentalPositions() {
         User currentUser = getCurrentUser();
         return ResponseHandler.handle(() ->

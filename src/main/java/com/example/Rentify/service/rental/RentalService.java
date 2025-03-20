@@ -16,23 +16,38 @@ public interface RentalService {
 
 
     RentalDto getRentalById(Long id);
+
     List<RentalDto> getAllRentals();
+
     List<Rental> getRentalsByUserId(Long userId);
+
     List<RentalPosition> getAllRentalPositions();
+
     RentalDto updateRental(Long id, Rental updatedRental);
+
     void deleteRental(Long id);
+
     BigDecimal calculateTotalPrice(Long rentalId);
-    void checkAndUpdateOverdueRentals();
+
+    void checkAndUpdateOverdueRentalPos();
+
     void changeAvailableToRented();
+
     void createRental(Rental rental, Article article, LocalDate rentalStart, LocalDate rentalEnd, int quantity);
-    List<AdminRentalInfoDto> getCurrentRentals();
-    List<AdminRentalInfoDto> getDueRentals();
-    List<AdminRentalInfoDto> getUpcomingUnderRepairRentals();
-    AdminRentalInfoDto updateRentalPeriod(Long rentalPositionId, RentalPositionDto updateDto);
+
+    List<AdminRentalInfoDto> getCurrentRentalPos();
+
+    List<AdminRentalInfoDto> getDueRentalPos();
+
+    List<AdminRentalInfoDto> getUpcomingUnderRepairRentalPos();
+
+    AdminRentalInfoDto updateRentalPosPeriod(Long rentalPositionId, RentalPositionDto updateDto);
+
     AdminRentalInfoDto updateInstanceStatus(Long rentalPositionId, String newStatusStr);
+
     List<AdminRentalInfoDto> getUnderRepairInstancesSorted();
 
-    List<AdminRentalInfoDto> getOverDueRentals();
+    List<AdminRentalInfoDto> getOverDueRentalPos();
 
     List<AdminRentalInfoDto> getAllRentalPos();
 

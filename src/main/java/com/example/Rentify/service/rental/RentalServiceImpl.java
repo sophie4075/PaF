@@ -110,7 +110,7 @@ public class RentalServiceImpl implements RentalService {
     }
 
     @Override
-    public void checkAndUpdateOverdueRentals() {
+    public void checkAndUpdateOverdueRentalPos() {
         LocalDate today = LocalDate.now();
         List<RentalPosition> rentals = rentalPositionRepo.findAll();
         System.out.println("Checking for overdue articleInstances");
@@ -183,26 +183,26 @@ public class RentalServiceImpl implements RentalService {
     }
 
     @Override
-    public List<AdminRentalInfoDto> getCurrentRentals() {
+    public List<AdminRentalInfoDto> getCurrentRentalPos() {
         LocalDate now = LocalDate.now();
         return rentalPositionRepo.findCurrentRentalInfo(now);
     }
 
     @Override
-    public List<AdminRentalInfoDto> getDueRentals() {
+    public List<AdminRentalInfoDto> getDueRentalPos() {
         LocalDate now = LocalDate.now();
         return rentalPositionRepo.findDueRentalInfo(now);
     }
 
     @Override
-    public List<AdminRentalInfoDto> getUpcomingUnderRepairRentals() {
+    public List<AdminRentalInfoDto> getUpcomingUnderRepairRentalPos() {
         LocalDate now = LocalDate.now();
         LocalDate sevenDaysLater = now.plusDays(7);
         return rentalPositionRepo.findUpcomingUnderRepairRentalInfo(now, sevenDaysLater);
     }
 
     @Override
-    public AdminRentalInfoDto updateRentalPeriod(Long rentalPositionId, RentalPositionDto updateDto){
+    public AdminRentalInfoDto updateRentalPosPeriod(Long rentalPositionId, RentalPositionDto updateDto){
         RentalPosition rentalPosition = rentalPositionRepo.findById(rentalPositionId)
                 .orElseThrow(() -> new IllegalArgumentException("RentalPosition not found"));
 
@@ -288,7 +288,7 @@ public class RentalServiceImpl implements RentalService {
     }
 
     @Override
-    public List<AdminRentalInfoDto> getOverDueRentals() {
+    public List<AdminRentalInfoDto> getOverDueRentalPos() {
         return articleInstanceRepo.getOverDue();
     }
 

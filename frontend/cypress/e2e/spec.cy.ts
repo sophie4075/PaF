@@ -90,7 +90,6 @@ describe('Register as Private Client', () => {
 
 });
 
-
 describe('Login', () => {
   beforeEach(() => {
     cy.visit('/login');
@@ -211,7 +210,7 @@ describe('Rent a product', () => {
   });
 
   it('View Dashboard', () => {
-    cy.intercept('GET', '**/api/rental/my-positions', {
+    cy.intercept('GET', '**/api/rental/customer/my-positions', {
       statusCode: 200,
       body: [{
         rentalPositionId: 1,

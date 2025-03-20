@@ -17,7 +17,7 @@ public class RentalStatusScheduler {
     // Every day at Midnight
     @Scheduled(cron = "0 0 0 * * ?", zone = "Europe/Berlin")
     public void scheduleDailyOverdueCheck() {
-        rentalServiceImpl.checkAndUpdateOverdueRentals();
+        rentalServiceImpl.checkAndUpdateOverdueRentalPos();
     }
 
     @Scheduled(cron = "0 0 0 * * ?", zone = "Europe/Berlin")

@@ -26,7 +26,7 @@ export class CustomerService {
   constructor(private http: HttpClient) { }
 
   getAllRentalPositions(): Observable<CustomerRentalInfoDto[]> {
-    return this.http.get<CustomerRentalInfoDto[]>(`${this.apiUrl}/my-positions`,
+    return this.http.get<CustomerRentalInfoDto[]>(`${this.apiUrl}/customer/my-positions`,
         {headers: this.createAuthHeader()});
   }
 

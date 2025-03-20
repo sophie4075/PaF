@@ -48,7 +48,7 @@ export class AdminService {
 
   updateRentalPeriod(rentalPositionId: number, rentalEnd: string): Observable<AdminRentalInfoDto> {
     return this.http.patch<AdminRentalInfoDto>(
-        `${this.rentalApiUrl}/admin/update-rental/${rentalPositionId}`,
+        `${this.rentalApiUrl}/admin/update-rentalpos-period/${rentalPositionId}`,
         { rentalEnd },
         {headers: this.createAuthHeader()}
     );

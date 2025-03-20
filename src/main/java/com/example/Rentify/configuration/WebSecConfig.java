@@ -2,6 +2,7 @@ package com.example.Rentify.configuration;
 
 import com.example.Rentify.entity.Role;
 import com.example.Rentify.service.jwt.UserService;
+import jakarta.ws.rs.HttpMethod;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,21 +34,30 @@ public class WebSecConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> request
+
                         .requestMatchers("/h2-console/**").permitAll()
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/rental/**").permitAll()
-                        .requestMatchers("/api/articles/**").permitAll()
-                        .requestMatchers("/api/admin/**").hasAnyAuthority(Role.ADMIN.name())
-                        .requestMatchers("/api/customer/**").hasAnyAuthority(Role.BUSINESS_CLIENT.name())
-                        .requestMatchers("/api/customer/**").hasAnyAuthority(Role.PRIVATE_CLIENT.name())
-                        .requestMatchers("api/rental/**").permitAll()
-                        .requestMatchers("/api/articles/**").permitAll()
-                        .requestMatchers("/api/uploads/**").permitAll()
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .requestMatchers(
-                                "/api/categories/**",
-                                "/api/statuses/**").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/articles/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/articles/**").hasAnyAuthority("STAFF", "ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/articles/**").hasAnyAuthority("STAFF", "ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/articles/**").hasAnyAuthority("STAFF", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/articles/**").hasAuthority("ADMIN")
+
+                        .requestMatchers(HttpMethod.GET, "/api/articles/*/instances/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/articles/*/instances/**").hasAnyAuthority("STAFF", "ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/articles/*/instances/**").hasAnyAuthority("STAFF", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/articles/*/instances/**").hasAuthority("ADMIN")
+
+
+                        .requestMatchers(HttpMethod.POST, "/api/rental").hasAnyAuthority("PRIVATE_CLIENT", "BUSINESS_CLIENT", "STAFF", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/rental/{id}").hasAuthority("ADMIN")
+                        .requestMatchers("/api/rental/admin/**").hasAnyAuthority("STAFF", "ADMIN")
+                        .requestMatchers("/api/rental/customer/**").hasAnyAuthority("PRIVATE_CLIENT", "BUSINESS_CLIENT")
+
+                        .requestMatchers("/api/categories/**", "/api/statuses/**").permitAll()
                         .anyRequest().authenticated()
+
                 )
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
@@ -73,5 +83,20 @@ public class WebSecConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
     }
+
+    /*.requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                       .requestMatchers("/api/auth/**").permitAll()
+                       .requestMatchers("/api/rental/**").permitAll()
+                       .requestMatchers("/api/articles/**").permitAll()
+                       .requestMatchers("/api/admin/**").hasAnyAuthority(Role.ADMIN.name())
+                       .requestMatchers("/api/customer/**").hasAnyAuthority(Role.BUSINESS_CLIENT.name())
+                       .requestMatchers("/api/customer/**").hasAnyAuthority(Role.PRIVATE_CLIENT.name())
+                       .requestMatchers("api/rental/**").permitAll()
+                       .requestMatchers("/api/articles/**").permitAll()
+                       .requestMatchers("/api/uploads/**").permitAll()
+                       .requestMatchers(
+                               "/api/categories/**",
+                               "/api/statuses/**").permitAll()
+                       .anyRequest().authenticated()*/
 
 }

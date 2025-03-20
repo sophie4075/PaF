@@ -373,6 +373,16 @@ export class ProductDetailPageComponent implements OnInit {
   }
 
   addToCart() {
+
+    const token = StorageService.getToken();
+    if (!token) {
+      this._snackBar.open('Please login, in order to add items to your cart.', '🔐', {
+        duration: 5000,
+      });
+      this.router.navigate(['/login']);
+      return;
+    }
+
     const name = this.article?.bezeichnung || ""
     const start = this.range.get('start')?.value;
     const end = this.range.get('end')?.value;
