@@ -45,7 +45,7 @@ public class ImageUploadController {
         }
     }
 
-    @GetMapping("/images/{filename}")
+    @GetMapping({"/{filename}", "/images/{filename}"})
     public ResponseEntity<Resource> getImage(@PathVariable String filename) {
         try {
             Resource resource = storageService.loadImageAsResource(filename);

@@ -55,6 +55,9 @@ public class WebSecConfig {
                         .requestMatchers("/api/rental/admin/**").hasAnyAuthority("STAFF", "ADMIN")
                         .requestMatchers("/api/rental/customer/**").hasAnyAuthority("PRIVATE_CLIENT", "BUSINESS_CLIENT")
 
+                        .requestMatchers("/api/uploads/**").permitAll()
+
+
                         .requestMatchers("/api/categories/**", "/api/statuses/**").permitAll()
                         .anyRequest().authenticated()
 
