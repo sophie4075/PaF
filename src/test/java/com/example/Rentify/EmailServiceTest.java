@@ -21,7 +21,7 @@ class EmailServiceTest {
     private JavaMailSender mailSender;
 
     @InjectMocks
-    private EmailService emailService;
+    private EmailServiceImpl emailService;
 
     @Test
     void testSendEmail_ShouldSendCorrectEmail() {

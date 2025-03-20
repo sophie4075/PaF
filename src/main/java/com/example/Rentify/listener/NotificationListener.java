@@ -7,6 +7,7 @@ import com.example.Rentify.events.UserUpdatedEvent;
 import com.example.Rentify.messengerBot.MessengerBot;
 import com.example.Rentify.service.email.EmailService;
 import com.example.Rentify.service.email.EmailServiceImpl;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;

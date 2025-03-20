@@ -169,7 +169,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         rental.setRentalStatus(RentalStatus.ACTIVE);
         rentalRepository.save(rental);
 
-        LocalDate rentalStart = LocalDate.now().plusDays(3);
+        LocalDate rentalStart = LocalDate.now().plusDays(1);
         LocalDate rentalEnd = LocalDate.now().plusDays(1);
         int quantity = 3;
         Article article = articleInstances.get(0).getArticle();
