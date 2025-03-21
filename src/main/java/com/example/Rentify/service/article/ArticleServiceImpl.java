@@ -370,7 +370,7 @@ public class ArticleServiceImpl implements ArticleService {
 
         List<Long> availableInstanceNumbers = new ArrayList<>();
         for (ArticleInstance instance : article.getArticleInstances()) {
-            if (instance.getStatus() == Status.AVAILABLE) {
+            if (instance.getStatus() != Status.UNDER_REPAIR && instance.getStatus() != Status.RETIRED) {
                 boolean booked = rentalPositionRepo.existsByArticleInstanceAndRentalPeriodOverlap(instance, startDate, endDate);
                 if (!booked) {
                     availableInstanceNumbers.add(instance.getId());
