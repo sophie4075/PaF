@@ -149,7 +149,7 @@ public class RentalServiceImpl implements RentalService {
         List<ArticleInstance> allInstances = articleInstanceRepo.findByArticle(article);
 
         List<ArticleInstance> availableInstances = allInstances.stream()
-                .filter(instance -> instance.getStatus() == Status.AVAILABLE)
+                .filter(instance -> instance.getStatus() != Status.RETIRED && instance.getStatus() != Status.UNDER_REPAIR)
                 .filter(instance -> !rentalPositionRepo.existsByArticleInstanceAndRentalPeriodOverlap(instance, rentalStart, rentalEnd))
                 .toList();
 
