@@ -43,9 +43,8 @@ export class MagicLoginComponent implements OnInit {
 
         StorageService.saveUser(user);
 
-        this.snackBar.open('Login erfolgreich! 🎉', 'OK', { duration: 4000 });
+        this.snackBar.open('Login succeeded! 🎉', 'OK', { duration: 4000 });
 
-        // Weiterleitung z.B. Dashboard/Admin
         if (user.role === 'ADMIN' || user.role === 'STAFF') {
           this.router.navigateByUrl('/admin');
         } else {
@@ -53,8 +52,8 @@ export class MagicLoginComponent implements OnInit {
         }
 
       } catch (error) {
-        this.errorMessage = 'Ungültiger Token!';
-        this.snackBar.open('Login fehlgeschlagen ❌', 'OK', { duration: 4000 });
+        this.errorMessage = 'Invalid Token!';
+        this.snackBar.open('No token found :/', 'OK', { duration: 4000 });
       }
     } else {
       this.errorMessage = 'Kein Token gefunden!';
